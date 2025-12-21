@@ -56,4 +56,7 @@ React handles everything you see on the screen that isn't 3D:
 - **3D Physics**: Bouncing movement, jumping, and momentum.
 - **Memory Cleanup**: Automatically disposes of 3D objects to keep your computer fast.
 
+To run the game:
+- https://3dcrystalcollector.netlify.app/
+
 **Created with ✨ by Lumidren**
