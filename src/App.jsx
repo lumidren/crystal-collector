@@ -80,6 +80,17 @@ const CrystalCollectorGame = () => {
   const [pylonsDeactivated, setPylonsDeactivated] = useState(0);
   const [fps, setFps] = useState(60);
 
+  // Combined frozen state: halts physics, obstacles, hazards, boss, and timers
+  const isGameFrozen = isPaused || showFieldManual || showHowToPlay || showSettings || showShop || showAchievements || showLevelSelect || showComplete || gameOver;
+  const isGameFrozenRef = useRef(false);
+
+  useEffect(() => {
+    isGameFrozenRef.current = isGameFrozen;
+    if (isGameFrozen && document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+  }, [isGameFrozen]);
+
   // Speedrun timer, spawn grace immunity, and scoreboard tracking
   const [spawnGraceTime, setSpawnGraceTime] = useState(3.0);
   const spawnGraceRef = useRef(3.0);
@@ -199,7 +210,8 @@ const CrystalCollectorGame = () => {
     damageTakenRef.current = 0;
     setDamageTakenThisLevel(0);
 
-    if (mountRef.current) {
+    const isOpeningGuide = !savedData.hasSeenFirstTimeGuide && level === 1;
+    if (mountRef.current && !isOpeningGuide) {
       const canvas = mountRef.current.querySelector('canvas');
       if (canvas && canvas.requestPointerLock) {
         canvas.requestPointerLock();
@@ -557,7 +569,7 @@ const CrystalCollectorGame = () => {
     let pointerLocked = false;
 
     const onCanvasClick = () => {
-      if (currentScreen !== 'playing' || showLevelStart || isPaused || gameOver || showComplete || showShop || showAchievements || showLevelSelect || showHowToPlay || showSettings) return;
+      if (currentScreen !== 'playing' || showLevelStart || isGameFrozenRef.current) return;
       if (!pointerLocked && renderer.domElement.requestPointerLock) {
         renderer.domElement.requestPointerLock();
       }
@@ -576,12 +588,42 @@ const CrystalCollectorGame = () => {
         if (e.key === 'Escape') {
           if (showLevelSelect) setShowLevelSelect(false);
           if (showHowToPlay) setShowHowToPlay(false);
+          if (showFieldManual) {
+            setShowFieldManual(false);
+            setIsFirstTimeManual(false);
+            setSavedData(prev => ({ ...prev, hasSeenFirstTimeGuide: true }));
+          }
           if (showSettings) setShowSettings(false);
           if (showShop) setShowShop(false);
           if (showAchievements) setShowAchievements(false);
         }
         return;
       }
+
+      // If game is frozen (instructions, menus, or paused), Escape closes the modal or unpauses
+      if (isGameFrozenRef.current) {
+        if (e.key === 'Escape') {
+          if (showFieldManual) {
+            setShowFieldManual(false);
+            setIsFirstTimeManual(false);
+            setSavedData(prev => ({ ...prev, hasSeenFirstTimeGuide: true }));
+          } else if (showHowToPlay) {
+            setShowHowToPlay(false);
+          } else if (showSettings) {
+            setShowSettings(false);
+          } else if (showShop) {
+            setShowShop(false);
+          } else if (showAchievements) {
+            setShowAchievements(false);
+          } else if (showLevelSelect) {
+            setShowLevelSelect(false);
+          } else if (isPaused) {
+            setIsPaused(false);
+          }
+        }
+        return;
+      }
+
       keys[e.key.toLowerCase()] = true;
       if (e.code) keys[e.code.toLowerCase()] = true;
 
@@ -671,32 +713,6 @@ const CrystalCollectorGame = () => {
       const dt = Math.min(clock.getDelta(), 0.033);
       const t = clock.getElapsedTime();
 
-      // Performance Monitor (60 FPS tracker)
-      frameCount++;
-      fpsTimer += dt;
-      if (fpsTimer >= 0.5) {
-        setFps(Math.round(frameCount / fpsTimer));
-        frameCount = 0;
-        fpsTimer = 0;
-      }
-
-      // Countdown Spawn Grace Invulnerability
-      if (spawnGraceRef.current > 0) {
-        spawnGraceRef.current = Math.max(0, spawnGraceRef.current - dt);
-        setSpawnGraceTime(spawnGraceRef.current);
-        shieldMesh.visible = true;
-        shieldMesh.rotation.y += dt * 3;
-      }
-
-      // Live Speedrun Stopwatch
-      if (currentScreen === 'playing' && !showLevelStart && !isPaused && !gameOver && !showComplete) {
-        levelElapsedRef.current += dt;
-        setLevelElapsedTime(levelElapsedRef.current);
-      }
-
-      // Update Celestial Starfield & Biome Weather Particles
-      BiomeGenerator.updateEnvironment(dt, biomeEnv);
-
       // Home Screen or Level Start Idle 3D orbit
       if (currentScreen === 'home' || showLevelStart) {
         idleAngle += dt * 0.22;
@@ -717,6 +733,39 @@ const CrystalCollectorGame = () => {
         animId = requestAnimationFrame(animate);
         return;
       }
+
+      // If game is frozen (reading instructions/field manual, in menus, or paused), freeze all gameplay and render stationary scene
+      if (isGameFrozenRef.current) {
+        renderer.render(scene, camera);
+        animId = requestAnimationFrame(animate);
+        return;
+      }
+
+      // Performance Monitor (60 FPS tracker)
+      frameCount++;
+      fpsTimer += dt;
+      if (fpsTimer >= 0.5) {
+        setFps(Math.round(frameCount / fpsTimer));
+        frameCount = 0;
+        fpsTimer = 0;
+      }
+
+      // Countdown Spawn Grace Invulnerability
+      if (spawnGraceRef.current > 0) {
+        spawnGraceRef.current = Math.max(0, spawnGraceRef.current - dt);
+        setSpawnGraceTime(spawnGraceRef.current);
+        shieldMesh.visible = true;
+        shieldMesh.rotation.y += dt * 3;
+      }
+
+      // Live Speedrun Stopwatch
+      if (currentScreen === 'playing' && !showLevelStart && !isGameFrozenRef.current) {
+        levelElapsedRef.current += dt;
+        setLevelElapsedTime(levelElapsedRef.current);
+      }
+
+      // Update Celestial Starfield & Biome Weather Particles
+      BiomeGenerator.updateEnvironment(dt, biomeEnv);
 
       // Power-up timer countdowns
       if (localShieldTime > 0) {
@@ -1136,7 +1185,7 @@ const CrystalCollectorGame = () => {
         } catch {}
       }
     };
-  }, [level, showComplete, gameOver, showLevelStart, isPaused, currentScreen]);
+  }, [level, showComplete, gameOver, showLevelStart, currentScreen]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: '#05050f' }}>
