@@ -17,14 +17,24 @@ export const InGameHUD = ({
   feverTime,
   bossState,
   fps = 60,
+  spawnGraceTime = 0,
+  elapsedTime = 0,
   onPause,
   onOpenShop,
-  onOpenAchievements
+  onOpenAchievements,
+  onOpenGuide
 }) => {
   const maxHearts = savedData.upgrades?.maxHearts || 3;
   const maxStamina = savedData.upgrades?.maxStamina || 100;
   const biomeData = BiomeGenerator.getBiomeData(level);
   const progressPercent = Math.min(100, Math.round((score / targetCrystals) * 100));
+
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    const ms = Math.floor((secs % 1) * 10);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms}`;
+  };
 
   const handleHover = () => soundEngine.playUIHover();
   const handleClick = (action) => {
@@ -107,9 +117,18 @@ export const InGameHUD = ({
           )}
         </div>
 
-        {/* Top-Right: Coins, Combo, Quick Controls */}
+        {/* Top-Right: Coins, Combo, Timer, Quick Controls */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            {spawnGraceTime > 0 && (
+              <div className="spawn-shield-badge">
+                🛡️ SPAWN SHIELD {spawnGraceTime.toFixed(1)}s
+              </div>
+            )}
+            <div className="timer-badge">
+              <span>⏱️</span>
+              <span>{formatTime(elapsedTime)}</span>
+            </div>
             {savedData.showFPS !== false && (
               <div className={`fps-badge ${fps < 45 ? 'warning' : ''}`}>
                 <span>{fps >= 58 ? '🟢' : '🟡'}</span>
@@ -136,6 +155,15 @@ export const InGameHUD = ({
               style={{ padding: '8px 14px', fontSize: '13px' }}
             >
               🛒 SHOP
+            </button>
+            <button
+              className="hud-btn btn-secondary"
+              onMouseEnter={handleHover}
+              onClick={() => handleClick(onOpenGuide)}
+              style={{ padding: '8px 12px', fontSize: '13px' }}
+              title="Field Manual & Codex"
+            >
+              📖
             </button>
             <button
               className="hud-btn btn-secondary"
