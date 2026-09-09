@@ -1,4 +1,4 @@
-# 💎 Crystal Collector 2.0
+# 💎 Crystal Collector 2.0 — Neon Cyber Odyssey
 
 <div align="center">
 
@@ -6,25 +6,56 @@
 ![Three.js](https://img.shields.io/badge/Three.js-r182-black?style=for-the-badge&logo=threedotjs&logoColor=white)
 ![Electron](https://img.shields.io/badge/Electron-Windows%20Desktop-47848F?style=for-the-badge&logo=electron&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-Build%20Tool-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Web Audio](https://img.shields.io/badge/Web%20Audio-Procedural%20BGM-ff00aa?style=for-the-badge)
+![60 FPS](https://img.shields.io/badge/Performance-Smooth%2060%20FPS-00ff88?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge)
 
-**A high-energy, low-poly 3D arcade platformer available both in web browsers and as a native standalone Windows desktop application (`.exe`), featuring dynamic biomes, platforming mechanics, procedural synthwave soundtrack, pet companions, and an epic Level 10 boss fight.**
+**A high-octane 3D cyberpunk arcade runner built with React, Three.js & Electron. Traverse 10 procedural sci-fi biomes, pilot the CyberRunner astronaut, conquer the Crystal Titan boss, unlock 3D pets & skins, and compete for S-Rank speedrun glory!**
 
-[🎮 **Play Live on Netlify**](https://3dcrystalcollector.netlify.app/) · [Report Bug](https://github.com/lumidren/crystal-collector/issues) · [Request Feature](https://github.com/lumidren/crystal-collector/issues)
+[🎮 **Play in Browser**](https://3dcrystalcollector.netlify.app/) · [📦 **Download Windows Release (.zip)**](https://github.com/lumidren/crystal-collector/releases/latest) · [Report Bug](https://github.com/lumidren/crystal-collector/issues)
 
 </div>
 
 ---
 
+## ⚡ 1-Click Quick Start (Windows ZIP)
+
+If you downloaded the repository ZIP from GitHub:
+1. **Extract the ZIP file** to any folder.
+2. Double-click **`PLAY.bat`** (launches directly in your web browser).
+3. Or double-click **`PLAY-DESKTOP.bat`** (launches in a native standalone game window).
+
+*(Requires [Node.js](https://nodejs.org) installed on Windows).*
+
 ## 🌟 What's New in 2.0
+
+* **🧑‍🚀 Next-Gen CyberRunner 3D Astronaut**:
+  * Fully articulated low-poly cyberpunk runner with reflective curved gold visor, glowing chest arc reactor, and dual jetpack thrusters.
+  * Physics-driven animated stride, mid-air jump tuck, dynamic sprint lean, and thruster particle trails.
+
+* **🅰️ Sci-Fi Arcade Typography (Orbitron & Rajdhani)**:
+  * Overhauled visual identity with **`Orbitron`** for HUD gauges, speedrun timers, combo streaks, and buttons.
+  * Monospace tabular numerals (`tabular-nums`) to eliminate layout jitter during high-speed runs.
+  * **`Rajdhani`** for crisp, technical field manual descriptions and menus.
+
+* **🛡️ 3-Second Spawn Grace Period (Invulnerability)**:
+  * 3.0 seconds of 100% damage immunity upon spawning into any level, proceeding to next level, or retrying.
+  * Rotating protective energy shield prevents cheap obstacle hits at spawn.
+
+* **🏆 End-of-Run Scoreboard & S/A/B/C Letter Ranks**:
+  * Competitive end-of-run debrief screen to challenge your friends!
+  * Evaluates clear speed, combo streaks, and damage taken to award **S, A, B, or C Ranks**.
+  * Live speedrun stopwatch and per-level personal best time records.
+
+* **📖 Interactive Field Manual & Game Pause Freeze**:
+  * 4-tab visual codex explaining crystals, power-up matrix, hazards, and jump pads.
+  * **Complete Gameplay Freeze**: Obstacles, hazards, boss attacks, and timers halt 100% while reading instructions!
 
 * **💻 Standalone Windows Desktop App (`.exe`)**:
   * Run Crystal Collector natively on Windows as a dedicated standalone app.
   * Ultra-clean arcade window with hardware-accelerated Three.js rendering and zero browser URL bars or tabs.
-  * One-click portable build: double-click `Crystal Collector.exe` and jump right in!
+  * One-click 155 MB portable build ready to extract and play anywhere!
 
-* **🌍 5 Distinct Themed Biomes**:
+* **🌍 10 Distinct Biomes**:
   * **Forest Valley (Lvl 1–2)**: Pine trees, mossy stepping boulders, and sunny atmosphere.
   * **Crystal Caverns (Lvl 3–4)**: Glowing crystal stalagmites, luminescent cavern fog, and neon lighting.
   * **Frozen Tundra (Lvl 5–6)**: Translucent ice pillars, frosty mist, and slick ice physics!
