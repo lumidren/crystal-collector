@@ -12,6 +12,8 @@ import { LevelSelectModal } from './components/LevelSelectModal.jsx';
 import { HowToPlayModal } from './components/HowToPlayModal.jsx';
 import { InGameHUD } from './components/InGameHUD.jsx';
 import { SettingsModal } from './components/SettingsModal.jsx';
+import { FieldManualModal } from './components/FieldManualModal.jsx';
+import { ScoreboardModal } from './components/ScoreboardModal.jsx';
 import './App.css';
 
 const levelConfigs = [
@@ -72,9 +74,21 @@ const CrystalCollectorGame = () => {
   const [showAchievements, setShowAchievements] = useState(false);
   const [showLevelSelect, setShowLevelSelect] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [showFieldManual, setShowFieldManual] = useState(false);
+  const [isFirstTimeManual, setIsFirstTimeManual] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [pylonsDeactivated, setPylonsDeactivated] = useState(0);
   const [fps, setFps] = useState(60);
+
+  // Speedrun timer, spawn grace immunity, and scoreboard tracking
+  const [spawnGraceTime, setSpawnGraceTime] = useState(3.0);
+  const spawnGraceRef = useRef(3.0);
+  const [levelElapsedTime, setLevelElapsedTime] = useState(0);
+  const levelElapsedRef = useRef(0);
+  const [maxComboThisLevel, setMaxComboThisLevel] = useState(1);
+  const maxComboRef = useRef(1);
+  const [damageTakenThisLevel, setDamageTakenThisLevel] = useState(0);
+  const damageTakenRef = useRef(0);
   const [shopTab, setShopTab] = useState('colors'); // 'colors', 'hats', 'pets', 'trails', 'upgrades'
   const [isEndless, setIsEndless] = useState(false);
   const [endlessSurviveTime, setEndlessSurviveTime] = useState(0);
@@ -166,9 +180,25 @@ const CrystalCollectorGame = () => {
 
   // Level flow handlers
   const startLevel = () => {
+    // Show First-Time Guide automatically if never seen
+    if (!savedData.hasSeenFirstTimeGuide && level === 1) {
+      setShowFieldManual(true);
+      setIsFirstTimeManual(true);
+    }
     setShowLevelStart(false);
     setIsPaused(false);
     soundEngine.startBGM();
+
+    // Reset level timers and grant 3s spawn protection
+    spawnGraceRef.current = 3.0;
+    setSpawnGraceTime(3.0);
+    levelElapsedRef.current = 0;
+    setLevelElapsedTime(0);
+    maxComboRef.current = 1;
+    setMaxComboThisLevel(1);
+    damageTakenRef.current = 0;
+    setDamageTakenThisLevel(0);
+
     if (mountRef.current) {
       const canvas = mountRef.current.querySelector('canvas');
       if (canvas && canvas.requestPointerLock) {
@@ -187,6 +217,25 @@ const CrystalCollectorGame = () => {
     if (document.pointerLockElement) {
       document.exitPointerLock();
     }
+  };
+
+  const onLevelComplete = () => {
+    soundEngine.stopBGM();
+    soundEngine.playPowerup('fever');
+    const finalElapsed = levelElapsedRef.current;
+    setSavedData(sd => {
+      const prevBest = sd.levelBestTimes?.[level];
+      const isNewBest = !prevBest || finalElapsed < prevBest;
+      const updatedBest = { ...(sd.levelBestTimes || {}) };
+      if (isNewBest) {
+        updatedBest[level] = finalElapsed;
+      }
+      return {
+        ...sd,
+        levelBestTimes: updatedBest
+      };
+    });
+    setShowComplete(true);
   };
 
   const nextLevel = () => {
@@ -209,10 +258,19 @@ const CrystalCollectorGame = () => {
     setMagnetTime(0);
     setSlowMoTime(0);
     setFeverTime(0);
+    spawnGraceRef.current = 3.0;
+    setSpawnGraceTime(3.0);
+    levelElapsedRef.current = 0;
+    setLevelElapsedTime(0);
+    maxComboRef.current = 1;
+    setMaxComboThisLevel(1);
+    damageTakenRef.current = 0;
+    setDamageTakenThisLevel(0);
   };
 
   const retryCurrentLevel = () => {
     setGameOver(false);
+    setShowComplete(false);
     setShowLevelStart(true);
     setScore(0);
     setCoins(0);
@@ -226,6 +284,14 @@ const CrystalCollectorGame = () => {
     setMagnetTime(0);
     setSlowMoTime(0);
     setFeverTime(0);
+    spawnGraceRef.current = 3.0;
+    setSpawnGraceTime(3.0);
+    levelElapsedRef.current = 0;
+    setLevelElapsedTime(0);
+    maxComboRef.current = 1;
+    setMaxComboThisLevel(1);
+    damageTakenRef.current = 0;
+    setDamageTakenThisLevel(0);
   };
 
   const restartGame = () => {
@@ -577,7 +643,10 @@ const CrystalCollectorGame = () => {
 
     // Damage handler
     const handlePlayerDamage = () => {
-      if (localShieldTime > 0 || localFeverTime > 0) return;
+      if (localShieldTime > 0 || localFeverTime > 0 || spawnGraceRef.current > 0) return;
+
+      damageTakenRef.current += 1;
+      setDamageTakenThisLevel(damageTakenRef.current);
 
       soundEngine.playHurt();
       particleManager.addTrauma(0.5);
@@ -609,6 +678,20 @@ const CrystalCollectorGame = () => {
         setFps(Math.round(frameCount / fpsTimer));
         frameCount = 0;
         fpsTimer = 0;
+      }
+
+      // Countdown Spawn Grace Invulnerability
+      if (spawnGraceRef.current > 0) {
+        spawnGraceRef.current = Math.max(0, spawnGraceRef.current - dt);
+        setSpawnGraceTime(spawnGraceRef.current);
+        shieldMesh.visible = true;
+        shieldMesh.rotation.y += dt * 3;
+      }
+
+      // Live Speedrun Stopwatch
+      if (currentScreen === 'playing' && !showLevelStart && !isPaused && !gameOver && !showComplete) {
+        levelElapsedRef.current += dt;
+        setLevelElapsedTime(levelElapsedRef.current);
       }
 
       // Update Celestial Starfield & Biome Weather Particles
@@ -759,6 +842,7 @@ const CrystalCollectorGame = () => {
         hazardZones.forEach(lava => {
           const d = Math.hypot(player.position.x - lava.x, player.position.z - lava.z);
           if (d < lava.radius && lavaCooldown <= 0) {
+            if (spawnGraceRef.current > 0) return; // 100% immune during spawn grace period!
             lavaCooldown = 1.0;
             handlePlayerDamage();
             particleManager.createFloatingText(player.position, 'LAVA BURN! 🔥', '#ff3300', 36);
@@ -822,6 +906,10 @@ const CrystalCollectorGame = () => {
             // Combo chaining
             localComboTimer = 2.5;
             localCombo = Math.min(8, localCombo + 1);
+            if (localCombo > maxComboRef.current) {
+              maxComboRef.current = localCombo;
+              setMaxComboThisLevel(localCombo);
+            }
             setCombo(localCombo);
             soundEngine.playCollect(localCombo);
 
@@ -844,9 +932,7 @@ const CrystalCollectorGame = () => {
               if (newScore === 1) unlockAchievement('first_crystal');
               if (newScore === cfg.crystals && level < 10) {
                 setTimeout(() => {
-                  soundEngine.stopBGM();
-                  soundEngine.playPowerup('fever');
-                  setShowComplete(true);
+                  onLevelComplete();
                   if (level === 1) unlockAchievement('level_1');
                   if (level === 5) unlockAchievement('level_5');
                 }, 100);
@@ -944,6 +1030,10 @@ const CrystalCollectorGame = () => {
 
         const distToPlayer = Math.hypot(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
         if (distToPlayer < 2.5 && o.cooldown <= 0 && player.position.y < 1.2) {
+          if (spawnGraceRef.current > 0) {
+            o.cooldown = 0.5;
+            return; // 100% immune during spawn grace!
+          }
           if (localShieldTime > 0 || localFeverTime > 0) {
             o.cooldown = 1.0;
             soundEngine.playPowerup('shield');
@@ -984,7 +1074,7 @@ const CrystalCollectorGame = () => {
             unlockAchievement('level_10');
 
             setTimeout(() => {
-              setShowComplete(true);
+              onLevelComplete();
             }, 1200);
           }
         }
@@ -1063,7 +1153,7 @@ const CrystalCollectorGame = () => {
           onOpenLevelSelect={() => setShowLevelSelect(true)}
           onOpenShop={() => setShowShop(true)}
           onOpenAchievements={() => setShowAchievements(true)}
-          onOpenHowToPlay={() => setShowHowToPlay(true)}
+          onOpenHowToPlay={() => setShowFieldManual(true)}
           onOpenSettings={() => setShowSettings(true)}
           shopHats={shopHats}
           shopPets={shopPets}
@@ -1087,9 +1177,12 @@ const CrystalCollectorGame = () => {
           feverTime={feverTime}
           bossState={{ pylonsDeactivated }}
           fps={fps}
+          spawnGraceTime={spawnGraceTime}
+          elapsedTime={levelElapsedTime}
           onPause={() => setIsPaused(true)}
           onOpenShop={() => setShowShop(true)}
           onOpenAchievements={() => setShowAchievements(true)}
+          onOpenGuide={() => setShowFieldManual(true)}
         />
       )}
 
@@ -1110,6 +1203,18 @@ const CrystalCollectorGame = () => {
       {/* --- HOW TO PLAY MODAL --- */}
       {showHowToPlay && (
         <HowToPlayModal onClose={() => setShowHowToPlay(false)} />
+      )}
+
+      {/* --- FIELD MANUAL & CODEX MODAL --- */}
+      {showFieldManual && (
+        <FieldManualModal
+          isFirstTime={isFirstTimeManual}
+          onClose={() => {
+            setShowFieldManual(false);
+            setIsFirstTimeManual(false);
+            setSavedData(prev => ({ ...prev, hasSeenFirstTimeGuide: true }));
+          }}
+        />
       )}
 
       {/* --- SETTINGS MODAL --- */}
@@ -1448,44 +1553,27 @@ const CrystalCollectorGame = () => {
         </div>
       )}
 
-      {/* --- LEVEL COMPLETE SCREEN --- */}
+      {/* --- END-OF-RUN SCOREBOARD (S / A / B / C RANK) --- */}
       {showComplete && !gameOver && (
-        <div className="modal-backdrop">
-          <div className="hud-panel" style={{ padding: '40px', maxWidth: '520px', width: '90%', textAlign: 'center', border: '2px solid #00ff88', boxShadow: '0 0 35px rgba(0, 255, 136, 0.4)' }}>
-            <div style={{ fontSize: '42px', marginBottom: '5px' }}>
-              {level === 10 ? '👑' : '⭐ ⭐ ⭐'}
-            </div>
-            <h1 style={{ fontSize: '44px', color: '#00ff88', margin: '0 0 10px' }}>
-              {level === 10 ? 'GRAND VICTORY!' : 'LEVEL COMPLETE!'}
-            </h1>
-            <p style={{ fontSize: '20px', color: '#00f0ff', margin: '6px 0' }}>
-              💎 Crystals Collected: {score}
-            </p>
-            <p style={{ fontSize: '18px', color: '#ffd700', margin: '0 0 25px' }}>
-              🪙 Coins Earned: +{coins} (Total: {savedData.totalCoins})
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {level < 10 ? (
-                <button className="hud-btn btn-primary" onClick={nextLevel} style={{ padding: '16px', fontSize: '20px' }}>
-                  NEXT LEVEL ({level + 1}) ➡️
-                </button>
-              ) : (
-                <div style={{ color: '#ffd700', fontWeight: 800, fontSize: '18px', marginBottom: '10px' }}>
-                  🎉 CONGRATULATIONS! YOU CONQUERED ALL 10 LEVELS!
-                </div>
-              )}
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button className="hud-btn btn-secondary" onClick={retryCurrentLevel} style={{ flex: 1, padding: '12px' }}>
-                  🔁 REPLAY LEVEL
-                </button>
-                <button className="hud-btn btn-secondary" onClick={returnToMainMenu} style={{ flex: 1, padding: '12px' }}>
-                  🏠 MAIN MENU
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ScoreboardModal
+          level={level}
+          score={score}
+          targetCrystals={cfg.crystals}
+          coins={coins}
+          totalCoins={savedData.totalCoins}
+          elapsedTime={levelElapsedTime}
+          maxCombo={maxComboThisLevel}
+          damageTaken={damageTakenThisLevel}
+          heartsRemaining={hearts}
+          isBestTime={
+            !savedData.levelBestTimes?.[level] ||
+            levelElapsedTime <= savedData.levelBestTimes[level]
+          }
+          bestTime={savedData.levelBestTimes?.[level]}
+          onNextLevel={nextLevel}
+          onRetry={retryCurrentLevel}
+          onMainMenu={returnToMainMenu}
+        />
       )}
     </div>
   );
