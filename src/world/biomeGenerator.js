@@ -383,7 +383,89 @@ export class BiomeGenerator {
       });
     }
 
-    return { biome, decorations, jumpPads, hazardZones, starField, weatherField, weatherPos, weatherVel, wCfg };
+    // 6. Vertical Multi-Tiered Sky Islands & Floating Bridges
+    const platforms = [];
+    const platformConfigs = [
+      // Island 1: West Sky Deck (Elevation: 3.8m)
+      { id: 'island-west', x: -13, y: 3.8, z: -9, width: 8.5, depth: 8.5, height: 0.6, color: biome.neonColor },
+      // Island 2: East Sky Deck (Elevation: 4.6m)
+      { id: 'island-east', x: 13, y: 4.6, z: 9, width: 8.5, depth: 8.5, height: 0.6, color: biome.neonColor },
+      // Sky Bridge: Central Connecting Span (Elevation: 5.8m)
+      { id: 'bridge-mid', x: 0, y: 5.8, z: -5, width: 4.8, depth: 10, height: 0.4, color: 0x00f0ff },
+      // Island 3: High-Altitude Apex Peak (Elevation: 7.5m)
+      { id: 'island-apex', x: 0, y: 7.5, z: 12, width: 9.5, depth: 9.5, height: 0.8, color: 0xffd700 }
+    ];
+
+    platformConfigs.forEach(p => {
+      const pGroup = new THREE.Group();
+
+      // Platform Deck
+      const deck = new THREE.Mesh(
+        new THREE.BoxGeometry(p.width, p.height, p.depth),
+        new THREE.MeshStandardMaterial({
+          color: 0x141b29,
+          roughness: 0.4,
+          metalness: 0.82
+        })
+      );
+      deck.castShadow = true;
+      deck.receiveShadow = true;
+      pGroup.add(deck);
+
+      // Neon Underglow Edge Trim
+      const edgeTrim = new THREE.Mesh(
+        new THREE.BoxGeometry(p.width + 0.15, 0.1, p.depth + 0.15),
+        new THREE.MeshBasicMaterial({ color: p.color })
+      );
+      edgeTrim.position.y = -p.height / 2;
+      pGroup.add(edgeTrim);
+
+      // Anti-Gravity Levitating Repulsor Crystal
+      const repulsor = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.85),
+        new THREE.MeshBasicMaterial({ color: p.color })
+      );
+      repulsor.position.y = -p.height / 2 - 0.7;
+      pGroup.add(repulsor);
+
+      // Corner Holographic Landing Beacons
+      [
+        [-p.width / 2 + 0.3, p.depth / 2 - 0.3],
+        [p.width / 2 - 0.3, p.depth / 2 - 0.3],
+        [-p.width / 2 + 0.3, -p.depth / 2 + 0.3],
+        [p.width / 2 - 0.3, -p.depth / 2 + 0.3]
+      ].forEach(corner => {
+        const beacon = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.08, 0.08, 0.5, 8),
+          new THREE.MeshBasicMaterial({ color: p.color })
+        );
+        beacon.position.set(corner[0], p.height / 2 + 0.25, corner[1]);
+        pGroup.add(beacon);
+      });
+
+      pGroup.position.set(p.x, p.y, p.z);
+      scene.add(pGroup);
+      decorations.push(pGroup);
+
+      platforms.push({
+        id: p.id,
+        group: pGroup,
+        repulsor,
+        x: p.x,
+        y: p.y,
+        z: p.z,
+        width: p.width,
+        depth: p.depth,
+        height: p.height,
+        topY: p.y + p.height / 2,
+        minX: p.x - p.width / 2,
+        maxX: p.x + p.width / 2,
+        minZ: p.z - p.depth / 2,
+        maxZ: p.z + p.depth / 2
+      });
+    });
+
+    return { biome, decorations, jumpPads, hazardZones, platforms, starField, weatherField, weatherPos, weatherVel, wCfg };
   }
 
   // Update weather particles and starfield in animation loop
@@ -393,6 +475,16 @@ export class BiomeGenerator {
     // Rotate starfield slowly
     if (env.starField) {
       env.starField.rotation.y += dt * 0.015;
+    }
+
+    // Animate anti-gravity repulsors on sky islands
+    if (env.platforms) {
+      env.platforms.forEach(p => {
+        if (p.repulsor) {
+          p.repulsor.rotation.y += dt * 2.2;
+          p.repulsor.rotation.x += dt * 1.1;
+        }
+      });
     }
 
     // Animate weather particles
