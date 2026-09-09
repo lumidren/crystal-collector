@@ -358,7 +358,7 @@ const CrystalCollectorGame = () => {
     // Scene & Camera
     scene = new THREE.Scene();
     const biomeEnv = BiomeGenerator.buildBiome(level, scene);
-    const { biome, decorations, jumpPads, hazardZones } = biomeEnv;
+    const { biome, decorations, jumpPads, hazardZones, platforms } = biomeEnv;
     scene.background = new THREE.Color(biome.skyColor);
 
     if (biome.fog) {
@@ -437,10 +437,20 @@ const CrystalCollectorGame = () => {
       scene.add(wall);
     });
 
-    // Spawn Crystals (Refractive Physical Octahedrons)
+    // Spawn Crystals (Ground and High-Altitude Sky Islands)
     for (let i = 0; i < cfg.crystals; i++) {
-      const angle = (i / cfg.crystals) * Math.PI * 2;
-      const r = 8 + Math.random() * 11;
+      let posX, posY = 1.2, posZ;
+      if (platforms && platforms.length > 0 && i < platforms.length) {
+        const p = platforms[i];
+        posX = p.x + (Math.random() - 0.5) * (p.width - 2.5);
+        posY = p.topY + 1.2;
+        posZ = p.z + (Math.random() - 0.5) * (p.depth - 2.5);
+      } else {
+        const angle = (i / cfg.crystals) * Math.PI * 2;
+        const r = 8 + Math.random() * 11;
+        posX = Math.cos(angle) * r;
+        posZ = Math.sin(angle) * r;
+      }
       const isRainbow = Math.random() < 0.15; // 15% chance for Rainbow Fever Crystal!
 
       const crystal = new THREE.Mesh(
@@ -458,14 +468,24 @@ const CrystalCollectorGame = () => {
           clearcoatRoughness: 0.1
         })
       );
-      crystal.position.set(Math.cos(angle) * r, 1.2, Math.sin(angle) * r);
+      crystal.position.set(posX, posY, posZ);
       crystal.castShadow = true;
       scene.add(crystal);
       crystals.push({ mesh: crystal, collected: false, isRainbow });
     }
 
-    // Spawn Coins (High-Gloss Polished Gold)
+    // Spawn Coins (Ground and Elevated Sky Decks)
     for (let i = 0; i < cfg.coins; i++) {
+      let cX, cY = 1, cZ;
+      if (platforms && platforms.length > 0 && i < platforms.length * 2) {
+        const p = platforms[i % platforms.length];
+        cX = p.x + (Math.random() - 0.5) * (p.width - 2);
+        cY = p.topY + 1;
+        cZ = p.z + (Math.random() - 0.5) * (p.depth - 2);
+      } else {
+        cX = (Math.random() - 0.5) * 40;
+        cZ = (Math.random() - 0.5) * 40;
+      }
       const coin = new THREE.Mesh(
         new THREE.CylinderGeometry(0.5, 0.5, 0.2, 24),
         new THREE.MeshStandardMaterial({
@@ -476,7 +496,7 @@ const CrystalCollectorGame = () => {
           roughness: 0.18
         })
       );
-      coin.position.set((Math.random() - 0.5) * 40, 1, (Math.random() - 0.5) * 40);
+      coin.position.set(cX, cY, cZ);
       coin.rotation.x = Math.PI / 2;
       coin.castShadow = true;
       scene.add(coin);
@@ -860,35 +880,59 @@ const CrystalCollectorGame = () => {
       player.position.x = Math.max(-23, Math.min(23, player.position.x + mx));
       player.position.z = Math.max(-23, Math.min(23, player.position.z + mz));
 
+      // Multi-Tier Sky Platform & Ground Floor Detection
+      let currentFloorY = 0;
+      if (platforms && platforms.length > 0) {
+        for (const p of platforms) {
+          if (
+            player.position.x >= p.minX && player.position.x <= p.maxX &&
+            player.position.z >= p.minZ && player.position.z <= p.maxZ
+          ) {
+            // Check if player is on or above this platform surface
+            if (player.position.y >= p.topY - 0.6) {
+              if (p.topY > currentFloorY) {
+                currentFloorY = p.topY;
+              }
+            }
+          }
+        }
+      }
+
+      // If walking off an elevated platform ledge into air, initiate falling
+      if (isGrounded && player.position.y > currentFloorY + 0.15) {
+        isGrounded = false;
+        jumpVelocity = 0;
+      }
+
       // Jump & Gravity physics
       if (!isGrounded) {
         jumpVelocity -= 35 * dt;
         player.position.y += jumpVelocity * dt;
-        if (player.position.y <= 0) {
-          player.position.y = 0;
+        if (player.position.y <= currentFloorY) {
+          player.position.y = currentFloorY;
           jumpVelocity = 0;
           isGrounded = true;
           canDoubleJump = false;
         }
       }
 
-      // Check Jump Pads (Trampolines)
+      // Check Jump Pads (Trampolines - Launch high to reach Sky Islands!)
       jumpPads.forEach(pad => {
         const d = Math.hypot(player.position.x - pad.x, player.position.z - pad.z);
-        if (d < pad.radius && isGrounded) {
-          jumpVelocity = 24; // Super launch!
+        if (d < pad.radius && (isGrounded || Math.abs(player.position.y - pad.group.position.y) < 1.5)) {
+          jumpVelocity = 28; // High altitude super launch!
           isGrounded = false;
           canDoubleJump = true;
           soundEngine.playJumpPad();
           particleManager.addTrauma(0.3);
           particleManager.createBurst(pad.group.position, 0xffd700, 25, 10);
-          particleManager.createFloatingText(player.position, 'LAUNCH! 🚀', '#ffd700', 44);
+          particleManager.createFloatingText(player.position, 'SKY LAUNCH! 🚀', '#ffd700', 44);
           unlockAchievement('trampoline_ace');
         }
       });
 
-      // Check Lava Hazard Pools
-      if (hazardZones.length > 0 && isGrounded) {
+      // Check Lava Hazard Pools (only hurts if near ground level)
+      if (hazardZones.length > 0 && isGrounded && player.position.y < 1.0) {
         lavaCooldown -= dt;
         hazardZones.forEach(lava => {
           const d = Math.hypot(player.position.x - lava.x, player.position.z - lava.z);
@@ -943,14 +987,16 @@ const CrystalCollectorGame = () => {
         if (!c.collected) {
           c.mesh.rotation.y += dt * 2.5;
 
-          // Magnet pull
+          // Magnet pull (must be within vertical range so ground player doesn't pull sky crystals)
           const distToPlayer = Math.hypot(c.mesh.position.x - player.position.x, c.mesh.position.z - player.position.z);
-          if (effectiveMagnetRadius > 0 && distToPlayer < effectiveMagnetRadius) {
+          const distY = Math.abs(c.mesh.position.y - (player.position.y + 1.2));
+          if (effectiveMagnetRadius > 0 && distToPlayer < effectiveMagnetRadius && distY < 4.5) {
             c.mesh.position.x += (player.position.x - c.mesh.position.x) * dt * 8;
             c.mesh.position.z += (player.position.z - c.mesh.position.z) * dt * 8;
+            c.mesh.position.y += ((player.position.y + 1.2) - c.mesh.position.y) * dt * 6;
           }
 
-          if (distToPlayer < 2.0) {
+          if (distToPlayer < 2.0 && distY < 2.5) {
             c.collected = true;
             scene.remove(c.mesh);
 
@@ -1000,12 +1046,14 @@ const CrystalCollectorGame = () => {
           cn.mesh.rotation.y += dt * 3;
 
           const distToPlayer = Math.hypot(cn.mesh.position.x - player.position.x, cn.mesh.position.z - player.position.z);
-          if (effectiveMagnetRadius > 0 && distToPlayer < effectiveMagnetRadius) {
+          const distY = Math.abs(cn.mesh.position.y - (player.position.y + 1.0));
+          if (effectiveMagnetRadius > 0 && distToPlayer < effectiveMagnetRadius && distY < 4.5) {
             cn.mesh.position.x += (player.position.x - cn.mesh.position.x) * dt * 9;
             cn.mesh.position.z += (player.position.z - cn.mesh.position.z) * dt * 9;
+            cn.mesh.position.y += ((player.position.y + 1.0) - cn.mesh.position.y) * dt * 6;
           }
 
-          if (distToPlayer < 1.6) {
+          if (distToPlayer < 1.6 && distY < 2.2) {
             cn.collected = true;
             scene.remove(cn.mesh);
             soundEngine.playCoin();
@@ -1027,7 +1075,8 @@ const CrystalCollectorGame = () => {
         if (!h.collected) {
           h.mesh.rotation.y += dt * 2;
           const distToPlayer = Math.hypot(h.mesh.position.x - player.position.x, h.mesh.position.z - player.position.z);
-          if (distToPlayer < 1.6) {
+          const distY = Math.abs(h.mesh.position.y - (player.position.y + 1.0));
+          if (distToPlayer < 1.6 && distY < 2.2) {
             h.collected = true;
             scene.remove(h.mesh);
             soundEngine.playPowerup('shield');
@@ -1043,7 +1092,8 @@ const CrystalCollectorGame = () => {
         if (!p.collected) {
           p.mesh.rotation.y += dt * 3;
           const distToPlayer = Math.hypot(p.mesh.position.x - player.position.x, p.mesh.position.z - player.position.z);
-          if (distToPlayer < 1.8) {
+          const distY = Math.abs(p.mesh.position.y - (player.position.y + 1.0));
+          if (distToPlayer < 1.8 && distY < 2.2) {
             p.collected = true;
             scene.remove(p.mesh);
             soundEngine.playPowerup(p.type);
