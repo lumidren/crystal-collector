@@ -59,6 +59,7 @@ const CrystalCollectorGame = () => {
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [pylonsDeactivated, setPylonsDeactivated] = useState(0);
+  const [fps, setFps] = useState(60);
   const [shopTab, setShopTab] = useState('colors'); // 'colors', 'hats', 'pets', 'trails', 'upgrades'
   const [isEndless, setIsEndless] = useState(false);
   const [endlessSurviveTime, setEndlessSurviveTime] = useState(0);
@@ -276,7 +277,8 @@ const CrystalCollectorGame = () => {
 
     // Scene & Camera
     scene = new THREE.Scene();
-    const { biome, decorations, jumpPads, hazardZones } = BiomeGenerator.buildBiome(level, scene);
+    const biomeEnv = BiomeGenerator.buildBiome(level, scene);
+    const { biome, decorations, jumpPads, hazardZones } = biomeEnv;
     scene.background = new THREE.Color(biome.skyColor);
 
     if (biome.fog) {
@@ -286,28 +288,50 @@ const CrystalCollectorGame = () => {
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 8, 15);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+
+    const isUltra = (currentSaved.graphicsQuality || 'ultra') === 'ultra';
+    const isHigh = (currentSaved.graphicsQuality || 'ultra') === 'high';
+    const shadowsEnabled = isUltra || isHigh;
+
+    renderer.shadowMap.enabled = shadowsEnabled;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mountNode.appendChild(renderer.domElement);
 
     // Particle VFX Engine
     const particleManager = new ParticleManager(scene);
 
-    // Lighting
-    scene.add(new THREE.AmbientLight(biome.ambientColor, 1.2));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(12, 20, 12);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
+    // Dynamic Environmental Lighting (Hemisphere + Directional + Soft Shadows)
+    const hemiLight = new THREE.HemisphereLight(biome.skyColor, biome.groundColor, 0.75);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.35);
+    dirLight.position.set(16, 26, 16);
+    dirLight.castShadow = shadowsEnabled;
+    dirLight.shadow.mapSize.width = isUltra ? 2048 : 1024;
+    dirLight.shadow.mapSize.height = isUltra ? 2048 : 1024;
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 70;
+    dirLight.shadow.camera.left = -28;
+    dirLight.shadow.camera.right = 28;
+    dirLight.shadow.camera.top = 28;
+    dirLight.shadow.camera.bottom = -28;
+    dirLight.shadow.bias = -0.0005;
+    dirLight.shadow.normalBias = 0.02;
     scene.add(dirLight);
 
-    // Ground Floor
+    // Ground Floor with PBR Texture
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(50, 50),
-      new THREE.MeshPhongMaterial({ color: biome.groundColor, shininess: 20 })
+      new THREE.MeshStandardMaterial({
+        color: biome.groundColor,
+        roughness: 0.85,
+        metalness: 0.1
+      })
     );
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
@@ -321,14 +345,19 @@ const CrystalCollectorGame = () => {
     [[0, 2.5, -25], [0, 2.5, 25], [-25, 2.5, 0], [25, 2.5, 0]].forEach((pos, i) => {
       const wall = new THREE.Mesh(
         new THREE.BoxGeometry(50, 5, 1),
-        new THREE.MeshPhongMaterial({ color: biome.wallColor })
+        new THREE.MeshStandardMaterial({
+          color: biome.wallColor,
+          roughness: 0.7,
+          metalness: 0.2
+        })
       );
       wall.position.set(...pos);
       if (i > 1) wall.rotation.y = Math.PI / 2;
+      wall.receiveShadow = true;
       scene.add(wall);
     });
 
-    // Spawn Crystals (Octahedrons)
+    // Spawn Crystals (Refractive Physical Octahedrons)
     for (let i = 0; i < cfg.crystals; i++) {
       const angle = (i / cfg.crystals) * Math.PI * 2;
       const r = 8 + Math.random() * 11;
@@ -336,25 +365,40 @@ const CrystalCollectorGame = () => {
 
       const crystal = new THREE.Mesh(
         new THREE.OctahedronGeometry(0.85),
-        new THREE.MeshPhongMaterial({
-          color: isRainbow ? 0xff00ff : 0x00ffff,
-          emissive: isRainbow ? 0xff00aa : 0x00aaaa,
-          emissiveIntensity: 0.8
+        new THREE.MeshPhysicalMaterial({
+          color: isRainbow ? 0xff00ff : 0x00f0ff,
+          emissive: isRainbow ? 0xff00bb : 0x00aacc,
+          emissiveIntensity: 0.8,
+          roughness: 0.12,
+          metalness: 0.18,
+          transmission: 0.55,
+          transparent: true,
+          opacity: 0.92,
+          clearcoat: 1.0,
+          clearcoatRoughness: 0.1
         })
       );
       crystal.position.set(Math.cos(angle) * r, 1.2, Math.sin(angle) * r);
+      crystal.castShadow = true;
       scene.add(crystal);
       crystals.push({ mesh: crystal, collected: false, isRainbow });
     }
 
-    // Spawn Coins (Cylinders)
+    // Spawn Coins (High-Gloss Polished Gold)
     for (let i = 0; i < cfg.coins; i++) {
       const coin = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 0.5, 0.2, 16),
-        new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0x665500 })
+        new THREE.CylinderGeometry(0.5, 0.5, 0.2, 24),
+        new THREE.MeshStandardMaterial({
+          color: 0xffd700,
+          emissive: 0xff9900,
+          emissiveIntensity: 0.25,
+          metalness: 0.92,
+          roughness: 0.18
+        })
       );
       coin.position.set((Math.random() - 0.5) * 40, 1, (Math.random() - 0.5) * 40);
       coin.rotation.x = Math.PI / 2;
+      coin.castShadow = true;
       scene.add(coin);
       coinObjs.push({ mesh: coin, collected: false });
     }
@@ -587,6 +631,8 @@ const CrystalCollectorGame = () => {
 
     const clock = new THREE.Clock();
     let idleAngle = 0;
+    let frameCount = 0;
+    let fpsTimer = 0;
 
     // Damage handler
     const handlePlayerDamage = () => {
@@ -612,8 +658,20 @@ const CrystalCollectorGame = () => {
     const animate = () => {
       if (!mounted) return;
 
-      const dt = Math.min(clock.getDelta(), 0.1);
+      const dt = Math.min(clock.getDelta(), 0.033);
       const t = clock.getElapsedTime();
+
+      // Performance Monitor (60 FPS tracker)
+      frameCount++;
+      fpsTimer += dt;
+      if (fpsTimer >= 0.5) {
+        setFps(Math.round(frameCount / fpsTimer));
+        frameCount = 0;
+        fpsTimer = 0;
+      }
+
+      // Update Celestial Starfield & Biome Weather Particles
+      BiomeGenerator.updateEnvironment(dt, biomeEnv);
 
       // Home Screen or Level Start Idle 3D orbit
       if (currentScreen === 'home' || showLevelStart) {
@@ -795,12 +853,16 @@ const CrystalCollectorGame = () => {
         petInstance.update(dt, t, player.position);
       }
 
-      // Camera Position + Screen Shake
+      // Camera Position + Screen Shake (Smooth 60fps Spring Interpolation)
       const shake = particleManager.getShakeOffset(dt);
-      camera.position.x = player.position.x + Math.sin(mouseX) * camDist + shake.x;
-      camera.position.z = player.position.z + Math.cos(mouseX) * camDist + shake.z;
-      camera.position.y = player.position.y + 6 + shake.y;
-      camera.lookAt(player.position.x, player.position.y + 2, player.position.z);
+      const targetCamX = player.position.x + Math.sin(mouseX) * camDist + shake.x;
+      const targetCamY = player.position.y + 5.5 + shake.y;
+      const targetCamZ = player.position.z + Math.cos(mouseX) * camDist + shake.z;
+      const camLerpSpeed = Math.min(1, dt * 14);
+      camera.position.x += (targetCamX - camera.position.x) * camLerpSpeed;
+      camera.position.y += (targetCamY - camera.position.y) * camLerpSpeed;
+      camera.position.z += (targetCamZ - camera.position.z) * camLerpSpeed;
+      camera.lookAt(player.position.x, player.position.y + 1.8, player.position.z);
       camera.rotation.z += shake.rotZ;
 
       // Magnet reach calculation
@@ -1092,6 +1154,7 @@ const CrystalCollectorGame = () => {
           slowMoTime={slowMoTime}
           feverTime={feverTime}
           bossState={{ pylonsDeactivated }}
+          fps={fps}
           onPause={() => setIsPaused(true)}
           onOpenShop={() => setShowShop(true)}
           onOpenAchievements={() => setShowAchievements(true)}
