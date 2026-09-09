@@ -150,6 +150,7 @@ const CrystalCollectorGame = () => {
     let damageThisLevel = false;
     let localShieldActive = false;
     let localShieldTime = 0;
+    let lastStamina = 100;
 
     const levelConfigs = [
       { crystals: 8, coins: 15, obs: 5, speed: 4, hearts: 2, name: "Tutorial Valley" },
@@ -485,12 +486,19 @@ const CrystalCollectorGame = () => {
 
     const onKeyDown = (e) => { 
       keys[e.key.toLowerCase()] = true;
+      if (e.code) keys[e.code.toLowerCase()] = true;
       if (e.key === ' ' && isGrounded) {
         jumpVelocity = 12;
         isGrounded = false;
       }
     };
-    const onKeyUp = (e) => { keys[e.key.toLowerCase()] = false; };
+    const onKeyUp = (e) => { 
+      keys[e.key.toLowerCase()] = false;
+      if (e.code) keys[e.code.toLowerCase()] = false;
+    };
+    const onBlur = () => {
+      for (const k in keys) keys[k] = false;
+    };
     const onMouse = (e) => { 
       if (pointerLocked) {
         mouseX -= e.movementX * 0.003; 
@@ -505,6 +513,7 @@ const CrystalCollectorGame = () => {
     document.addEventListener('keyup', onKeyUp);
     document.addEventListener('mousemove', onMouse);
     document.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('blur', onBlur);
 
     const clock = new THREE.Clock();
 
@@ -534,26 +543,50 @@ const CrystalCollectorGame = () => {
         }
       }
 
-      setStamina(prev => {
-        const isSprinting = keys['shift'] && (keys['w'] || keys['s'] || keys['a'] || keys['d']);
-        let newStamina;
-        if (isSprinting) {
-          newStamina = Math.max(0, prev - dt * 25);
-        } else {
-          newStamina = Math.min(100, prev + dt * 15);
-        }
-        staminaRef.current = newStamina;
-        return newStamina;
-      });
+      // Directional movement calculation
+      let moveForward = 0;
+      let moveRight = 0;
+
+      const isW = keys['w'] || keys['keyw'];
+      const isS = keys['s'] || keys['keys'];
+      const isA = keys['a'] || keys['keya'];
+      const isD = keys['d'] || keys['keyd'];
+
+      if (isW) moveForward += 1;
+      if (isS) moveForward -= 1;
+      if (isD) moveRight += 1;
+      if (isA) moveRight -= 1;
+
+      const moving = moveForward !== 0 || moveRight !== 0;
+      const isShift = keys['shift'] || keys['shiftleft'] || keys['shiftright'];
+      const isSprinting = isShift && moving;
+
+      if (isSprinting && staminaRef.current > 5) {
+        staminaRef.current = Math.max(0, staminaRef.current - dt * 25);
+      } else {
+        staminaRef.current = Math.min(100, staminaRef.current + dt * 15);
+      }
+
+      const roundedStamina = Math.round(staminaRef.current);
+      if (roundedStamina !== lastStamina) {
+        lastStamina = roundedStamina;
+        setStamina(roundedStamina);
+      }
 
       const canSprint = staminaRef.current > 5;
-      const spd = 8 * dt * (keys['shift'] && canSprint ? 1.8 : 1);
-      let mx = 0, mz = 0, moving = false;
+      const spd = 8 * dt * (isSprinting && canSprint ? 1.8 : 1);
 
-      if (keys['w']) { mx -= Math.sin(mouseX) * spd; mz -= Math.cos(mouseX) * spd; moving = true; }
-      if (keys['s']) { mx += Math.sin(mouseX) * spd; mz += Math.cos(mouseX) * spd; moving = true; }
-      if (keys['a']) { mx -= Math.cos(mouseX) * spd; mz += Math.sin(mouseX) * spd; moving = true; }
-      if (keys['d']) { mx += Math.cos(mouseX) * spd; mz += Math.sin(mouseX) * spd; moving = true; }
+      let mx = 0, mz = 0;
+      if (moving) {
+        // Normalize diagonal vector to prevent 1.414x speed boost & axis shearing
+        const len = Math.hypot(moveForward, moveRight);
+        const normF = moveForward / len;
+        const normR = moveRight / len;
+
+        // Forward: (-sin, -cos), Right: (cos, -sin)
+        mx = (-Math.sin(mouseX) * normF + Math.cos(mouseX) * normR) * spd;
+        mz = (-Math.cos(mouseX) * normF - Math.sin(mouseX) * normR) * spd;
+      }
 
       player.position.x = Math.max(-23, Math.min(23, player.position.x + mx));
       player.position.z = Math.max(-23, Math.min(23, player.position.z + mz));
@@ -570,7 +603,8 @@ const CrystalCollectorGame = () => {
 
       if (moving) {
         player.rotation.y = Math.atan2(mx, mz);
-        const rs = t * 12;
+        const animSpeed = isSprinting && canSprint ? 20 : 12;
+        const rs = t * animSpeed;
         body.position.y = 1.5 + Math.sin(rs) * 0.1;
         lArm.rotation.x = Math.sin(rs) * 0.6;
         rArm.rotation.x = -Math.sin(rs) * 0.6;
@@ -733,6 +767,7 @@ const CrystalCollectorGame = () => {
       document.removeEventListener('wheel', onWheel);
       document.removeEventListener('pointerlockchange', onPointerLockChange);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('blur', onBlur);
       if (renderer.domElement) {
         renderer.domElement.removeEventListener('click', onCanvasClick);
       }
