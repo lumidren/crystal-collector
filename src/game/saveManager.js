@@ -24,7 +24,11 @@ const defaultState = {
   musicVolume: 0.25,
   sfxVolume: 0.5,
   sensitivity: 0.003,
-  unlockedLevels: 1
+  unlockedLevels: 1,
+  hasSeenFirstTimeGuide: false,
+  levelBestTimes: {},
+  graphicsQuality: 'ultra',
+  showFps: true
 };
 
 export const loadGameState = () => {
@@ -41,6 +45,9 @@ export const loadGameState = () => {
       },
       achievements: {
         ...(parsed.achievements || {})
+      },
+      levelBestTimes: {
+        ...(parsed.levelBestTimes || {})
       }
     };
   } catch (e) {
