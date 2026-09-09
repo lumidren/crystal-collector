@@ -100,6 +100,15 @@ const CrystalCollectorGame = () => {
   const maxComboRef = useRef(1);
   const [damageTakenThisLevel, setDamageTakenThisLevel] = useState(0);
   const damageTakenRef = useRef(0);
+  const radarDataRef = useRef({
+    player: { x: 0, z: 0, rot: 0 },
+    crystals: [],
+    coins: [],
+    jumpPads: [],
+    hazards: [],
+    obstacles: [],
+    boss: null
+  });
   const [shopTab, setShopTab] = useState('colors'); // 'colors', 'hats', 'pets', 'trails', 'upgrades'
   const [isEndless, setIsEndless] = useState(false);
   const [endlessSurviveTime, setEndlessSurviveTime] = useState(0);
@@ -1184,6 +1193,17 @@ const CrystalCollectorGame = () => {
       // Update Particle Systems
       particleManager.update(dt);
 
+      // Update Holographic Radar Real-Time Detection
+      radarDataRef.current.player.x = player.position.x;
+      radarDataRef.current.player.z = player.position.z;
+      radarDataRef.current.player.rot = mouseX;
+      radarDataRef.current.crystals = crystals;
+      radarDataRef.current.coins = coinObjs;
+      radarDataRef.current.jumpPads = jumpPads;
+      radarDataRef.current.hazards = hazardZones;
+      radarDataRef.current.obstacles = obstacles;
+      radarDataRef.current.boss = bossInstance;
+
       renderer.render(scene, camera);
       animId = requestAnimationFrame(animate);
     };
@@ -1280,6 +1300,8 @@ const CrystalCollectorGame = () => {
           fps={fps}
           spawnGraceTime={spawnGraceTime}
           elapsedTime={levelElapsedTime}
+          radarDataRef={radarDataRef}
+          isPaused={isPaused}
           onPause={() => setIsPaused(true)}
           onOpenShop={() => setShowShop(true)}
           onOpenAchievements={() => setShowAchievements(true)}
