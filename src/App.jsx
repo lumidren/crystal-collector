@@ -6,6 +6,11 @@ import { ParticleManager } from './game/particles.js';
 import { BiomeGenerator } from './world/biomeGenerator.js';
 import { CrystalTitanBoss } from './game/boss.js';
 import { PetCompanion } from './game/pets.js';
+import { HomeScreen } from './components/HomeScreen.jsx';
+import { LevelSelectModal } from './components/LevelSelectModal.jsx';
+import { HowToPlayModal } from './components/HowToPlayModal.jsx';
+import { InGameHUD } from './components/InGameHUD.jsx';
+import { SettingsModal } from './components/SettingsModal.jsx';
 import './App.css';
 
 const CrystalCollectorGame = () => {
@@ -42,13 +47,18 @@ const CrystalCollectorGame = () => {
   const [slowMoTime, setSlowMoTime] = useState(0);
   const [feverTime, setFeverTime] = useState(0);
 
-  // UI modal toggles
-  const [showLevelStart, setShowLevelStart] = useState(true);
+  // Top-level screen & UI modal toggles
+  const [currentScreen, setCurrentScreen] = useState('home'); // 'home' | 'playing'
+  const [showLevelStart, setShowLevelStart] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [showShop, setShowShop] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [showLevelSelect, setShowLevelSelect] = useState(false);
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [pylonsDeactivated, setPylonsDeactivated] = useState(0);
   const [shopTab, setShopTab] = useState('colors'); // 'colors', 'hats', 'pets', 'trails', 'upgrades'
   const [isEndless, setIsEndless] = useState(false);
   const [endlessSurviveTime, setEndlessSurviveTime] = useState(0);
@@ -143,16 +153,42 @@ const CrystalCollectorGame = () => {
     setShowLevelStart(false);
     setIsPaused(false);
     soundEngine.startBGM();
+    if (mountRef.current) {
+      const canvas = mountRef.current.querySelector('canvas');
+      if (canvas && canvas.requestPointerLock) {
+        canvas.requestPointerLock();
+      }
+    }
+  };
+
+  const returnToMainMenu = () => {
+    setIsPaused(false);
+    setGameOver(false);
+    setShowComplete(false);
+    setShowLevelStart(false);
+    setCurrentScreen('home');
+    soundEngine.stopBGM();
+    if (document.pointerLockElement) {
+      document.exitPointerLock();
+    }
   };
 
   const nextLevel = () => {
     soundEngine.playPowerup('fever');
     setShowComplete(false);
     setShowLevelStart(true);
-    setLevel(prev => prev + 1);
+    setLevel(prev => {
+      const nxt = prev + 1;
+      setSavedData(sd => ({
+        ...sd,
+        unlockedLevels: Math.max(sd.unlockedLevels || 1, nxt)
+      }));
+      return nxt;
+    });
     setScore(0);
     setCoins(0);
     setCombo(1);
+    setPylonsDeactivated(0);
     setShieldTime(0);
     setMagnetTime(0);
     setSlowMoTime(0);
@@ -165,6 +201,7 @@ const CrystalCollectorGame = () => {
     setScore(0);
     setCoins(0);
     setCombo(1);
+    setPylonsDeactivated(0);
     setHearts(savedDataRef.current.upgrades?.maxHearts || 3);
     const maxStam = savedDataRef.current.upgrades?.maxStamina || 100;
     setStamina(maxStam);
@@ -183,6 +220,7 @@ const CrystalCollectorGame = () => {
     setScore(0);
     setCoins(0);
     setCombo(1);
+    setPylonsDeactivated(0);
     setHearts(savedDataRef.current.upgrades?.maxHearts || 3);
     const maxStam = savedDataRef.current.upgrades?.maxStamina || 100;
     setStamina(maxStam);
@@ -195,7 +233,7 @@ const CrystalCollectorGame = () => {
 
   // --- Three.js Game World Effect ---
   useEffect(() => {
-    if (!mountRef.current || showComplete || gameOver || showLevelStart) return;
+    if (!mountRef.current || showComplete || gameOver) return;
 
     const mountNode = mountRef.current;
     let scene, camera, renderer, player, petInstance, bossInstance;
@@ -468,6 +506,7 @@ const CrystalCollectorGame = () => {
     let pointerLocked = false;
 
     const onCanvasClick = () => {
+      if (currentScreen !== 'playing' || showLevelStart || isPaused || gameOver || showComplete || showShop || showAchievements || showLevelSelect || showHowToPlay || showSettings) return;
       if (!pointerLocked && renderer.domElement.requestPointerLock) {
         renderer.domElement.requestPointerLock();
       }
@@ -482,12 +521,24 @@ const CrystalCollectorGame = () => {
     document.addEventListener('pointerlockchange', onPointerLockChange);
 
     const onKeyDown = (e) => {
+      if (currentScreen !== 'playing' || showLevelStart) {
+        if (e.key === 'Escape') {
+          if (showLevelSelect) setShowLevelSelect(false);
+          if (showHowToPlay) setShowHowToPlay(false);
+          if (showSettings) setShowSettings(false);
+          if (showShop) setShowShop(false);
+          if (showAchievements) setShowAchievements(false);
+        }
+        return;
+      }
       keys[e.key.toLowerCase()] = true;
       if (e.code) keys[e.code.toLowerCase()] = true;
 
       // Pause toggle
       if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
-        setIsPaused(prev => !prev);
+        if (!gameOver && !showComplete) {
+          setIsPaused(prev => !prev);
+        }
       }
 
       // Jump & Double Jump
@@ -535,6 +586,7 @@ const CrystalCollectorGame = () => {
     window.addEventListener('blur', onBlur);
 
     const clock = new THREE.Clock();
+    let idleAngle = 0;
 
     // Damage handler
     const handlePlayerDamage = () => {
@@ -562,6 +614,27 @@ const CrystalCollectorGame = () => {
 
       const dt = Math.min(clock.getDelta(), 0.1);
       const t = clock.getElapsedTime();
+
+      // Home Screen or Level Start Idle 3D orbit
+      if (currentScreen === 'home' || showLevelStart) {
+        idleAngle += dt * 0.22;
+        camera.position.x = Math.sin(idleAngle) * 20;
+        camera.position.z = Math.cos(idleAngle) * 20;
+        camera.position.y = 9;
+        camera.lookAt(0, 1.5, 0);
+
+        crystals.forEach(c => {
+          if (c.mesh) c.mesh.rotation.y += dt * 1.5;
+        });
+        coinObjs.forEach(cn => {
+          if (cn.mesh) cn.mesh.rotation.y += dt * 2;
+        });
+
+        particleManager.update(dt);
+        renderer.render(scene, camera);
+        animId = requestAnimationFrame(animate);
+        return;
+      }
 
       // Power-up timer countdowns
       if (localShieldTime > 0) {
@@ -898,6 +971,7 @@ const CrystalCollectorGame = () => {
             const d = Math.hypot(player.position.x - pylon.x, player.position.z - pylon.z);
             if (d < 2.6) {
               bossInstance.activatePylon(pylon.id, soundEngine, particleManager);
+              setPylonsDeactivated(bossInstance.pylons.filter(p => p.activated).length);
             }
           }
         });
@@ -978,105 +1052,128 @@ const CrystalCollectorGame = () => {
         } catch {}
       }
     };
-  }, [level, showComplete, gameOver, showLevelStart, isPaused]);
+  }, [level, showComplete, gameOver, showLevelStart, isPaused, currentScreen]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: '#05050f' }}>
       <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
 
-      {/* --- HUD --- */}
-      {!showLevelStart && !gameOver && !showComplete && !isPaused && (
-        <>
-          {/* Top-Left Stats Panel */}
-          <div className="hud-panel" style={{ position: 'absolute', top: 20, left: 20, padding: '16px 20px', minWidth: '220px' }}>
-            <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px', color: '#00f0ff' }}>
-              Level {level}: {level === 10 ? '🔥 THE FINAL TITAN' : BiomeGenerator.getBiomeData(level).name}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '18px' }}>
-              <div>💎 {score}</div>
-              <div style={{ color: '#ffd700' }}>🪙 {savedData.totalCoins}</div>
-              {combo > 1 && <div className="combo-badge">{combo}x COMBO</div>}
-            </div>
+      {/* --- HOME SCREEN --- */}
+      {currentScreen === 'home' && (
+        <HomeScreen
+          savedData={savedData}
+          onPlay={() => {
+            setCurrentScreen('playing');
+            setShowLevelStart(true);
+          }}
+          onOpenLevelSelect={() => setShowLevelSelect(true)}
+          onOpenShop={() => setShowShop(true)}
+          onOpenAchievements={() => setShowAchievements(true)}
+          onOpenHowToPlay={() => setShowHowToPlay(true)}
+          onOpenSettings={() => setShowSettings(true)}
+          shopHats={shopHats}
+          shopPets={shopPets}
+        />
+      )}
 
-            {/* Health Hearts */}
-            <div style={{ fontSize: '24px', marginTop: '8px' }}>
-              {[...Array(hearts)].map((_, i) => <span key={i}>❤️</span>)}
-            </div>
+      {/* --- IN-GAME HUD --- */}
+      {currentScreen === 'playing' && !showLevelStart && !gameOver && !showComplete && !isPaused && (
+        <InGameHUD
+          level={level}
+          score={score}
+          targetCrystals={cfg.crystals}
+          coins={coins}
+          savedData={savedData}
+          hearts={hearts}
+          stamina={stamina}
+          combo={combo}
+          shieldTime={shieldTime}
+          magnetTime={magnetTime}
+          slowMoTime={slowMoTime}
+          feverTime={feverTime}
+          bossState={{ pylonsDeactivated }}
+          onPause={() => setIsPaused(true)}
+          onOpenShop={() => setShowShop(true)}
+          onOpenAchievements={() => setShowAchievements(true)}
+        />
+      )}
 
-            {/* Stamina Bar */}
-            <div style={{ marginTop: '12px' }}>
-              <div style={{ fontSize: '12px', marginBottom: '4px', color: '#aaa' }}>⚡ STAMINA</div>
-              <div style={{ width: '100%', height: '10px', background: '#222', borderRadius: '5px', overflow: 'hidden' }}>
-                <div style={{
-                  width: `${(stamina / (savedData.upgrades?.maxStamina || 100)) * 100}%`,
-                  height: '100%',
-                  background: feverTime > 0 ? 'linear-gradient(90deg, #ff00ff, #00ffff)' : stamina > 30 ? '#00ff88' : '#ff3344',
-                  transition: 'width 0.1s linear'
-                }} />
-              </div>
-            </div>
+      {/* --- LEVEL SELECT MODAL --- */}
+      {showLevelSelect && (
+        <LevelSelectModal
+          unlockedLevels={savedData.unlockedLevels || 1}
+          onSelectLevel={(lvl) => {
+            setLevel(lvl);
+            setShowLevelSelect(false);
+            setCurrentScreen('playing');
+            setShowLevelStart(true);
+          }}
+          onClose={() => setShowLevelSelect(false)}
+        />
+      )}
 
-            {/* Active Power-up Badges */}
-            <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
-              {shieldTime > 0 && <span style={{ background: '#00ffff33', border: '1px solid #00ffff', padding: '2px 8px', borderRadius: '6px', fontSize: '12px' }}>🛡️ {Math.ceil(shieldTime)}s</span>}
-              {magnetTime > 0 && <span style={{ background: '#ff005533', border: '1px solid #ff0055', padding: '2px 8px', borderRadius: '6px', fontSize: '12px' }}>🧲 {Math.ceil(magnetTime)}s</span>}
-              {slowMoTime > 0 && <span style={{ background: '#ffd70033', border: '1px solid #ffd700', padding: '2px 8px', borderRadius: '6px', fontSize: '12px' }}>⏳ {Math.ceil(slowMoTime)}s</span>}
-              {feverTime > 0 && <span className="fever-active" style={{ background: '#ff00ff33', border: '1px solid #ff00ff', padding: '2px 8px', borderRadius: '6px', fontSize: '12px' }}>🌈 FEVER {Math.ceil(feverTime)}s</span>}
-            </div>
-          </div>
+      {/* --- HOW TO PLAY MODAL --- */}
+      {showHowToPlay && (
+        <HowToPlayModal onClose={() => setShowHowToPlay(false)} />
+      )}
 
-          {/* Top-Right Quick Action Buttons */}
-          <div style={{ position: 'absolute', top: 20, right: 20, display: 'flex', gap: '10px', flexDirection: 'column' }}>
-            <button className="hud-btn" onClick={() => setShowShop(true)} style={{ background: '#ffd700', color: '#000', padding: '12px 20px' }}>
-              🛒 SHOP
-            </button>
-            <button className="hud-btn" onClick={() => setShowAchievements(true)} style={{ background: '#9d4edd', color: '#fff', padding: '12px 20px' }}>
-              🏆 BADGES
-            </button>
-            <button className="hud-btn" onClick={() => setIsPaused(true)} style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', padding: '10px 18px' }}>
-              ⏸️ PAUSE
-            </button>
-          </div>
-
-          {/* Bottom-Left Controls Overlay */}
-          <div className="hud-panel" style={{ position: 'absolute', bottom: 20, left: 20, padding: '12px 18px', fontSize: '13px' }}>
-            <div><strong>WASD</strong>: Move · <strong>Space</strong>: Jump & Double Jump 🪶</div>
-            <div><strong>Hold Shift</strong>: Sprint · <strong>Click Canvas</strong>: Mouse Look</div>
-            <div><strong>Jump Pads 🚀</strong>: Launch into air · <strong>P / Esc</strong>: Pause</div>
-          </div>
-        </>
+      {/* --- SETTINGS MODAL --- */}
+      {showSettings && (
+        <SettingsModal
+          savedData={savedData}
+          setSavedData={setSavedData}
+          onClose={() => setShowSettings(false)}
+        />
       )}
 
       {/* --- LEVEL START OVERLAY --- */}
-      {showLevelStart && !gameOver && !showComplete && (
+      {currentScreen === 'playing' && showLevelStart && !gameOver && !showComplete && (
         <div className="modal-backdrop">
-          <div className="hud-panel" style={{ padding: '40px', maxWidth: '520px', width: '90%', textAlign: 'center', border: '2px solid #00f0ff' }}>
-            <h1 style={{ fontSize: '44px', color: '#00f0ff', marginBottom: '10px' }}>
-              {level === 10 ? '👑 BOSS GAUNTLET 👑' : `💎 LEVEL ${level} 💎`}
+          <div className="hud-panel glass-card-glow" style={{ padding: '40px', maxWidth: '540px', width: '90%', textAlign: 'center' }}>
+            <div style={{ fontSize: '13px', color: '#00f0ff', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '4px' }}>
+              {level === 10 ? 'FINAL CONFRONTATION' : `ZONE EXPEDITION`}
+            </div>
+            <h1 style={{ fontSize: '42px', margin: '0 0 10px', color: level === 10 ? '#ff3366' : '#ffffff' }}>
+              {level === 10 ? '👑 THE CRYSTAL TITAN 👑' : `💎 LEVEL ${level} 💎`}
             </h1>
-            <h2 style={{ fontSize: '24px', color: '#ffd700', marginBottom: '20px' }}>
-              {level === 10 ? 'THE CRYSTAL TITAN' : BiomeGenerator.getBiomeData(level).name}
+            <h2 style={{ fontSize: '20px', color: '#ffd700', marginBottom: '20px' }}>
+              {level === 10 ? 'GUARDIAN BOSS GAUNTLET' : BiomeGenerator.getBiomeData(level).name}
             </h2>
 
             {level === 10 ? (
-              <div style={{ background: 'rgba(255,0,0,0.15)', padding: '16px', borderRadius: '12px', marginBottom: '25px', textAlign: 'left' }}>
-                <p>⚠️ <strong>Boss Strategy:</strong></p>
-                <p>1. Dodge the Titan's sweeping laser and jump over expanding shockwaves.</p>
-                <p>2. Run to all <strong>4 Power Pylons</strong> in the arena corners to shatter the force field.</p>
-                <p>3. Grab the exposed <strong>Master Core Crystal</strong> to win the game!</p>
+              <div style={{ background: 'rgba(255,0,85,0.12)', border: '1px solid rgba(255,0,85,0.3)', padding: '16px', borderRadius: '14px', marginBottom: '25px', textAlign: 'left' }}>
+                <p style={{ margin: '0 0 8px', color: '#ff66aa', fontWeight: 800 }}>⚠️ BOSS PROTOCOL:</p>
+                <div style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5 }}>
+                  1. Dodge rotating lasers & jump ground shockwaves.<br />
+                  2. Sprint to all <strong>4 Power Pylons</strong> in the corners to collapse the forcefield.<br />
+                  3. Collect the exposed <strong>Master Core Crystal</strong> to save the realm!
+                </div>
               </div>
             ) : (
-              <div style={{ background: 'rgba(255,255,255,0.08)', padding: '16px', borderRadius: '12px', marginBottom: '25px', textAlign: 'left' }}>
-                <div>💎 Goal: Collect crystals to complete the level</div>
-                <div>🚀 Trampolines: Launch high to reach floating bonus items</div>
-                <div>🪶 Double Jump: Tap Spacebar again mid-air</div>
-                <div>🔥 Watch out for lava hazard pools and moving blocks!</div>
+              <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', padding: '16px', borderRadius: '14px', marginBottom: '25px', textAlign: 'left', fontSize: '14px', lineHeight: 1.6 }}>
+                <div>💎 <strong>Target</strong>: Collect {cfg.crystals} crystals to complete realm</div>
+                <div>🚀 <strong>Jump Pads</strong>: Launch high to reach floating bonus items</div>
+                <div>🪶 <strong>Double Jump</strong>: Tap Spacebar again mid-air</div>
+                <div>🔥 <strong>Caution</strong>: Avoid molten lava hazard pools!</div>
               </div>
             )}
 
-            <button className="hud-btn" onClick={startLevel} style={{ background: '#00ff88', color: '#000', fontSize: '22px', padding: '16px 40px', width: '100%' }}>
-              ▶️ START LEVEL
-            </button>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                className="hud-btn btn-secondary"
+                onClick={returnToMainMenu}
+                style={{ flex: 1, padding: '14px', fontSize: '15px' }}
+              >
+                🏠 MAIN MENU
+              </button>
+              <button
+                className="hud-btn btn-primary"
+                onClick={startLevel}
+                style={{ flex: 2, padding: '14px', fontSize: '18px' }}
+              >
+                ▶️ START LEVEL
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1288,30 +1385,39 @@ const CrystalCollectorGame = () => {
       {/* --- PAUSE MENU MODAL --- */}
       {isPaused && (
         <div className="modal-backdrop">
-          <div className="hud-panel" style={{ padding: '35px', maxWidth: '440px', width: '90%', textAlign: 'center' }}>
-            <h2 style={{ fontSize: '32px', color: '#00f0ff', marginBottom: '25px' }}>⏸️ GAME PAUSED</h2>
+          <div className="hud-panel glass-card-glow" style={{ padding: '35px', maxWidth: '440px', width: '90%', textAlign: 'center' }}>
+            <h2 style={{ fontSize: '32px', color: '#00f0ff', marginBottom: '25px', letterSpacing: '1px' }}>
+              ⏸️ GAME PAUSED
+            </h2>
 
-            <div style={{ textAlign: 'left', marginBottom: '25px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <div>
-                <div style={{ fontSize: '14px', marginBottom: '6px' }}>🎵 Music Volume: {Math.round(savedData.musicVolume * 100)}%</div>
-                <input type="range" min="0" max="1" step="0.05" value={savedData.musicVolume} onChange={e => setSavedData(prev => ({ ...prev, musicVolume: parseFloat(e.target.value) }))} />
-              </div>
-              <div>
-                <div style={{ fontSize: '14px', marginBottom: '6px' }}>🔊 Sound FX Volume: {Math.round(savedData.sfxVolume * 100)}%</div>
-                <input type="range" min="0" max="1" step="0.05" value={savedData.sfxVolume} onChange={e => setSavedData(prev => ({ ...prev, sfxVolume: parseFloat(e.target.value) }))} />
-              </div>
-              <div>
-                <div style={{ fontSize: '14px', marginBottom: '6px' }}>🖱️ Mouse Sensitivity</div>
-                <input type="range" min="0.001" max="0.008" step="0.0005" value={savedData.sensitivity || 0.003} onChange={e => setSavedData(prev => ({ ...prev, sensitivity: parseFloat(e.target.value) }))} />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button className="hud-btn" onClick={() => setIsPaused(false)} style={{ background: '#00ff88', color: '#000', padding: '14px', fontSize: '18px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button
+                className="hud-btn btn-primary"
+                onClick={() => setIsPaused(false)}
+                style={{ padding: '14px', fontSize: '18px' }}
+              >
                 ▶️ RESUME
               </button>
-              <button className="hud-btn" onClick={() => { setIsPaused(false); retryCurrentLevel(); }} style={{ background: '#ffd700', color: '#000', padding: '12px' }}>
+              <button
+                className="hud-btn btn-accent"
+                onClick={() => { setIsPaused(false); retryCurrentLevel(); }}
+                style={{ padding: '12px', fontSize: '16px' }}
+              >
                 🔄 RESTART LEVEL
+              </button>
+              <button
+                className="hud-btn btn-secondary"
+                onClick={() => setShowSettings(true)}
+                style={{ padding: '12px', fontSize: '16px' }}
+              >
+                ⚙️ AUDIO & SETTINGS
+              </button>
+              <button
+                className="hud-btn btn-secondary"
+                onClick={returnToMainMenu}
+                style={{ padding: '12px', fontSize: '16px', color: '#ff66aa' }}
+              >
+                🏠 EXIT TO MAIN MENU
               </button>
             </div>
           </div>
@@ -1321,17 +1427,27 @@ const CrystalCollectorGame = () => {
       {/* --- GAME OVER SCREEN --- */}
       {gameOver && (
         <div className="modal-backdrop">
-          <div className="hud-panel" style={{ padding: '40px', maxWidth: '480px', width: '90%', textAlign: 'center', border: '2px solid #ff3344' }}>
-            <h1 style={{ fontSize: '56px', color: '#ff3344', marginBottom: '10px' }}>💔 GAME OVER</h1>
-            <p style={{ fontSize: '20px', color: '#aaa', marginBottom: '20px' }}>You ran out of hearts on Level {level}!</p>
-            <div style={{ fontSize: '24px', color: '#ffd700', marginBottom: '30px' }}>🪙 Banked Coins: {savedData.totalCoins}</div>
-            <div style={{ display: 'flex', gap: '15px' }}>
-              <button className="hud-btn" onClick={retryCurrentLevel} style={{ flex: 1, background: '#ffd700', color: '#000', padding: '14px', fontSize: '18px' }}>
-                🔄 RETRY
+          <div className="hud-panel" style={{ padding: '40px', maxWidth: '480px', width: '90%', textAlign: 'center', border: '2px solid #ff3366', boxShadow: '0 0 35px rgba(255, 51, 102, 0.4)' }}>
+            <h1 style={{ fontSize: '52px', color: '#ff3366', margin: '0 0 10px' }}>💔 GAME OVER</h1>
+            <p style={{ fontSize: '18px', color: '#cbd5e1', marginBottom: '15px' }}>
+              You ran out of hearts on Level {level}!
+            </p>
+            <div className="stat-pill" style={{ fontSize: '18px', padding: '8px 18px', margin: '0 auto 25px' }}>
+              <span>🪙 Banked Coins:</span>
+              <span>{savedData.totalCoins}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <button className="hud-btn btn-accent" onClick={retryCurrentLevel} style={{ padding: '14px', fontSize: '18px' }}>
+                🔄 RETRY LEVEL
               </button>
-              <button className="hud-btn" onClick={restartGame} style={{ flex: 1, background: '#00ff88', color: '#000', padding: '14px', fontSize: '18px' }}>
-                🔁 RESTART
-              </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="hud-btn btn-secondary" onClick={() => setShowShop(true)} style={{ flex: 1, padding: '12px' }}>
+                  🛒 SHOP UPGRADES
+                </button>
+                <button className="hud-btn btn-secondary" onClick={returnToMainMenu} style={{ flex: 1, padding: '12px' }}>
+                  🏠 MAIN MENU
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1340,25 +1456,39 @@ const CrystalCollectorGame = () => {
       {/* --- LEVEL COMPLETE SCREEN --- */}
       {showComplete && !gameOver && (
         <div className="modal-backdrop">
-          <div className="hud-panel" style={{ padding: '40px', maxWidth: '520px', width: '90%', textAlign: 'center', border: '2px solid #00ff88' }}>
-            <h1 style={{ fontSize: '50px', color: '#00ff88', marginBottom: '10px' }}>
-              {level === 10 ? '🏆 GRAND VICTORY! 🏆' : '🎉 LEVEL COMPLETE!'}
+          <div className="hud-panel" style={{ padding: '40px', maxWidth: '520px', width: '90%', textAlign: 'center', border: '2px solid #00ff88', boxShadow: '0 0 35px rgba(0, 255, 136, 0.4)' }}>
+            <div style={{ fontSize: '42px', marginBottom: '5px' }}>
+              {level === 10 ? '👑' : '⭐ ⭐ ⭐'}
+            </div>
+            <h1 style={{ fontSize: '44px', color: '#00ff88', margin: '0 0 10px' }}>
+              {level === 10 ? 'GRAND VICTORY!' : 'LEVEL COMPLETE!'}
             </h1>
-            <p style={{ fontSize: '22px', color: '#00ffff' }}>Crystals Collected: {score}</p>
-            <p style={{ fontSize: '20px', color: '#ffd700' }}>Coins Earned: +{coins} 🪙</p>
+            <p style={{ fontSize: '20px', color: '#00f0ff', margin: '6px 0' }}>
+              💎 Crystals Collected: {score}
+            </p>
+            <p style={{ fontSize: '18px', color: '#ffd700', margin: '0 0 25px' }}>
+              🪙 Coins Earned: +{coins} (Total: {savedData.totalCoins})
+            </p>
 
-            {level < 10 ? (
-              <button className="hud-btn" onClick={nextLevel} style={{ background: '#00ff88', color: '#000', padding: '16px 40px', fontSize: '22px', marginTop: '20px' }}>
-                NEXT LEVEL ➡️
-              </button>
-            ) : (
-              <div>
-                <h2 style={{ color: '#ffd700', margin: '20px 0 10px' }}>You beat all 10 Levels & the Crystal Titan!</h2>
-                <button className="hud-btn" onClick={restartGame} style={{ background: '#00ff88', color: '#000', padding: '16px 40px', fontSize: '22px', marginTop: '20px' }}>
-                  PLAY AGAIN 🔁
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {level < 10 ? (
+                <button className="hud-btn btn-primary" onClick={nextLevel} style={{ padding: '16px', fontSize: '20px' }}>
+                  NEXT LEVEL ({level + 1}) ➡️
+                </button>
+              ) : (
+                <div style={{ color: '#ffd700', fontWeight: 800, fontSize: '18px', marginBottom: '10px' }}>
+                  🎉 CONGRATULATIONS! YOU CONQUERED ALL 10 LEVELS!
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="hud-btn btn-secondary" onClick={retryCurrentLevel} style={{ flex: 1, padding: '12px' }}>
+                  🔁 REPLAY LEVEL
+                </button>
+                <button className="hud-btn btn-secondary" onClick={returnToMainMenu} style={{ flex: 1, padding: '12px' }}>
+                  🏠 MAIN MENU
                 </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}
