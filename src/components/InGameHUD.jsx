@@ -16,6 +16,7 @@ export const InGameHUD = ({
   slowMoTime,
   feverTime,
   bossState,
+  fps = 60,
   onPause,
   onOpenShop,
   onOpenAchievements
@@ -109,6 +110,12 @@ export const InGameHUD = ({
         {/* Top-Right: Coins, Combo, Quick Controls */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            {savedData.showFPS !== false && (
+              <div className={`fps-badge ${fps < 45 ? 'warning' : ''}`}>
+                <span>{fps >= 58 ? '🟢' : '🟡'}</span>
+                <span>{fps} FPS</span>
+              </div>
+            )}
             {combo > 1 && (
               <div className="combo-badge">
                 🔥 {combo}x COMBO!
