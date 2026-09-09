@@ -484,3 +484,53 @@ input[type=range]::-webkit-slider-thumb {
   cursor: pointer;
   box-shadow: 0 0 12px #00f0ff;
 }
+
+/* Real-Time FPS Badge */
+.fps-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: monospace;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: rgba(10, 15, 25, 0.85);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  color: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+  user-select: none;
+}
+
+.fps-badge.warning {
+  border-color: #ffd700;
+  color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+}
+
+/* Graphics Quality Selector */
+.graphics-preset-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.graphics-preset-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 240, 255, 0.4);
+  color: #ffffff;
+}
+
+.graphics-preset-btn.active {
+  background: linear-gradient(135deg, #00f0ff, #0072ff);
+  color: #050510;
+  border-color: #00f0ff;
+  box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
+}
