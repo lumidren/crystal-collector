@@ -36,25 +36,43 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
             className={`shop-tab-btn ${activeTab === 'objectives' ? 'active' : ''}`}
             onClick={() => handleTab('objectives')}
           >
-            💎 Collectibles & Goals
+            💎 Collectibles
+          </button>
+          <button
+            className={`shop-tab-btn ${activeTab === 'skyislands' ? 'active' : ''}`}
+            onClick={() => handleTab('skyislands')}
+          >
+            🏝️ Sky Islands & 3D
+          </button>
+          <button
+            className={`shop-tab-btn ${activeTab === 'radar' ? 'active' : ''}`}
+            onClick={() => handleTab('radar')}
+          >
+            📡 Holographic Radar
+          </button>
+          <button
+            className={`shop-tab-btn ${activeTab === 'pets' ? 'active' : ''}`}
+            onClick={() => handleTab('pets')}
+          >
+            🐕 Cyber Pets
           </button>
           <button
             className={`shop-tab-btn ${activeTab === 'powerups' ? 'active' : ''}`}
             onClick={() => handleTab('powerups')}
           >
-            ⚡ Power-Up Orbs
+            ⚡ Power-Ups
           </button>
           <button
             className={`shop-tab-btn ${activeTab === 'hazards' ? 'active' : ''}`}
             onClick={() => handleTab('hazards')}
           >
-            ⚠️ Hazards & Defense
+            ⚠️ Hazards
           </button>
           <button
             className={`shop-tab-btn ${activeTab === 'controls' ? 'active' : ''}`}
             onClick={() => handleTab('controls')}
           >
-            🎮 Controls & Scoring
+            🎮 Controls
           </button>
         </div>
 
@@ -88,6 +106,112 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff3366' }}>Floating Recovery Hearts</div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
                     Restores 1 lost heart when collected. Keep your health high to achieve prestigious <strong>S-Rank Flawless</strong> ratings on the final scoreboard!
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'skyislands' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(0, 240, 255, 0.15)', color: '#00f0ff' }}>🏝️</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#00f0ff' }}>Multi-Tier Sky Islands & Bridges</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    The realm now expands vertically into full 3D space! Explore 4 floating decks elevated at <strong>3.8m, 4.6m, 5.8m, and 7.5m</strong>. Each island features pulsing anti-gravity repulsors underneath and neon landing beacon pillars.
+                  </div>
+                </div>
+              </div>
+
+              <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(255, 215, 0, 0.15)', color: '#ffd700' }}>🚀</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ffd700' }}>Trampoline Super-Launch</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    Step onto ground trampolines to trigger a super-boost high into the sky! Combine with your <strong>Spacebar Double Jump</strong> to cross the high bridge and reach the highest Apex Peak cache.
+                  </div>
+                </div>
+              </div>
+
+              <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(0, 255, 136, 0.15)', color: '#00ff88' }}>🛡️</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#00ff88' }}>High-Altitude Hazard Immunity</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    Elevated islands provide tactical high ground. While stationed on sky platforms, you are completely safe above ground lava pools and roaming red hazard cubes!
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'radar' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(0, 240, 255, 0.15)', color: '#00f0ff' }}>📡</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#00f0ff' }}>45m Holographic Scanner</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    Mounted in the bottom-left HUD. The radar sweeps 360° every 2.5s with phosphorus fade trails, tracking all items and threats within 45 meters. Orienting dynamically so your character forward is always <strong>UP</strong>.
+                  </div>
+                </div>
+              </div>
+
+              <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(255, 0, 255, 0.15)', color: '#ff00ff' }}>▲</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff00ff' }}>Elevation Altitude Markers</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    Crystals situated atop high sky islands display an elevated <strong>(^)</strong> marker on the radar screen, indicating they are above ground level.
+                  </div>
+                </div>
+              </div>
+
+              <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(255, 51, 68, 0.15)', color: '#ff3344' }}>⚠️</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff3344' }}>Target Blip Legend</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    • <strong style={{ color: '#00f0ff' }}>Cyan Diamond</strong>: Crystal objective<br />
+                    • <strong style={{ color: '#ffd700' }}>Gold Dot</strong>: Bankable Gold Coin<br />
+                    • <strong style={{ color: '#ffe600' }}>Yellow Ring</strong>: Trampoline Launch Pad<br />
+                    • <strong style={{ color: '#ff3344' }}>Red Diamond/Zone</strong>: Moving Hazard Cube or Lava Pool<br />
+                    • <strong style={{ color: '#ff0055' }}>Crimson Skull & Nodes</strong>: Titan Boss & Corner Shield Pylons
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'pets' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(255, 170, 0, 0.15)', color: '#ffaa00' }}>🐕</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ffaa00' }}>Cyber Dog (Robo-Pup Companion)</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    A loyal 4-legged robotic companion! Follows right beside you with animated running legs, a wagging antenna tail, glowing visor, and an industry-leading <strong>11-meter fetch reach</strong> that pulls crystals and coins directly to you!
+                  </div>
+                </div>
+              </div>
+
+              <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(0, 240, 255, 0.15)', color: '#00f0ff' }}>🦅</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#00f0ff' }}>Cyber Falcon</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    Aerodynamic mechanical avian scout with animated flapping wings, banking aerial turns, and a <strong>9-meter magnetic suction radius</strong>.
+                  </div>
+                </div>
+              </div>
+
+              <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(255, 0, 102, 0.15)', color: '#ff0066' }}>🛸</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff0066' }}>Drones, Pixies & Sprites</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    Equip Cyber Drone (6m), Magic Pixie (8m), or Fire Sprite (10m) from the Arcade Shop to suit your playstyle.
                   </div>
                 </div>
               </div>
