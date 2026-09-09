@@ -1,14 +1,14 @@
-# 💎 Crystal Collector 3D
+# 💎 Crystal Collector 2.0
 
 <div align="center">
 
 ![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![Three.js](https://img.shields.io/badge/Three.js-r182-black?style=for-the-badge&logo=threedotjs&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-Build%20Tool-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Web Audio](https://img.shields.io/badge/Web%20Audio-Procedural%20BGM-ff00aa?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge)
 
-**A high-energy, low-poly 3D arcade platformer built with React 19 and Three.js.**  
-Dash, jump, and collect crystals across 10 dangerous arenas while dodging lethal obstacles, managing stamina, unlocking cosmetics, and racking up achievements.
+**A high-energy, low-poly 3D arcade platformer with dynamic biomes, platforming mechanics, procedural synthwave soundtrack, pet companions, and an epic Level 10 boss fight.**
 
 [🎮 **Play Live on Netlify**](https://3dcrystalcollector.netlify.app/) · [Report Bug](https://github.com/lumidren/crystal-collector/issues) · [Request Feature](https://github.com/lumidren/crystal-collector/issues)
 
@@ -16,17 +16,45 @@ Dash, jump, and collect crystals across 10 dangerous arenas while dodging lethal
 
 ---
 
-## 🕹️ Gameplay & Features
+## 🌟 What's New in 2.0
 
-### 🌟 Core Highlights
-- **10 Progressively Challenging Stages**: Advance from *Tutorial Valley* through treacherous frozen wastes and shadow realms to the dreaded *FINAL GAUNTLET*.
-- **🛒 In-Game Cosmetics Shop**: Earn coins on every run to buy custom character colors and stylish 3D hats.
-- **🏆 Badges & Achievements System**: Track milestones like collecting your first crystal, clearing intermediate worlds, and accumulating 100+ coins.
-- **🛡️ Shield Power-Ups**: Grab glowing 3D shields that project an animated protective force field for 10 seconds of obstacle immunity.
-- **⚡ Stamina & Sprint Mechanics**: Manage your energy meter for tactical burst-sprints with dynamic camera framing and character bobbing.
-- **🔊 Procedural Web Audio Engine**: Zero-asset audio powered by HTML5 `AudioContext` with custom frequencies and envelope ramps for crystal & coin pickups.
-- **🎯 Pointer-Lock Camera**: Seamless first/third-person hybrid mouse-look controls with zoom wheel and escape handling.
-- **🏃 Skeletal-Style Animations**: Procedurally animated swinging arms and legs synced to walking and sprinting speeds.
+* **🌍 5 Distinct Themed Biomes**:
+  * **Forest Valley (Lvl 1–2)**: Pine trees, mossy stepping boulders, and sunny atmosphere.
+  * **Crystal Caverns (Lvl 3–4)**: Glowing crystal stalagmites, luminescent cavern fog, and neon lighting.
+  * **Frozen Tundra (Lvl 5–6)**: Translucent ice pillars, frosty mist, and slick ice physics!
+  * **Volcanic Caldera (Lvl 7–8)**: Molten lava hazard pools (stepping into them hurts!), rising ash, and basalt rock pillars.
+  * **Cosmic Void (Lvl 9–10)**: Infinite space void, anti-gravity launch pads, and neon boundary lines.
+
+* **👾 Level 10 Guardian Boss — The Crystal Titan**:
+  * Colossal mechanical titan in the center of the arena.
+  * Emits rotating sweeping lasers and ground shockwaves that require jump timing.
+  * Activate all **4 Power Pylons** in the corners to shatter its shield and capture the Master Core Crystal to win!
+
+* **🚀 Trampoline Jump Pads & Double Jump**:
+  * Golden jump pads launch the player high into the air.
+  * Mid-air **Double Jump** (<kbd>Spacebar</kbd> twice) for enhanced aerial maneuverability.
+
+* **🐾 3D Pet Companions**:
+  * **Cyber Drone** 🛸: Hovers above your shoulder and vacuums coins from 6m away.
+  * **Magic Pixie** 🧚: Flutters with translucent wings and pulls crystals from 8m away.
+  * **Fire Sprite** 🔥: Super magnet aura pulling items from up to 10m away.
+
+* **🎵 Procedural Synthwave BGM & Chiptune Audio**:
+  * **0 KB Download Size**: Real-time algorithmic synth basslines, arpeggios, and sound effects generated entirely with the HTML5 Web Audio API.
+  * Dynamic tempo: Speeds up during sprints and Prism Fever Mode!
+
+* **🛒 Shop 2.0 & Meta-Progression**:
+  * **5 Character Skins** & **4 Custom 3D Hats**.
+  * **Footstep Trails**: Flame Spark, Rainbow Stardust, and Cyber Neon.
+  * **Permanent Stat Upgrades**: Max Hearts (up to 5), Stamina Tank (up to 150), and Natural Magnet Reach.
+
+* **💾 Save State Persistence**:
+  * Automatically saves all coins, unlocked hats, pets, upgrades, and achievements to `localStorage`.
+
+* **✨ Particle VFX & Game Juice**:
+  * Particle bursts on crystal & coin pickups.
+  * Running dust trails and dynamic screen trauma camera shake on impacts.
+  * Floating 3D score text popups (`+1 💎`, `COMBO x3!`, `LAUNCH! 🚀`, `FEVER! 🌈`).
 
 ---
 
@@ -34,92 +62,61 @@ Dash, jump, and collect crystals across 10 dangerous arenas while dodging lethal
 
 | Action | Key / Input | Notes |
 | :--- | :--- | :--- |
-| **Move** | <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> | Directional movement relative to camera |
-| **Sprint** | Hold <kbd>Shift</kbd> | Increases speed by 1.8x; consumes Stamina ⚡ |
-| **Jump** | <kbd>Spacebar</kbd> | Jump over ground hazards and obstacles |
-| **Look / Orbit** | **Click Screen** + **Mouse Move** | Locks cursor via Pointer Lock API for smooth camera orbit |
-| **Release Mouse** | <kbd>Esc</kbd> | Unlocks cursor to click UI / Shop / Badges |
-| **Zoom Camera** | **Mouse Wheel** | Adjusts third-person camera distance (3m - 15m) |
-| **Mute / Unmute** | **🔊 / 🔇 Button** | Quick toggle for procedural audio effects |
+| **Move** | <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> | Normalized diagonal movement relative to camera |
+| **Sprint** | Hold <kbd>Shift</kbd> | Increases speed by up to 2.2x; consumes Stamina ⚡ |
+| **Jump** | <kbd>Spacebar</kbd> | Ground jump |
+| **Double Jump** | <kbd>Spacebar</kbd> (mid-air) | Mid-air flutter jump 🪶 |
+| **Look / Orbit** | **Click Screen** + **Mouse Move** | Locks cursor via Pointer Lock API for smooth 3D camera look |
+| **Release Mouse** | <kbd>Esc</kbd> / <kbd>P</kbd> | Opens the Pause & Settings Menu |
+| **Zoom Camera** | **Mouse Wheel** | Adjusts third-person camera distance (3m – 15m) |
 
 ---
 
-## 🗺️ Level Progression
+## 🗺️ 10 Levels & Biomes
 
-Each stage escalates in speed, danger, and rewards:
-
-| Level | Realm Name | 💎 Crystals | 🪙 Coins | ⚠️ Obstacles | Speed | ❤️ Hearts |
-| :---: | :--- | :---: | :---: | :---: | :---: | :---: |
-| **1** | Tutorial Valley | 8 | 15 | 5 | 4 | 2 |
-| **2** | Crystal Cavern | 10 | 20 | 8 | 5 | 2 |
-| **3** | Mystic Peaks | 12 | 25 | 10 | 6 | 3 |
-| **4** | Thunder Plains | 15 | 30 | 12 | 7 | 3 |
-| **5** | Frozen Tundra | 18 | 35 | 14 | 8 | 3 |
-| **6** | Lava Fields | 20 | 40 | 16 | 9 | 4 |
-| **7** | Sky Gardens | 22 | 45 | 18 | 10 | 4 |
-| **8** | Shadow Realm | 25 | 50 | 20 | 11 | 4 |
-| **9** | Cosmic Void | 28 | 55 | 22 | 12 | 5 |
-| **10** | **FINAL GAUNTLET** | 30 | 60 | 25 | 13 | 5 |
+| Level | Realm & Biome | 💎 Crystals | 🪙 Coins | ⚠️ Hazards | Special Mechanics |
+| :---: | :--- | :---: | :---: | :---: | :--- |
+| **1** | Forest Valley | 8 | 15 | 5 | Pine Trees & 2 Jump Pads |
+| **2** | Forest Valley (Deep) | 10 | 20 | 8 | Dense Woods & Jump Pads |
+| **3** | Crystal Cavern | 12 | 25 | 10 | Glowing Stalagmites & Fog |
+| **4** | Crystal Cavern (Depths) | 15 | 30 | 12 | Neon Light Clusters & Speed Hazards |
+| **5** | Frozen Tundra | 18 | 35 | 14 | Slick Ice Physics & Ice Spikes |
+| **6** | Frozen Tundra (Blizzard) | 20 | 40 | 16 | 3 Trampoline Jump Pads |
+| **7** | Volcanic Caldera | 22 | 45 | 18 | Molten Lava Pools (Damage on touch!) |
+| **8** | Volcanic Caldera (Eruption) | 25 | 50 | 20 | Ash Fog & Lava Stream Crossing |
+| **9** | Cosmic Void | 28 | 55 | 22 | Anti-Gravity Platforms & 4 Jump Pads |
+| **10** | **THE FINAL TITAN** | 30 | 60 | Boss | **Crystal Titan Boss: Lasers, Shockwaves & 4 Pylons** |
 
 ---
 
-## 🛒 Shop & Customization
+## 🏗️ Project Architecture
 
-Spend your hard-earned coins directly from the HUD:
-
-### 🎨 Character Colors
-- **Classic Green** (Default, Free)
-- **Electric Blue** (50 🪙)
-- **Crimson Red** (50 🪙)
-- **Mystic Purple** (100 🪙)
-- **Radiant Gold** (150 🪙)
-
-### 🎩 Headwear Collection
-- **Baseball Cap** 🧢 (Free) - Red cap with a sporty front visor
-- **Dapper Top Hat** 🎩 (100 🪙) - Classic black silk hat with a velvet ribbon
-- **Royal Crown** 👑 (150 🪙) - Gold crown set with alternating ruby and sapphire gems
-- **Santa Hat** 🎅 (200 🪙) - Festive red conical hat with fluffy white trim & pompom
-
----
-
-## 🏆 Achievements & Badges
-
-| Badge | Title | Requirement |
-| :---: | :--- | :--- |
-| 💎 | **First Steps** | Collect your first crystal |
-| 🏆 | **Beginner** | Complete Level 1 |
-| ⭐ | **Halfway There** | Complete Level 5 |
-| 👑 | **Champion** | Complete Level 10 (*The Final Gauntlet*) |
-| 💰 | **Coin Collector** | Accumulate 100+ total coins |
-
----
-
-## 🏗️ Architecture & Technical Details
-
-### 1. Three.js Graphics Pipeline
-- **Scene Graph**: Managed through React `useRef` attachment to cleanly separate DOM layout from the WebGL canvas.
-- **Lighting & Atmosphere**: Directional sunlight with high-resolution PCF soft shadow maps (`2048x2048`), complemented by low-intensity ambient fill lighting.
-- **Low-Poly Primitives**: Octahedron crystals with emissive shading, multi-part procedural hats, and composite humanoid meshes built with cylinders and spheres.
-- **Resource Disposal**: Comprehensive lifecycle traversal in `useEffect` cleanup disposing all geometries, materials, and renderer contexts to prevent WebGL memory leaks.
-
-### 2. High-Performance Game Loop
-- **Decoupled State**: Animation runs via `requestAnimationFrame` using a `THREE.Clock` delta timer (`dt`).
-- **Zero-Stutter Mechanics**: Frame-rate independent physics for velocity, obstacle bounces, and jumping arcs.
-- **Stable React Binding**: HUD values like stamina and shield timers update state without triggering full 3D scene re-instantiations.
-
-### 3. Procedural Audio Engine
-- Built directly on the native Web Audio API with zero external asset dependencies.
-- Generates dynamic square/sine oscillator tones with fast exponential decay curves for crisp, nostalgic arcade feedback.
+```text
+crystal-collector/
+├── README.md               # Game documentation & 2.0 guide
+├── index.html              # HTML entrypoint
+├── vite.config.js          # Vite build config
+├── package.json            # Dependencies & build scripts
+└── src/
+    ├── main.jsx            # React root mounting
+    ├── index.css           # Global viewport reset
+    ├── App.css             # Arcade HUD, glassmorphism, animations & shop styling
+    ├── App.jsx             # Main game controller, Three.js loop, HUD & shop modals
+    ├── audio/
+    │   └── soundEngine.js  # Procedural Web Audio chiptune/synthwave BGM & SFX
+    ├── world/
+    │   └── biomeGenerator.js # Procedural biomes, jump pads, scenery & lava hazards
+    └── game/
+        ├── particles.js    # High-performance particle bursts, dust & floating popups
+        ├── boss.js         # Level 10 Guardian Titan boss, laser sweep & shockwaves
+        ├── pets.js         # Pet companion follower system (Drone, Pixie, Sprite)
+        └── saveManager.js  # LocalStorage persistence for stats, upgrades & unlocks
+```
 
 ---
 
 ## 🚀 Running Locally
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (version 18 or higher recommended)
-- `npm` or `yarn`
-
-### Installation
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/lumidren/crystal-collector.git
@@ -131,7 +128,7 @@ Spend your hard-earned coins directly from the HUD:
    npm install
    ```
 
-3. **Start the development server**:
+3. **Start the local arcade server**:
    ```bash
    npm run dev
    ```
@@ -143,29 +140,9 @@ Spend your hard-earned coins directly from the HUD:
 
 ---
 
-## 📁 Project Structure
-
-```text
-crystal-collector/
-├── README.md               # Project documentation & overview
-├── index.html              # HTML entrypoint
-├── vite.config.js          # Vite build configuration
-├── package.json            # Project manifest and dependencies
-└── src/
-    ├── main.jsx            # React root mounting
-    ├── index.css           # Global reset and viewport styling
-    ├── App.css             # Component layout styles
-    ├── App.jsx             # Main 3D Game component (Three.js + React UI)
-    └── assets/             # Static game assets & icons
-```
-
----
-
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
-
----
 
 <div align="center">
 
