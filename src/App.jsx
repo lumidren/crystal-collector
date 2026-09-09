@@ -6,6 +6,7 @@ import { ParticleManager } from './game/particles.js';
 import { BiomeGenerator } from './world/biomeGenerator.js';
 import { CrystalTitanBoss } from './game/boss.js';
 import { PetCompanion } from './game/pets.js';
+import { CyberRunner } from './game/character.js';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { LevelSelectModal } from './components/LevelSelectModal.jsx';
 import { HowToPlayModal } from './components/HowToPlayModal.jsx';
@@ -457,68 +458,9 @@ const CrystalCollectorGame = () => {
       bossInstance = new CrystalTitanBoss(scene);
     }
 
-    // Player Mesh
-    player = new THREE.Group();
-    const pCol = parseInt((currentSaved.playerColor || '#00ff00').replace('#', '0x'));
-    const mat = new THREE.MeshPhongMaterial({ color: pCol });
-
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1.5, 16), mat);
-    body.position.y = 1.5;
-    player.add(body);
-
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), mat);
-    head.position.y = 2.8;
-    player.add(head);
-
-    const lArm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1, 8), mat);
-    lArm.position.set(-0.7, 1.5, 0);
-    player.add(lArm);
-
-    const rArm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1, 8), mat);
-    rArm.position.set(0.7, 1.5, 0);
-    player.add(rArm);
-
-    const lLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.18, 1.2, 8), mat);
-    lLeg.position.set(-0.25, 0.3, 0);
-    player.add(lLeg);
-
-    const rLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.18, 1.2, 8), mat);
-    rLeg.position.set(0.25, 0.3, 0);
-    player.add(rLeg);
-
-    // 3D Hat Model
-    let hatGroup = null;
-    if (currentSaved.currentHat === 'cap') {
-      hatGroup = new THREE.Group();
-      hatGroup.position.y = 3.1;
-      const visor = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.6), new THREE.MeshPhongMaterial({ color: 0xff0000 }));
-      visor.position.set(0, -0.05, 0.3);
-      const dome = new THREE.Mesh(new THREE.SphereGeometry(0.38, 16, 16, 0, Math.PI * 2, 0, Math.PI / 1.5), new THREE.MeshPhongMaterial({ color: 0xff0000 }));
-      dome.position.y = 0.05;
-      hatGroup.add(visor, dome);
-      player.add(hatGroup);
-    } else if (currentSaved.currentHat === 'tophat') {
-      hatGroup = new THREE.Group();
-      hatGroup.position.y = 3.2;
-      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.08, 24), new THREE.MeshPhongMaterial({ color: 0x111111 }));
-      const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.9, 24), new THREE.MeshPhongMaterial({ color: 0x111111 }));
-      cyl.position.y = 0.45;
-      hatGroup.add(brim, cyl);
-      player.add(hatGroup);
-    } else if (currentSaved.currentHat === 'crown') {
-      hatGroup = new THREE.Group();
-      hatGroup.position.y = 3.25;
-      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.55, 0.25, 8), new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0x443300 }));
-      hatGroup.add(base);
-      player.add(hatGroup);
-    } else if (currentSaved.currentHat === 'santa') {
-      hatGroup = new THREE.Group();
-      hatGroup.position.y = 3.2;
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.95, 16), new THREE.MeshPhongMaterial({ color: 0xff0000 }));
-      cone.position.y = 0.35;
-      hatGroup.add(cone);
-      player.add(hatGroup);
-    }
+    // Player Character (Next-Gen CyberRunner Astronaut)
+    const playerCharacter = new CyberRunner(currentSaved, scene);
+    player = playerCharacter.group;
 
     // Shield Forcefield Mesh
     const shieldMesh = new THREE.Mesh(
@@ -824,27 +766,17 @@ const CrystalCollectorGame = () => {
         });
       }
 
-      // Limb swings
-      if (moving) {
-        player.rotation.y = Math.atan2(mx, mz);
-        const animSpeed = isSprinting && canSprint ? 20 : 12;
-        const rs = t * animSpeed;
-        body.position.y = 1.5 + Math.sin(rs) * 0.1;
-        lArm.rotation.x = Math.sin(rs) * 0.6;
-        rArm.rotation.x = -Math.sin(rs) * 0.6;
-        lLeg.rotation.x = Math.sin(rs) * 1.2;
-        rLeg.rotation.x = -Math.sin(rs) * 1.2;
-
-        if (hatGroup) {
-          hatGroup.rotation.z = Math.sin(rs) * 0.08;
-          hatGroup.position.y = 3.1 + Math.sin(rs) * 0.05;
-        }
-      } else {
-        body.position.y = 1.5;
-        lArm.rotation.x = 0;
-        rArm.rotation.x = 0;
-        lLeg.rotation.x = 0;
-        rLeg.rotation.x = 0;
+      // Update CyberRunner Character Animations (run, sprint lean, jump pose, thruster VFX)
+      if (playerCharacter) {
+        playerCharacter.update(dt, t, {
+          isMoving: moving,
+          isSprinting: isSprinting && canSprint,
+          isGrounded,
+          mx,
+          mz,
+          feverTime: localFeverTime,
+          particleManager
+        });
       }
 
       // Update Pet Companion Follower
@@ -1093,6 +1025,7 @@ const CrystalCollectorGame = () => {
       }
 
       particleManager.clear();
+      if (playerCharacter) playerCharacter.destroy();
       if (petInstance) petInstance.destroy();
       if (bossInstance) bossInstance.destroy();
 
