@@ -1,116 +1,162 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { loadGameState, saveGameState } from './game/saveManager.js';
+import { soundEngine } from './audio/soundEngine.js';
+import { ParticleManager } from './game/particles.js';
+import { BiomeGenerator } from './world/biomeGenerator.js';
+import { CrystalTitanBoss } from './game/boss.js';
+import { PetCompanion } from './game/pets.js';
+import './App.css';
 
 const CrystalCollectorGame = () => {
   const mountRef = useRef(null);
+
+  // Persistent user state
+  const [savedData, setSavedData] = useState(() => loadGameState());
+  const savedDataRef = useRef(savedData);
+  useEffect(() => {
+    savedDataRef.current = savedData;
+    saveGameState(savedData);
+    soundEngine.setSettings(
+      savedData.soundEnabled,
+      savedData.musicEnabled,
+      savedData.sfxVolume,
+      savedData.musicVolume
+    );
+  }, [savedData]);
+
+  // Session game state
   const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
-  const [totalCoins, setTotalCoins] = useState(0);
   const [level, setLevel] = useState(1);
-  const [hearts, setHearts] = useState(3);
-  const [stamina, setStamina] = useState(100);
-  const staminaRef = useRef(100);
-  const [showComplete, setShowComplete] = useState(false);
-  const [showLevelStart, setShowLevelStart] = useState(true);
-  const [gameOver, setGameOver] = useState(false);
-  const [showShop, setShowShop] = useState(false);
-  const [playerColor, setPlayerColor] = useState('#00ff00');
-  const [ownedColors, setOwnedColors] = useState(['#00ff00']);
-  const [currentHat, setCurrentHat] = useState(null);
-  const [ownedHats, setOwnedHats] = useState([]);
-  const [achievements, setAchievements] = useState({});
-  const [showAchievements, setShowAchievements] = useState(false);
-  const [shieldActive, setShieldActive] = useState(false);
+  const [hearts, setHearts] = useState(savedData.upgrades?.maxHearts || 3);
+  const [stamina, setStamina] = useState(savedData.upgrades?.maxStamina || 100);
+  const staminaRef = useRef(savedData.upgrades?.maxStamina || 100);
+
+  const [combo, setCombo] = useState(1);
+  const [comboTimer, setComboTimer] = useState(0);
+
+  // Active power-up timers
   const [shieldTime, setShieldTime] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const soundEnabledRef = useRef(soundEnabled);
+  const [magnetTime, setMagnetTime] = useState(0);
+  const [slowMoTime, setSlowMoTime] = useState(0);
+  const [feverTime, setFeverTime] = useState(0);
 
-  useEffect(() => {
-    soundEnabledRef.current = soundEnabled;
-  }, [soundEnabled]);
+  // UI modal toggles
+  const [showLevelStart, setShowLevelStart] = useState(true);
+  const [showComplete, setShowComplete] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [showShop, setShowShop] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [shopTab, setShopTab] = useState('colors'); // 'colors', 'hats', 'pets', 'trails', 'upgrades'
+  const [isEndless, setIsEndless] = useState(false);
+  const [endlessSurviveTime, setEndlessSurviveTime] = useState(0);
 
+  // Catalogs
   const shopColors = [
-    { name: 'Green', color: '#00ff00', cost: 0 },
-    { name: 'Blue', color: '#0080ff', cost: 50 },
-    { name: 'Red', color: '#ff0000', cost: 50 },
-    { name: 'Purple', color: '#ff00ff', cost: 100 },
-    { name: 'Gold', color: '#ffd700', cost: 150 }
+    { name: 'Neon Green', color: '#00ff00', cost: 0 },
+    { name: 'Electric Blue', color: '#0080ff', cost: 50 },
+    { name: 'Crimson Red', color: '#ff0000', cost: 50 },
+    { name: 'Mystic Purple', color: '#ff00ff', cost: 100 },
+    { name: 'Radiant Gold', color: '#ffd700', cost: 150 }
   ];
 
   const shopHats = [
-    { name: 'Baseball Cap', id: 'cap', cost: 0 },
-    { name: 'Top Hat', id: 'tophat', cost: 100 },
-    { name: 'Crown', id: 'crown', cost: 150 },
-    { name: 'Santa Hat', id: 'santa', cost: 200 }
+    { name: 'Baseball Cap', id: 'cap', cost: 0, icon: '🧢' },
+    { name: 'Top Hat', id: 'tophat', cost: 100, icon: '🎩' },
+    { name: 'Royal Crown', id: 'crown', cost: 150, icon: '👑' },
+    { name: 'Santa Hat', id: 'santa', cost: 200, icon: '🎅' }
+  ];
+
+  const shopPets = [
+    { name: 'Cyber Drone', id: 'drone', cost: 150, icon: '🛸', desc: 'Vacuums coins from 6m away' },
+    { name: 'Magic Pixie', id: 'pixie', cost: 200, icon: '🧚', desc: 'Attracts crystals from 8m away' },
+    { name: 'Fire Sprite', id: 'sprite', cost: 250, icon: '🔥', desc: 'Super magnet reach up to 10m' }
+  ];
+
+  const shopTrails = [
+    { name: 'Flame Spark', id: 'fire', cost: 100, color: '#ff4500' },
+    { name: 'Rainbow Stardust', id: 'rainbow', cost: 150, color: '#00ffff' },
+    { name: 'Cyber Neon', id: 'cyber', cost: 200, color: '#bd00ff' }
   ];
 
   const achievementsList = [
     { id: 'first_crystal', name: 'First Steps', desc: 'Collect your first crystal', icon: '💎' },
     { id: 'level_1', name: 'Beginner', desc: 'Complete Level 1', icon: '🏆' },
     { id: 'level_5', name: 'Halfway There', desc: 'Complete Level 5', icon: '⭐' },
-    { id: 'level_10', name: 'Champion', desc: 'Complete Level 10', icon: '👑' },
-    { id: 'coin_collector', name: 'Coin Collector', desc: 'Collect 100 coins', icon: '💰' }
+    { id: 'level_10', name: 'Champion', desc: 'Defeat the Crystal Titan (Level 10)', icon: '👑' },
+    { id: 'coin_collector', name: 'Coin Collector', desc: 'Collect 100 coins', icon: '💰' },
+    { id: 'fever_master', name: 'Fever Frenzy', desc: 'Trigger Prism Fever Mode', icon: '🌈' },
+    { id: 'trampoline_ace', name: 'High Flyer', desc: 'Launch from a Jump Pad', icon: '🚀' }
   ];
 
-  const playSound = (type) => {
-    if (!soundEnabledRef.current) return;
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      
-      if (type === 'collect') {
-        osc.frequency.value = 800;
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.1);
-      } else if (type === 'coin') {
-        osc.frequency.value = 1200;
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.15);
-      }
-    } catch {
-      console.log('Audio not supported');
-    }
-  };
-
   const unlockAchievement = (id) => {
-    if (!achievements[id]) {
-      setAchievements(prev => ({...prev, [id]: true}));
-      playSound('collect');
+    if (!savedData.achievements[id]) {
+      setSavedData(prev => ({
+        ...prev,
+        achievements: { ...prev.achievements, [id]: true }
+      }));
+      soundEngine.playPowerup('fever');
     }
   };
 
-  const buyColor = (c, cost) => {
-    if (totalCoins >= cost && !ownedColors.includes(c)) {
-      setTotalCoins(prev => prev - cost);
-      setOwnedColors([...ownedColors, c]);
-      setPlayerColor(c);
-      playSound('coin');
-    }
+  const buyItem = (type, item, cost) => {
+    if (savedData.totalCoins < cost) return;
+
+    setSavedData(prev => {
+      const next = { ...prev, totalCoins: prev.totalCoins - cost };
+      if (type === 'color') {
+        next.ownedColors = [...prev.ownedColors, item];
+        next.playerColor = item;
+      } else if (type === 'hat') {
+        next.ownedHats = [...prev.ownedHats, item];
+        next.currentHat = item;
+      } else if (type === 'pet') {
+        next.ownedPets = [...prev.ownedPets, item];
+        next.currentPet = item;
+      } else if (type === 'trail') {
+        next.ownedTrails = [...prev.ownedTrails, item];
+        next.currentTrail = item;
+      }
+      return next;
+    });
+    soundEngine.playCoin();
   };
 
-  const buyHat = (id, cost) => {
-    if (totalCoins >= cost && !ownedHats.includes(id)) {
-      setTotalCoins(prev => prev - cost);
-      setOwnedHats([...ownedHats, id]);
-      setCurrentHat(id);
-      playSound('coin');
-    }
+  const buyUpgrade = (upgradeKey, cost, increment) => {
+    if (savedData.totalCoins < cost) return;
+
+    setSavedData(prev => ({
+      ...prev,
+      totalCoins: prev.totalCoins - cost,
+      upgrades: {
+        ...prev.upgrades,
+        [upgradeKey]: (prev.upgrades[upgradeKey] || 0) + increment
+      }
+    }));
+    soundEngine.playPowerup('shield');
+  };
+
+  // Level flow handlers
+  const startLevel = () => {
+    setShowLevelStart(false);
+    setIsPaused(false);
+    soundEngine.startBGM();
   };
 
   const nextLevel = () => {
-    playSound('collect');
+    soundEngine.playPowerup('fever');
     setShowComplete(false);
     setShowLevelStart(true);
     setLevel(prev => prev + 1);
     setScore(0);
     setCoins(0);
+    setCombo(1);
+    setShieldTime(0);
+    setMagnetTime(0);
+    setSlowMoTime(0);
+    setFeverTime(0);
   };
 
   const retryCurrentLevel = () => {
@@ -118,9 +164,15 @@ const CrystalCollectorGame = () => {
     setShowLevelStart(true);
     setScore(0);
     setCoins(0);
-    setHearts(3);
-    setStamina(100);
-    staminaRef.current = 100;
+    setCombo(1);
+    setHearts(savedDataRef.current.upgrades?.maxHearts || 3);
+    const maxStam = savedDataRef.current.upgrades?.maxStamina || 100;
+    setStamina(maxStam);
+    staminaRef.current = maxStam;
+    setShieldTime(0);
+    setMagnetTime(0);
+    setSlowMoTime(0);
+    setFeverTime(0);
   };
 
   const restartGame = () => {
@@ -130,47 +182,68 @@ const CrystalCollectorGame = () => {
     setLevel(1);
     setScore(0);
     setCoins(0);
-    setHearts(3);
-    setStamina(100);
-    staminaRef.current = 100;
-    setShieldActive(false);
+    setCombo(1);
+    setHearts(savedDataRef.current.upgrades?.maxHearts || 3);
+    const maxStam = savedDataRef.current.upgrades?.maxStamina || 100;
+    setStamina(maxStam);
+    staminaRef.current = maxStam;
     setShieldTime(0);
+    setMagnetTime(0);
+    setSlowMoTime(0);
+    setFeverTime(0);
   };
 
+  // --- Three.js Game World Effect ---
   useEffect(() => {
     if (!mountRef.current || showComplete || gameOver || showLevelStart) return;
 
     const mountNode = mountRef.current;
-    let scene, camera, renderer, player;
-    let crystals = [], coinObjs = [], obstacles = [], heartObjs = [], powerups = [];
+    let scene, camera, renderer, player, petInstance, bossInstance;
+    let crystals = [], coinObjs = [], obstacles = [], heartObjs = [], powerupObjs = [];
     let animId;
     let mounted = true;
+
+    // Movement & physics
     let jumpVelocity = 0;
     let isGrounded = true;
-    let damageThisLevel = false;
-    let localShieldActive = false;
-    let localShieldTime = 0;
-    let lastStamina = 100;
+    let canDoubleJump = false;
+    let lastStamina = staminaRef.current;
+    let localShieldTime = shieldTime;
+    let localMagnetTime = magnetTime;
+    let localSlowMoTime = slowMoTime;
+    let localFeverTime = feverTime;
+    let localCombo = combo;
+    let localComboTimer = 0;
+    let lavaCooldown = 0;
 
+    const currentSaved = savedDataRef.current;
+    const maxStamina = currentSaved.upgrades?.maxStamina || 100;
+    const sprintSpeedMult = currentSaved.upgrades?.sprintMultiplier || 1.8;
+    const baseMagnetRadius = currentSaved.upgrades?.magnetRadius || 0;
+
+    // Level configuration
     const levelConfigs = [
-      { crystals: 8, coins: 15, obs: 5, speed: 4, hearts: 2, name: "Tutorial Valley" },
-      { crystals: 10, coins: 20, obs: 8, speed: 5, hearts: 2, name: "Crystal Cavern" },
-      { crystals: 12, coins: 25, obs: 10, speed: 6, hearts: 3, name: "Mystic Peaks" },
-      { crystals: 15, coins: 30, obs: 12, speed: 7, hearts: 3, name: "Thunder Plains" },
-      { crystals: 18, coins: 35, obs: 14, speed: 8, hearts: 3, name: "Frozen Tundra" },
-      { crystals: 20, coins: 40, obs: 16, speed: 9, hearts: 4, name: "Lava Fields" },
-      { crystals: 22, coins: 45, obs: 18, speed: 10, hearts: 4, name: "Sky Gardens" },
-      { crystals: 25, coins: 50, obs: 20, speed: 11, hearts: 4, name: "Shadow Realm" },
-      { crystals: 28, coins: 55, obs: 22, speed: 12, hearts: 5, name: "Cosmic Void" },
-      { crystals: 30, coins: 60, obs: 25, speed: 13, hearts: 5, name: "FINAL GAUNTLET" }
+      { crystals: 8, coins: 15, obs: 5, speed: 4, hearts: 2 },
+      { crystals: 10, coins: 20, obs: 8, speed: 5, hearts: 2 },
+      { crystals: 12, coins: 25, obs: 10, speed: 6, hearts: 3 },
+      { crystals: 15, coins: 30, obs: 12, speed: 7, hearts: 3 },
+      { crystals: 18, coins: 35, obs: 14, speed: 8, hearts: 3 },
+      { crystals: 20, coins: 40, obs: 16, speed: 9, hearts: 4 },
+      { crystals: 22, coins: 45, obs: 18, speed: 10, hearts: 4 },
+      { crystals: 25, coins: 50, obs: 20, speed: 11, hearts: 4 },
+      { crystals: 28, coins: 55, obs: 22, speed: 12, hearts: 5 },
+      { crystals: 30, coins: 60, obs: 12, speed: 10, hearts: 5 } // Titan Guardian Boss Level!
     ];
-    
-    window.levelConfigs = levelConfigs;
-
     const cfg = levelConfigs[level - 1] || levelConfigs[0];
 
+    // Scene & Camera
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a1a2e);
+    const { biome, decorations, jumpPads, hazardZones } = BiomeGenerator.buildBiome(level, scene);
+    scene.background = new THREE.Color(biome.skyColor);
+
+    if (biome.fog) {
+      scene.fog = new THREE.Fog(biome.fog.color, biome.fog.near, biome.fog.far);
+    }
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 8, 15);
@@ -178,52 +251,69 @@ const CrystalCollectorGame = () => {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mountNode.appendChild(renderer.domElement);
 
-    scene.add(new THREE.AmbientLight(0x404040, 0.8));
-    
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-    dirLight.position.set(10, 15, 10);
+    // Particle VFX Engine
+    const particleManager = new ParticleManager(scene);
+
+    // Lighting
+    scene.add(new THREE.AmbientLight(biome.ambientColor, 1.2));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight.position.set(12, 20, 12);
     dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
     scene.add(dirLight);
 
+    // Ground Floor
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(50, 50),
-      new THREE.MeshPhongMaterial({ color: 0x3a5a40 })
+      new THREE.MeshPhongMaterial({ color: biome.groundColor, shininess: 20 })
     );
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     scene.add(ground);
 
-    const grid = new THREE.GridHelper(50, 25, 0x555555, 0x333333);
+    const grid = new THREE.GridHelper(50, 25, 0x555555, 0x222222);
+    grid.position.y = 0.01;
     scene.add(grid);
 
-    [[0,2.5,-25], [0,2.5,25], [-25,2.5,0], [25,2.5,0]].forEach((pos, i) => {
+    // Boundary Walls
+    [[0, 2.5, -25], [0, 2.5, 25], [-25, 2.5, 0], [25, 2.5, 0]].forEach((pos, i) => {
       const wall = new THREE.Mesh(
         new THREE.BoxGeometry(50, 5, 1),
-        new THREE.MeshPhongMaterial({ color: 0x8b4513 })
+        new THREE.MeshPhongMaterial({ color: biome.wallColor })
       );
       wall.position.set(...pos);
       if (i > 1) wall.rotation.y = Math.PI / 2;
       scene.add(wall);
     });
 
+    // Spawn Crystals (Octahedrons)
     for (let i = 0; i < cfg.crystals; i++) {
       const angle = (i / cfg.crystals) * Math.PI * 2;
-      const r = 8 + Math.random() * 10;
+      const r = 8 + Math.random() * 11;
+      const isRainbow = Math.random() < 0.15; // 15% chance for Rainbow Fever Crystal!
+
       const crystal = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.8),
-        new THREE.MeshPhongMaterial({ color: 0x00ffff, emissive: 0x00aaaa })
+        new THREE.OctahedronGeometry(0.85),
+        new THREE.MeshPhongMaterial({
+          color: isRainbow ? 0xff00ff : 0x00ffff,
+          emissive: isRainbow ? 0xff00aa : 0x00aaaa,
+          emissiveIntensity: 0.8
+        })
       );
-      crystal.position.set(Math.cos(angle) * r, 1, Math.sin(angle) * r);
+      crystal.position.set(Math.cos(angle) * r, 1.2, Math.sin(angle) * r);
       scene.add(crystal);
-      crystals.push({ mesh: crystal, collected: false });
+      crystals.push({ mesh: crystal, collected: false, isRainbow });
     }
 
+    // Spawn Coins (Cylinders)
     for (let i = 0; i < cfg.coins; i++) {
       const coin = new THREE.Mesh(
         new THREE.CylinderGeometry(0.5, 0.5, 0.2, 16),
-        new THREE.MeshPhongMaterial({ color: 0xffd700 })
+        new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0x665500 })
       );
       coin.position.set((Math.random() - 0.5) * 40, 1, (Math.random() - 0.5) * 40);
       coin.rotation.x = Math.PI / 2;
@@ -231,6 +321,7 @@ const CrystalCollectorGame = () => {
       coinObjs.push({ mesh: coin, collected: false });
     }
 
+    // Spawn Health Hearts
     for (let i = 0; i < cfg.hearts; i++) {
       const heart = new THREE.Mesh(
         new THREE.SphereGeometry(0.5, 16, 16),
@@ -243,72 +334,35 @@ const CrystalCollectorGame = () => {
       heartObjs.push({ mesh: heart, collected: false });
     }
 
-    // Shield powerups - shield emoji style
-    for (let i = 0; i < 2; i++) {
-      const shieldGroup = new THREE.Group();
-      
-      // Shield shape - like 🛡️
-      const shieldBody = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.6, 0.7, 0.2, 6),
-        new THREE.MeshPhongMaterial({ 
-          color: 0x00ddff, 
-          emissive: 0x0088ff,
-          metalness: 0.8
-        })
-      );
-      shieldBody.rotation.z = Math.PI;
-      
-      // Shield top point
-      const shieldTop = new THREE.Mesh(
-        new THREE.ConeGeometry(0.6, 0.4, 6),
-        new THREE.MeshPhongMaterial({ 
-          color: 0x00ddff, 
-          emissive: 0x0088ff
-        })
-      );
-      shieldTop.position.y = 0.3;
-      
-      // Shield bottom point
-      const shieldBottom = new THREE.Mesh(
-        new THREE.ConeGeometry(0.3, 0.5, 6),
-        new THREE.MeshPhongMaterial({ 
-          color: 0x00ddff, 
-          emissive: 0x0088ff
-        })
-      );
-      shieldBottom.position.y = -0.35;
-      shieldBottom.rotation.z = Math.PI;
-      
-      // Center emblem
-      const emblem = new THREE.Mesh(
-        new THREE.SphereGeometry(0.25, 16, 16),
-        new THREE.MeshPhongMaterial({ 
-          color: 0xffffff, 
-          emissive: 0x00ffff
-        })
-      );
-      emblem.position.z = 0.15;
-      
-      shieldGroup.add(shieldBody);
-      shieldGroup.add(shieldTop);
-      shieldGroup.add(shieldBottom);
-      shieldGroup.add(emblem);
-      
-      const angle = (i / 2) * Math.PI * 2;
-      const r = 10 + Math.random() * 10;
-      shieldGroup.position.set(Math.cos(angle) * r, 1.5, Math.sin(angle) * r);
-      shieldGroup.rotation.y = Math.PI / 4;
-      scene.add(shieldGroup);
-      powerups.push({ mesh: shieldGroup, collected: false });
-    }
+    // Spawn Powerups (Shield, Magnet 🧲, Chrono Slow-Mo ⏳)
+    const powerTypes = ['shield', 'magnet', 'slowmo'];
+    powerTypes.forEach((type, idx) => {
+      const pGroup = new THREE.Group();
+      let pColor = 0x00ffff;
+      if (type === 'magnet') pColor = 0xff0055;
+      if (type === 'slowmo') pColor = 0xffd700;
 
+      const pMesh = new THREE.Mesh(
+        new THREE.TorusGeometry(0.5, 0.2, 8, 16),
+        new THREE.MeshPhongMaterial({ color: pColor, emissive: pColor, emissiveIntensity: 0.6 })
+      );
+      pGroup.add(pMesh);
+
+      const angle = (idx / 3) * Math.PI * 2 + 1.0;
+      const r = 13 + Math.random() * 6;
+      pGroup.position.set(Math.cos(angle) * r, 1.4, Math.sin(angle) * r);
+      scene.add(pGroup);
+      powerupObjs.push({ mesh: pGroup, type, collected: false });
+    });
+
+    // Spawn Obstacles (unless boss stage)
     for (let i = 0; i < cfg.obs; i++) {
       const obs = new THREE.Mesh(
         new THREE.BoxGeometry(2, 2, 2),
-        new THREE.MeshPhongMaterial({ color: 0xff0000, emissive: 0x440000 })
+        new THREE.MeshPhongMaterial({ color: 0xff0044, emissive: 0x440011 })
       );
       const angle = (i / cfg.obs) * Math.PI * 2;
-      obs.position.set(Math.cos(angle) * 5, 1.5, Math.sin(angle) * 5);
+      obs.position.set(Math.cos(angle) * 7, 1.5, Math.sin(angle) * 7);
       scene.add(obs);
       obstacles.push({
         mesh: obs,
@@ -317,8 +371,14 @@ const CrystalCollectorGame = () => {
       });
     }
 
+    // Boss Titan on Level 10
+    if (level === 10) {
+      bossInstance = new CrystalTitanBoss(scene);
+    }
+
+    // Player Mesh
     player = new THREE.Group();
-    const pCol = parseInt(playerColor.replace('#', '0x'));
+    const pCol = parseInt((currentSaved.playerColor || '#00ff00').replace('#', '0x'));
     const mat = new THREE.MeshPhongMaterial({ color: pCol });
 
     const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1.5, 16), mat);
@@ -332,7 +392,7 @@ const CrystalCollectorGame = () => {
     const lArm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1, 8), mat);
     lArm.position.set(-0.7, 1.5, 0);
     player.add(lArm);
-    
+
     const rArm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1, 8), mat);
     rArm.position.set(0.7, 1.5, 0);
     player.add(rArm);
@@ -340,120 +400,51 @@ const CrystalCollectorGame = () => {
     const lLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.18, 1.2, 8), mat);
     lLeg.position.set(-0.25, 0.3, 0);
     player.add(lLeg);
-    
+
     const rLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.18, 1.2, 8), mat);
     rLeg.position.set(0.25, 0.3, 0);
     player.add(rLeg);
 
-    // Add hat with animations
+    // 3D Hat Model
     let hatGroup = null;
-    if (currentHat === 'cap') {
+    if (currentSaved.currentHat === 'cap') {
       hatGroup = new THREE.Group();
       hatGroup.position.y = 3.1;
-      hatGroup.rotation.x = -0.1;
-      const visor = new THREE.Mesh(
-        new THREE.BoxGeometry(0.8, 0.05, 0.6), 
-        new THREE.MeshPhongMaterial({ color: 0xff0000 })
-      );
+      const visor = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.6), new THREE.MeshPhongMaterial({ color: 0xff0000 }));
       visor.position.set(0, -0.05, 0.3);
-      const dome = new THREE.Mesh(
-        new THREE.SphereGeometry(0.38, 16, 16, 0, Math.PI * 2, 0, Math.PI / 1.5), 
-        new THREE.MeshPhongMaterial({ color: 0xff0000 })
-      );
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(0.38, 16, 16, 0, Math.PI * 2, 0, Math.PI / 1.5), new THREE.MeshPhongMaterial({ color: 0xff0000 }));
       dome.position.y = 0.05;
-      const button = new THREE.Mesh(
-        new THREE.SphereGeometry(0.08, 8, 8),
-        new THREE.MeshPhongMaterial({ color: 0x333333 })
-      );
-      button.position.y = 0.35;
-      hatGroup.add(visor);
-      hatGroup.add(dome);
-      hatGroup.add(button);
+      hatGroup.add(visor, dome);
       player.add(hatGroup);
-    } else if (currentHat === 'tophat') {
+    } else if (currentSaved.currentHat === 'tophat') {
       hatGroup = new THREE.Group();
       hatGroup.position.y = 3.2;
-      const brim = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.55, 0.55, 0.08, 32), 
-        new THREE.MeshPhongMaterial({ color: 0x000000 })
-      );
-      brim.position.y = 0;
-      const cylinder = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.38, 0.38, 0.9, 32), 
-        new THREE.MeshPhongMaterial({ color: 0x000000 })
-      );
-      cylinder.position.y = 0.45;
-      const top = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.38, 0.38, 0.05, 32), 
-        new THREE.MeshPhongMaterial({ color: 0x000000 })
-      );
-      top.position.y = 0.92;
-      const ribbon = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.4, 0.4, 0.1, 32), 
-        new THREE.MeshPhongMaterial({ color: 0x8b0000 })
-      );
-      ribbon.position.y = 0.1;
-      hatGroup.add(brim);
-      hatGroup.add(cylinder);
-      hatGroup.add(top);
-      hatGroup.add(ribbon);
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.08, 24), new THREE.MeshPhongMaterial({ color: 0x111111 }));
+      const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.9, 24), new THREE.MeshPhongMaterial({ color: 0x111111 }));
+      cyl.position.y = 0.45;
+      hatGroup.add(brim, cyl);
       player.add(hatGroup);
-    } else if (currentHat === 'crown') {
+    } else if (currentSaved.currentHat === 'crown') {
       hatGroup = new THREE.Group();
       hatGroup.position.y = 3.25;
-      const base = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 0.55, 0.25, 8), 
-        new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0x443300 })
-      );
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.55, 0.25, 8), new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0x443300 }));
       hatGroup.add(base);
-      for (let i = 0; i < 8; i++) {
-        const spike = new THREE.Mesh(
-          new THREE.ConeGeometry(0.12, 0.45, 8), 
-          new THREE.MeshPhongMaterial({ color: 0xffd700, emissive: 0x443300 })
-        );
-        const angle = (i / 8) * Math.PI * 2;
-        spike.position.set(Math.cos(angle) * 0.45, 0.35, Math.sin(angle) * 0.45);
-        hatGroup.add(spike);
-        
-        const jewel = new THREE.Mesh(
-          new THREE.SphereGeometry(0.08, 8, 8),
-          new THREE.MeshPhongMaterial({ color: i % 2 === 0 ? 0xff0000 : 0x0000ff, emissive: i % 2 === 0 ? 0x660000 : 0x000066 })
-        );
-        jewel.position.set(Math.cos(angle) * 0.45, 0.05, Math.sin(angle) * 0.45);
-        hatGroup.add(jewel);
-      }
       player.add(hatGroup);
-    } else if (currentHat === 'santa') {
+    } else if (currentSaved.currentHat === 'santa') {
       hatGroup = new THREE.Group();
       hatGroup.position.y = 3.2;
-      hatGroup.rotation.z = 0.15;
-      const cone = new THREE.Mesh(
-        new THREE.ConeGeometry(0.5, 0.95, 16), 
-        new THREE.MeshPhongMaterial({ color: 0xff0000 })
-      );
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.95, 16), new THREE.MeshPhongMaterial({ color: 0xff0000 }));
       cone.position.y = 0.35;
-      const whiteRim = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.52, 0.52, 0.15, 16), 
-        new THREE.MeshPhongMaterial({ color: 0xffffff })
-      );
-      whiteRim.position.y = -0.05;
-      const pompom = new THREE.Mesh(
-        new THREE.SphereGeometry(0.18, 16, 16), 
-        new THREE.MeshPhongMaterial({ color: 0xffffff })
-      );
-      pompom.position.y = 0.85;
-      pompom.position.x = 0.15;
       hatGroup.add(cone);
-      hatGroup.add(whiteRim);
-      hatGroup.add(pompom);
       player.add(hatGroup);
     }
 
+    // Shield Forcefield Mesh
     const shieldMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(2, 32, 32),
-      new THREE.MeshPhongMaterial({ 
-        color: 0x00ffff, 
-        transparent: true, 
+      new THREE.SphereGeometry(2, 24, 24),
+      new THREE.MeshPhongMaterial({
+        color: 0x00ffff,
+        transparent: true,
         opacity: 0.25,
         emissive: 0x0088ff,
         side: THREE.DoubleSide
@@ -466,6 +457,12 @@ const CrystalCollectorGame = () => {
     player.position.set(0, 0, 8);
     scene.add(player);
 
+    // Pet Companion Follower
+    if (currentSaved.currentPet) {
+      petInstance = new PetCompanion(currentSaved.currentPet, scene);
+    }
+
+    // Input Controls & Pointer Lock
     const keys = {};
     let mouseX = 0, camDist = 8;
     let pointerLocked = false;
@@ -484,26 +481,48 @@ const CrystalCollectorGame = () => {
     renderer.domElement.addEventListener('click', onCanvasClick);
     document.addEventListener('pointerlockchange', onPointerLockChange);
 
-    const onKeyDown = (e) => { 
+    const onKeyDown = (e) => {
       keys[e.key.toLowerCase()] = true;
       if (e.code) keys[e.code.toLowerCase()] = true;
-      if (e.key === ' ' && isGrounded) {
-        jumpVelocity = 12;
-        isGrounded = false;
+
+      // Pause toggle
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        setIsPaused(prev => !prev);
+      }
+
+      // Jump & Double Jump
+      if (e.key === ' ') {
+        if (isGrounded) {
+          jumpVelocity = 12;
+          isGrounded = false;
+          canDoubleJump = true;
+          soundEngine.playJump();
+        } else if (canDoubleJump) {
+          jumpVelocity = 13;
+          canDoubleJump = false;
+          soundEngine.playDoubleJump();
+          particleManager.createDust(player.position, 0x00ffff);
+          particleManager.createFloatingText(player.position, 'DOUBLE JUMP! 🪶', '#00ffff', 36);
+        }
       }
     };
-    const onKeyUp = (e) => { 
+
+    const onKeyUp = (e) => {
       keys[e.key.toLowerCase()] = false;
       if (e.code) keys[e.code.toLowerCase()] = false;
     };
+
     const onBlur = () => {
       for (const k in keys) keys[k] = false;
     };
-    const onMouse = (e) => { 
+
+    const onMouse = (e) => {
       if (pointerLocked) {
-        mouseX -= e.movementX * 0.003; 
+        const sens = currentSaved.sensitivity || 0.003;
+        mouseX -= e.movementX * sens;
       }
     };
+
     const onWheel = (e) => {
       e.preventDefault();
       camDist = Math.max(3, Math.min(15, camDist + e.deltaY * 0.01));
@@ -517,33 +536,71 @@ const CrystalCollectorGame = () => {
 
     const clock = new THREE.Clock();
 
+    // Damage handler
+    const handlePlayerDamage = () => {
+      if (localShieldTime > 0 || localFeverTime > 0) return;
+
+      soundEngine.playHurt();
+      particleManager.addTrauma(0.5);
+      particleManager.createBurst(player.position, 0xff0000, 20, 7);
+
+      setHearts(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          setTimeout(() => {
+            soundEngine.stopBGM();
+            setGameOver(true);
+          }, 100);
+        }
+        return next;
+      });
+    };
+
+    // --- Main Game Animation Loop ---
     const animate = () => {
       if (!mounted) return;
-      
-      const dt = clock.getDelta();
+
+      const dt = Math.min(clock.getDelta(), 0.1);
       const t = clock.getElapsedTime();
 
-      if (localShieldActive) {
+      // Power-up timer countdowns
+      if (localShieldTime > 0) {
         localShieldTime = Math.max(0, localShieldTime - dt);
-        if (localShieldTime <= 0) {
-          localShieldActive = false;
-          setShieldActive(false);
-          if (shieldMesh) shieldMesh.visible = false;
-        } else {
-          setShieldTime(localShieldTime);
-        }
-        
-        if (shieldMesh && localShieldActive) {
-          shieldMesh.visible = true;
-          shieldMesh.rotation.y += dt * 2;
-          shieldMesh.rotation.x += dt * 0.5;
-          const pulse = 0.25 + Math.sin(t * 5) * 0.1;
-          shieldMesh.material.opacity = pulse;
-          shieldMesh.scale.setScalar(1 + Math.sin(t * 3) * 0.05);
+        setShieldTime(localShieldTime);
+        shieldMesh.visible = true;
+        shieldMesh.rotation.y += dt * 2;
+      } else {
+        shieldMesh.visible = false;
+      }
+
+      if (localMagnetTime > 0) {
+        localMagnetTime = Math.max(0, localMagnetTime - dt);
+        setMagnetTime(localMagnetTime);
+      }
+
+      if (localSlowMoTime > 0) {
+        localSlowMoTime = Math.max(0, localSlowMoTime - dt);
+        setSlowMoTime(localSlowMoTime);
+      }
+
+      if (localFeverTime > 0) {
+        localFeverTime = Math.max(0, localFeverTime - dt);
+        setFeverTime(localFeverTime);
+        soundEngine.setFever(true);
+      } else {
+        soundEngine.setFever(false);
+      }
+
+      // Combo expiration timer
+      if (localComboTimer > 0) {
+        localComboTimer -= dt;
+        if (localComboTimer <= 0) {
+          localCombo = 1;
+          setCombo(1);
         }
       }
 
-      // Directional movement calculation
+      // Movement vectors
       let moveForward = 0;
       let moveRight = 0;
 
@@ -561,36 +618,43 @@ const CrystalCollectorGame = () => {
       const isShift = keys['shift'] || keys['shiftleft'] || keys['shiftright'];
       const isSprinting = isShift && moving;
 
-      if (isSprinting && staminaRef.current > 5) {
+      // Stamina system
+      if (isSprinting && staminaRef.current > 5 && localFeverTime <= 0) {
         staminaRef.current = Math.max(0, staminaRef.current - dt * 25);
+      } else if (localFeverTime > 0) {
+        staminaRef.current = maxStamina; // Infinite stamina in Fever Mode!
       } else {
-        staminaRef.current = Math.min(100, staminaRef.current + dt * 15);
+        staminaRef.current = Math.min(maxStamina, staminaRef.current + dt * 15);
       }
 
-      const roundedStamina = Math.round(staminaRef.current);
-      if (roundedStamina !== lastStamina) {
-        lastStamina = roundedStamina;
-        setStamina(roundedStamina);
+      const roundedStam = Math.round(staminaRef.current);
+      if (roundedStam !== lastStamina) {
+        lastStamina = roundedStam;
+        setStamina(roundedStam);
       }
 
-      const canSprint = staminaRef.current > 5;
-      const spd = 8 * dt * (isSprinting && canSprint ? 1.8 : 1);
+      const canSprint = staminaRef.current > 5 || localFeverTime > 0;
+      const moveSpeed = 8 * dt * (isSprinting && canSprint ? sprintSpeedMult : 1);
 
       let mx = 0, mz = 0;
       if (moving) {
-        // Normalize diagonal vector to prevent 1.414x speed boost & axis shearing
         const len = Math.hypot(moveForward, moveRight);
         const normF = moveForward / len;
         const normR = moveRight / len;
 
-        // Forward: (-sin, -cos), Right: (cos, -sin)
-        mx = (-Math.sin(mouseX) * normF + Math.cos(mouseX) * normR) * spd;
-        mz = (-Math.cos(mouseX) * normF - Math.sin(mouseX) * normR) * spd;
+        mx = (-Math.sin(mouseX) * normF + Math.cos(mouseX) * normR) * moveSpeed;
+        mz = (-Math.cos(mouseX) * normF - Math.sin(mouseX) * normR) * moveSpeed;
+
+        // Footstep dust & trails
+        if (Math.random() < 0.25) {
+          particleManager.createDust(player.position, currentSaved.currentTrail === 'fire' ? 0xff4500 : 0xcccccc);
+        }
       }
 
       player.position.x = Math.max(-23, Math.min(23, player.position.x + mx));
       player.position.z = Math.max(-23, Math.min(23, player.position.z + mz));
 
+      // Jump & Gravity physics
       if (!isGrounded) {
         jumpVelocity -= 35 * dt;
         player.position.y += jumpVelocity * dt;
@@ -598,9 +662,39 @@ const CrystalCollectorGame = () => {
           player.position.y = 0;
           jumpVelocity = 0;
           isGrounded = true;
+          canDoubleJump = false;
         }
       }
 
+      // Check Jump Pads (Trampolines)
+      jumpPads.forEach(pad => {
+        const d = Math.hypot(player.position.x - pad.x, player.position.z - pad.z);
+        if (d < pad.radius && isGrounded) {
+          jumpVelocity = 24; // Super launch!
+          isGrounded = false;
+          canDoubleJump = true;
+          soundEngine.playJumpPad();
+          particleManager.addTrauma(0.3);
+          particleManager.createBurst(pad.group.position, 0xffd700, 25, 10);
+          particleManager.createFloatingText(player.position, 'LAUNCH! 🚀', '#ffd700', 44);
+          unlockAchievement('trampoline_ace');
+        }
+      });
+
+      // Check Lava Hazard Pools
+      if (hazardZones.length > 0 && isGrounded) {
+        lavaCooldown -= dt;
+        hazardZones.forEach(lava => {
+          const d = Math.hypot(player.position.x - lava.x, player.position.z - lava.z);
+          if (d < lava.radius && lavaCooldown <= 0) {
+            lavaCooldown = 1.0;
+            handlePlayerDamage();
+            particleManager.createFloatingText(player.position, 'LAVA BURN! 🔥', '#ff3300', 36);
+          }
+        });
+      }
+
+      // Limb swings
       if (moving) {
         player.rotation.y = Math.atan2(mx, mz);
         const animSpeed = isSprinting && canSprint ? 20 : 12;
@@ -610,46 +704,85 @@ const CrystalCollectorGame = () => {
         rArm.rotation.x = -Math.sin(rs) * 0.6;
         lLeg.rotation.x = Math.sin(rs) * 1.2;
         rLeg.rotation.x = -Math.sin(rs) * 1.2;
-        
-        // Animate hat when moving
+
         if (hatGroup) {
           hatGroup.rotation.z = Math.sin(rs) * 0.08;
           hatGroup.position.y = 3.1 + Math.sin(rs) * 0.05;
         }
       } else {
-        // Reset hat position when idle
-        if (hatGroup) {
-          hatGroup.rotation.z = 0;
-          if (currentHat === 'cap') hatGroup.position.y = 3.1;
-          else if (currentHat === 'tophat') hatGroup.position.y = 3.2;
-          else if (currentHat === 'crown') hatGroup.position.y = 3.25;
-          else if (currentHat === 'santa') hatGroup.position.y = 3.2;
-        }
+        body.position.y = 1.5;
+        lArm.rotation.x = 0;
+        rArm.rotation.x = 0;
+        lLeg.rotation.x = 0;
+        rLeg.rotation.x = 0;
       }
 
-      camera.position.x = player.position.x + Math.sin(mouseX) * camDist;
-      camera.position.z = player.position.z + Math.cos(mouseX) * camDist;
-      camera.position.y = player.position.y + 6;
-      camera.lookAt(player.position.x, player.position.y + 2, player.position.z);
+      // Update Pet Companion Follower
+      if (petInstance) {
+        petInstance.update(dt, t, player.position);
+      }
 
-      crystals.forEach((c, i) => {
+      // Camera Position + Screen Shake
+      const shake = particleManager.getShakeOffset(dt);
+      camera.position.x = player.position.x + Math.sin(mouseX) * camDist + shake.x;
+      camera.position.z = player.position.z + Math.cos(mouseX) * camDist + shake.z;
+      camera.position.y = player.position.y + 6 + shake.y;
+      camera.lookAt(player.position.x, player.position.y + 2, player.position.z);
+      camera.rotation.z += shake.rotZ;
+
+      // Magnet reach calculation
+      let effectiveMagnetRadius = baseMagnetRadius;
+      if (localMagnetTime > 0) effectiveMagnetRadius = 14.0;
+      if (petInstance && petInstance.magnetReach > effectiveMagnetRadius) {
+        effectiveMagnetRadius = petInstance.magnetReach;
+      }
+
+      // Collect Crystals
+      crystals.forEach(c => {
         if (!c.collected) {
-          c.mesh.rotation.y += dt * 2;
-          c.mesh.position.y = 1 + Math.sin(t * 2 + i) * 0.3;
-          if (player.position.distanceTo(new THREE.Vector3(c.mesh.position.x, 0, c.mesh.position.z)) < 2) {
+          c.mesh.rotation.y += dt * 2.5;
+
+          // Magnet pull
+          const distToPlayer = Math.hypot(c.mesh.position.x - player.position.x, c.mesh.position.z - player.position.z);
+          if (effectiveMagnetRadius > 0 && distToPlayer < effectiveMagnetRadius) {
+            c.mesh.position.x += (player.position.x - c.mesh.position.x) * dt * 8;
+            c.mesh.position.z += (player.position.z - c.mesh.position.z) * dt * 8;
+          }
+
+          if (distToPlayer < 2.0) {
             c.collected = true;
             scene.remove(c.mesh);
-            playSound('collect');
+
+            // Combo chaining
+            localComboTimer = 2.5;
+            localCombo = Math.min(8, localCombo + 1);
+            setCombo(localCombo);
+            soundEngine.playCollect(localCombo);
+
+            const crystalColor = c.isRainbow ? 0xff00ff : 0x00ffff;
+            particleManager.createBurst(c.mesh.position, crystalColor, 20, 8);
+
+            if (c.isRainbow) {
+              localFeverTime = 6;
+              setFeverTime(6);
+              soundEngine.playPowerup('fever');
+              particleManager.createFloatingText(c.mesh.position, 'FEVER MODE! 🌈', '#ff00ff', 44);
+              unlockAchievement('fever_master');
+            } else {
+              const pointsText = localCombo > 1 ? `+1 💎 (${localCombo}x)` : '+1 💎';
+              particleManager.createFloatingText(c.mesh.position, pointsText, '#00ffff');
+            }
+
             setScore(prev => {
               const newScore = prev + 1;
               if (newScore === 1) unlockAchievement('first_crystal');
-              if (newScore === cfg.crystals) {
+              if (newScore === cfg.crystals && level < 10) {
                 setTimeout(() => {
+                  soundEngine.stopBGM();
+                  soundEngine.playPowerup('fever');
                   setShowComplete(true);
-                  if (!damageThisLevel) unlockAchievement('no_damage');
                   if (level === 1) unlockAchievement('level_1');
                   if (level === 5) unlockAchievement('level_5');
-                  if (level === 10) unlockAchievement('level_10');
                 }, 100);
               }
               return newScore;
@@ -658,92 +791,140 @@ const CrystalCollectorGame = () => {
         }
       });
 
-      coinObjs.forEach((c) => {
-        if (!c.collected) {
-          c.mesh.rotation.y += dt * 3;
-          if (player.position.distanceTo(new THREE.Vector3(c.mesh.position.x, 0, c.mesh.position.z)) < 1.5) {
-            c.collected = true;
-            scene.remove(c.mesh);
-            playSound('coin');
+      // Collect Coins
+      coinObjs.forEach(cn => {
+        if (!cn.collected) {
+          cn.mesh.rotation.y += dt * 3;
+
+          const distToPlayer = Math.hypot(cn.mesh.position.x - player.position.x, cn.mesh.position.z - player.position.z);
+          if (effectiveMagnetRadius > 0 && distToPlayer < effectiveMagnetRadius) {
+            cn.mesh.position.x += (player.position.x - cn.mesh.position.x) * dt * 9;
+            cn.mesh.position.z += (player.position.z - cn.mesh.position.z) * dt * 9;
+          }
+
+          if (distToPlayer < 1.6) {
+            cn.collected = true;
+            scene.remove(cn.mesh);
+            soundEngine.playCoin();
+            particleManager.createBurst(cn.mesh.position, 0xffd700, 12, 6);
+            particleManager.createFloatingText(cn.mesh.position, '+1 🪙', '#ffd700');
+
             setCoins(prev => prev + 1);
-            setTotalCoins(prev => {
-              const newTotal = prev + 1;
-              if (newTotal >= 100) unlockAchievement('coin_collector');
-              return newTotal;
+            setSavedData(prev => {
+              const nextTotal = prev.totalCoins + 1;
+              if (nextTotal >= 100) unlockAchievement('coin_collector');
+              return { ...prev, totalCoins: nextTotal };
             });
           }
         }
       });
 
-      heartObjs.forEach((h) => {
+      // Collect Hearts
+      heartObjs.forEach(h => {
         if (!h.collected) {
           h.mesh.rotation.y += dt * 2;
-          if (player.position.distanceTo(new THREE.Vector3(h.mesh.position.x, 0, h.mesh.position.z)) < 1.5) {
+          const distToPlayer = Math.hypot(h.mesh.position.x - player.position.x, h.mesh.position.z - player.position.z);
+          if (distToPlayer < 1.6) {
             h.collected = true;
             scene.remove(h.mesh);
-            playSound('collect');
-            setHearts(prev => prev + 1);
+            soundEngine.playPowerup('shield');
+            particleManager.createBurst(h.mesh.position, 0xff0033, 16, 6);
+            particleManager.createFloatingText(h.mesh.position, '+1 ❤️', '#ff0033');
+            setHearts(prev => Math.min(currentSaved.upgrades?.maxHearts || 5, prev + 1));
           }
         }
       });
 
-      powerups.forEach((p) => {
+      // Collect Powerups (Shield, Magnet, Slow-Mo)
+      powerupObjs.forEach(p => {
         if (!p.collected) {
-          // Rotate the shield
-          p.mesh.rotation.y += dt * 2;
-          // Float up and down
-          p.mesh.position.y = 1.5 + Math.sin(t * 2) * 0.3;
-          // Tilt slightly for dynamic look
-          p.mesh.rotation.x = Math.sin(t * 1.5) * 0.2;
-          
-          // Make shield glow
-          p.mesh.children.forEach(child => {
-            if (child.material && child.material.emissive) {
-              const glowIntensity = Math.sin(t * 5) * 0.3;
-              child.material.emissive.setRGB(0, 0.5 + glowIntensity, 1);
-            }
-          });
-          
-          if (player.position.distanceTo(new THREE.Vector3(p.mesh.position.x, 0, p.mesh.position.z)) < 1.5) {
+          p.mesh.rotation.y += dt * 3;
+          const distToPlayer = Math.hypot(p.mesh.position.x - player.position.x, p.mesh.position.z - player.position.z);
+          if (distToPlayer < 1.8) {
             p.collected = true;
             scene.remove(p.mesh);
-            playSound('collect');
-            localShieldActive = true;
-            localShieldTime = 10;
-            setShieldActive(true);
-            setShieldTime(10);
+            soundEngine.playPowerup(p.type);
+
+            if (p.type === 'shield') {
+              localShieldTime = 10;
+              setShieldTime(10);
+              particleManager.createFloatingText(p.mesh.position, '10s SHIELD! 🛡️', '#00ffff');
+            } else if (p.type === 'magnet') {
+              localMagnetTime = 8;
+              setMagnetTime(8);
+              particleManager.createFloatingText(p.mesh.position, '8s MAGNET! 🧲', '#ff0055');
+            } else if (p.type === 'slowmo') {
+              localSlowMoTime = 7;
+              setSlowMoTime(7);
+              particleManager.createFloatingText(p.mesh.position, 'SLOW-MO! ⏳', '#ffd700');
+            }
           }
         }
       });
 
-      obstacles.forEach((o) => {
-        o.mesh.position.x += o.velocity.x * dt;
-        o.mesh.position.z += o.velocity.z * dt;
-        
+      // Move Obstacles
+      const slowMultiplier = localSlowMoTime > 0 ? 0.4 : 1.0;
+      obstacles.forEach(o => {
+        o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
+        o.mesh.position.z += o.velocity.z * dt * slowMultiplier;
+
         if (o.mesh.position.x > 23 || o.mesh.position.x < -23) o.velocity.x *= -1;
         if (o.mesh.position.z > 23 || o.mesh.position.z < -23) o.velocity.z *= -1;
-        
-        o.mesh.rotation.x += dt * 2;
-        o.mesh.rotation.y += dt * 2;
+
+        o.mesh.rotation.x += dt * 2 * slowMultiplier;
+        o.mesh.rotation.y += dt * 2 * slowMultiplier;
 
         if (o.cooldown > 0) o.cooldown -= dt;
-        
-        if (player.position.distanceTo(new THREE.Vector3(o.mesh.position.x, 0, o.mesh.position.z)) < 2.5 && o.cooldown <= 0) {
-          if (!localShieldActive) {
-            o.cooldown = 2;
-            damageThisLevel = true;
-            setHearts(prev => {
-              const newHearts = prev - 1;
-              if (newHearts <= 0) {
-                setTimeout(() => setGameOver(true), 100);
-              }
-              return newHearts;
-            });
+
+        const distToPlayer = Math.hypot(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
+        if (distToPlayer < 2.5 && o.cooldown <= 0 && player.position.y < 1.2) {
+          if (localShieldTime > 0 || localFeverTime > 0) {
+            o.cooldown = 1.0;
+            soundEngine.playPowerup('shield');
+            particleManager.createBurst(o.mesh.position, 0x00ffff, 15, 8);
+            particleManager.createFloatingText(player.position, 'DEFLECTED! 🛡️', '#00ffff');
           } else {
-            o.cooldown = 0.5;
+            o.cooldown = 2.0;
+            handlePlayerDamage();
           }
         }
       });
+
+      // Boss Logic on Level 10
+      if (bossInstance) {
+        // Check Pylon activation
+        bossInstance.pylons.forEach(pylon => {
+          if (!pylon.activated) {
+            const d = Math.hypot(player.position.x - pylon.x, player.position.z - pylon.z);
+            if (d < 2.6) {
+              bossInstance.activatePylon(pylon.id, soundEngine, particleManager);
+            }
+          }
+        });
+
+        // Boss attacks & updates
+        bossInstance.update(dt, t, player.position, isGrounded, soundEngine, handlePlayerDamage);
+
+        // Core Crystal Collection (Victory!)
+        if (bossInstance.shieldBroken && bossInstance.coreCrystal && !bossInstance.isDefeated) {
+          const dToCore = Math.hypot(player.position.x, player.position.z);
+          if (dToCore < 2.5) {
+            bossInstance.isDefeated = true;
+            soundEngine.stopBGM();
+            soundEngine.playPowerup('fever');
+            particleManager.createBurst({ x: 0, y: 2, z: 0 }, 0xffd700, 60, 15);
+            particleManager.createFloatingText({ x: 0, y: 3, z: 0 }, 'TITAN DEFEATED! 🏆', '#ffd700', 52);
+            unlockAchievement('level_10');
+
+            setTimeout(() => {
+              setShowComplete(true);
+            }, 1200);
+          }
+        }
+      }
+
+      // Update Particle Systems
+      particleManager.update(dt);
 
       renderer.render(scene, camera);
       animId = requestAnimationFrame(animate);
@@ -768,15 +949,20 @@ const CrystalCollectorGame = () => {
       document.removeEventListener('pointerlockchange', onPointerLockChange);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('blur', onBlur);
+
       if (renderer.domElement) {
         renderer.domElement.removeEventListener('click', onCanvasClick);
       }
       if (document.pointerLockElement === renderer.domElement) {
         document.exitPointerLock();
       }
-      
+
+      particleManager.clear();
+      if (petInstance) petInstance.destroy();
+      if (bossInstance) bossInstance.destroy();
+
       if (scene) {
-        scene.traverse((obj) => {
+        scene.traverse(obj => {
           if (obj.geometry) obj.geometry.dispose();
           if (obj.material) {
             if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
@@ -784,320 +970,396 @@ const CrystalCollectorGame = () => {
           }
         });
       }
-      
+
       if (renderer && mountNode) {
         try {
           mountNode.removeChild(renderer.domElement);
           renderer.dispose();
-        } catch {
-          // ignore cleanup error
-        }
+        } catch {}
       }
     };
-  }, [level, showComplete, gameOver, showLevelStart, playerColor, currentHat]);
+  }, [level, showComplete, gameOver, showLevelStart, isPaused]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: '#05050f' }}>
       <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
-      
-      {showLevelStart && !gameOver && !showComplete && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'linear-gradient(135deg, #1a1a2e, #0f3460)',
-          display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white', zIndex: 1000
-        }}>
-          <div style={{
-            background: 'rgba(0,0,0,0.9)', padding: '40px', borderRadius: '20px',
-            textAlign: 'center', maxWidth: '500px', border: '3px solid #0ff'
-          }}>
-            <h1 style={{ fontSize: '48px', marginBottom: '10px', color: '#00ffff' }}>
-              💎 LEVEL {level} 💎
-            </h1>
-            <div style={{ fontSize: '18px', marginBottom: '20px' }}>❤️ Hearts: {hearts}</div>
-            <div style={{ fontSize: '18px', marginBottom: '20px', color: '#ffd700' }}>💰 Coins: {totalCoins}</div>
-            <button onClick={() => setShowLevelStart(false)} style={{
-              padding: '20px 50px', fontSize: '24px', 
-              background: '#00ff00',
-              border: 'none', borderRadius: '15px', cursor: 'pointer', 
-              fontWeight: 'bold', color: 'black', width: '100%'
-            }}>▶️ START</button>
-          </div>
-        </div>
-      )}
-      
-      {!showComplete && !gameOver && !showLevelStart && (
+
+      {/* --- HUD --- */}
+      {!showLevelStart && !gameOver && !showComplete && !isPaused && (
         <>
-          <div style={{
-            position: 'absolute', top: 20, left: 20, color: 'white',
-            fontSize: '18px', textShadow: '2px 2px 4px black', background: 'rgba(0,0,0,0.8)',
-            padding: '20px', borderRadius: '15px'
-          }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Level {level}</div>
-            <div>💎 {score}</div>
-            <div style={{ color: '#ffd700' }}>🪙 {coins}</div>
-            <div style={{ fontSize: '24px', marginTop: '5px' }}>
+          {/* Top-Left Stats Panel */}
+          <div className="hud-panel" style={{ position: 'absolute', top: 20, left: 20, padding: '16px 20px', minWidth: '220px' }}>
+            <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px', color: '#00f0ff' }}>
+              Level {level}: {level === 10 ? '🔥 THE FINAL TITAN' : BiomeGenerator.getBiomeData(level).name}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '18px' }}>
+              <div>💎 {score}</div>
+              <div style={{ color: '#ffd700' }}>🪙 {savedData.totalCoins}</div>
+              {combo > 1 && <div className="combo-badge">{combo}x COMBO</div>}
+            </div>
+
+            {/* Health Hearts */}
+            <div style={{ fontSize: '24px', marginTop: '8px' }}>
               {[...Array(hearts)].map((_, i) => <span key={i}>❤️</span>)}
             </div>
-            {shieldActive && (
-              <div style={{ marginTop: '10px', color: '#00ffff', fontWeight: 'bold' }}>
-                🛡️ {Math.ceil(shieldTime)}s
+
+            {/* Stamina Bar */}
+            <div style={{ marginTop: '12px' }}>
+              <div style={{ fontSize: '12px', marginBottom: '4px', color: '#aaa' }}>⚡ STAMINA</div>
+              <div style={{ width: '100%', height: '10px', background: '#222', borderRadius: '5px', overflow: 'hidden' }}>
+                <div style={{
+                  width: `${(stamina / (savedData.upgrades?.maxStamina || 100)) * 100}%`,
+                  height: '100%',
+                  background: feverTime > 0 ? 'linear-gradient(90deg, #ff00ff, #00ffff)' : stamina > 30 ? '#00ff88' : '#ff3344',
+                  transition: 'width 0.1s linear'
+                }} />
               </div>
-            )}
-            <div style={{ marginTop: '10px' }}>
-              <div style={{ fontSize: '14px', marginBottom: '5px' }}>⚡ Stamina</div>
-              <div style={{ width: '150px', height: '12px', background: '#333', borderRadius: '6px', overflow: 'hidden' }}>
-                <div style={{ width: `${stamina}%`, height: '100%', background: stamina > 30 ? '#00ff00' : '#ff4444', transition: 'width 0.1s' }}></div>
-              </div>
+            </div>
+
+            {/* Active Power-up Badges */}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+              {shieldTime > 0 && <span style={{ background: '#00ffff33', border: '1px solid #00ffff', padding: '2px 8px', borderRadius: '6px', fontSize: '12px' }}>🛡️ {Math.ceil(shieldTime)}s</span>}
+              {magnetTime > 0 && <span style={{ background: '#ff005533', border: '1px solid #ff0055', padding: '2px 8px', borderRadius: '6px', fontSize: '12px' }}>🧲 {Math.ceil(magnetTime)}s</span>}
+              {slowMoTime > 0 && <span style={{ background: '#ffd70033', border: '1px solid #ffd700', padding: '2px 8px', borderRadius: '6px', fontSize: '12px' }}>⏳ {Math.ceil(slowMoTime)}s</span>}
+              {feverTime > 0 && <span className="fever-active" style={{ background: '#ff00ff33', border: '1px solid #ff00ff', padding: '2px 8px', borderRadius: '6px', fontSize: '12px' }}>🌈 FEVER {Math.ceil(feverTime)}s</span>}
             </div>
           </div>
 
+          {/* Top-Right Quick Action Buttons */}
           <div style={{ position: 'absolute', top: 20, right: 20, display: 'flex', gap: '10px', flexDirection: 'column' }}>
-            <button onClick={() => setShowShop(true)} style={{
-              padding: '15px 25px', fontSize: '20px', background: '#ffd700', border: 'none', 
-              borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', color: 'black'
-            }}>🛒 SHOP</button>
-            
-            <button onClick={() => setShowAchievements(true)} style={{
-              padding: '15px 25px', fontSize: '20px', background: '#9d4edd', border: 'none', 
-              borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', color: 'white'
-            }}>🏆 BADGES</button>
-
-            <button onClick={() => setSoundEnabled(!soundEnabled)} style={{
-              padding: '12px 20px', fontSize: '18px',
-              background: soundEnabled ? '#4CAF50' : '#f44336',
-              border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', color: 'white'
-            }}>{soundEnabled ? '🔊' : '🔇'}</button>
+            <button className="hud-btn" onClick={() => setShowShop(true)} style={{ background: '#ffd700', color: '#000', padding: '12px 20px' }}>
+              🛒 SHOP
+            </button>
+            <button className="hud-btn" onClick={() => setShowAchievements(true)} style={{ background: '#9d4edd', color: '#fff', padding: '12px 20px' }}>
+              🏆 BADGES
+            </button>
+            <button className="hud-btn" onClick={() => setIsPaused(true)} style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', padding: '10px 18px' }}>
+              ⏸️ PAUSE
+            </button>
           </div>
 
-          <div style={{
-            position: 'absolute', bottom: 20, left: 20, color: 'white',
-            fontSize: '14px', textShadow: '2px 2px 4px black', background: 'rgba(0,0,0,0.7)',
-            padding: '15px', borderRadius: '10px'
-          }}>
-            <div><strong>WASD</strong> - Move</div>
-            <div><strong>Shift</strong> - Sprint</div>
-            <div><strong>Space</strong> - Jump</div>
-            <div><strong>Click screen</strong> - Enable mouse look</div>
-            <div><strong>Esc</strong> - Release mouse</div>
+          {/* Bottom-Left Controls Overlay */}
+          <div className="hud-panel" style={{ position: 'absolute', bottom: 20, left: 20, padding: '12px 18px', fontSize: '13px' }}>
+            <div><strong>WASD</strong>: Move · <strong>Space</strong>: Jump & Double Jump 🪶</div>
+            <div><strong>Hold Shift</strong>: Sprint · <strong>Click Canvas</strong>: Mouse Look</div>
+            <div><strong>Jump Pads 🚀</strong>: Launch into air · <strong>P / Esc</strong>: Pause</div>
           </div>
         </>
       )}
 
-      {showShop && !showComplete && !gameOver && !showLevelStart && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'rgba(0,0,0,0.95)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000
-        }}>
-          <div style={{
-            background: 'linear-gradient(135deg, #1a1a1a, #2a2a2a)', padding: '30px', borderRadius: '20px',
-            maxWidth: '700px', width: '90%', maxHeight: '85vh', overflowY: 'auto',
-            color: 'white', border: '3px solid #ffd700', boxShadow: '0 0 30px rgba(255,215,0,0.3)'
-          }}>
-            <h2 style={{ textAlign: 'center', marginTop: 0, fontSize: '32px', color: '#ffd700' }}>🛒 SHOP</h2>
-            <p style={{ textAlign: 'center', color: '#ffd700', fontSize: '28px', marginBottom: '30px', background: 'rgba(255,215,0,0.1)', padding: '10px', borderRadius: '10px' }}>
-              💰 {totalCoins} Coins
-            </p>
+      {/* --- LEVEL START OVERLAY --- */}
+      {showLevelStart && !gameOver && !showComplete && (
+        <div className="modal-backdrop">
+          <div className="hud-panel" style={{ padding: '40px', maxWidth: '520px', width: '90%', textAlign: 'center', border: '2px solid #00f0ff' }}>
+            <h1 style={{ fontSize: '44px', color: '#00f0ff', marginBottom: '10px' }}>
+              {level === 10 ? '👑 BOSS GAUNTLET 👑' : `💎 LEVEL ${level} 💎`}
+            </h1>
+            <h2 style={{ fontSize: '24px', color: '#ffd700', marginBottom: '20px' }}>
+              {level === 10 ? 'THE CRYSTAL TITAN' : BiomeGenerator.getBiomeData(level).name}
+            </h2>
 
-            <h3 style={{ color: '#00ffff', marginBottom: '15px', fontSize: '24px' }}>🎨 Character Colors</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '15px', marginBottom: '30px' }}>
-              {shopColors.map((item) => {
-                const owned = ownedColors.includes(item.color);
-                const isEquipped = playerColor === item.color;
-                const canBuy = totalCoins >= item.cost && !owned;
-                return (
-                  <div key={item.color} style={{
-                    background: isEquipped ? 'linear-gradient(135deg, #2a4a2a, #1a3a1a)' : '#2a2a2a',
-                    padding: '15px', borderRadius: '12px',
-                    textAlign: 'center', 
-                    border: isEquipped ? '3px solid #00ff00' : owned ? '2px solid #555' : '1px solid #444',
-                    transition: 'transform 0.2s',
-                    cursor: owned ? 'pointer' : 'default',
-                    boxShadow: isEquipped ? '0 0 15px rgba(0,255,0,0.3)' : 'none'
-                  }}
-                  onClick={() => owned && setPlayerColor(item.color)}
-                  onMouseEnter={(e) => owned && (e.currentTarget.style.transform = 'scale(1.05)')}
-                  onMouseLeave={(e) => owned && (e.currentTarget.style.transform = 'scale(1)')}>
-                    <div style={{
-                      width: '70px', height: '70px', background: item.color,
-                      margin: '0 auto 10px', borderRadius: '50%', border: '4px solid white',
-                      boxShadow: `0 0 20px ${item.color}`
-                    }}></div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '16px' }}>{item.name}</div>
-                    <div style={{ color: owned ? '#00ff00' : '#ffd700', marginBottom: '10px', fontSize: '14px', fontWeight: 'bold' }}>
-                      {owned ? '✓ OWNED' : `🪙 ${item.cost}`}
-                    </div>
-                    {!owned && (
-                      <button onClick={(e) => {e.stopPropagation(); buyColor(item.color, item.cost);}} disabled={!canBuy} style={{
-                        padding: '8px 15px', width: '100%',
-                        background: canBuy ? 'linear-gradient(135deg, #ffd700, #ffed4e)' : '#555',
-                        border: 'none', borderRadius: '8px',
-                        cursor: canBuy ? 'pointer' : 'not-allowed',
-                        fontWeight: 'bold', color: 'black',
-                        opacity: canBuy ? 1 : 0.5,
-                        transition: 'transform 0.2s'
-                      }}
-                      onMouseEnter={(e) => canBuy && (e.target.style.transform = 'scale(1.05)')}
-                      onMouseLeave={(e) => canBuy && (e.target.style.transform = 'scale(1)')}>
-                        BUY NOW
-                      </button>
-                    )}
-                    {owned && !isEquipped && (
-                      <div style={{ color: '#aaa', fontSize: '12px', marginTop: '5px' }}>Click to equip</div>
-                    )}
-                    {isEquipped && (
-                      <div style={{ color: '#00ff00', fontSize: '14px', marginTop: '5px', fontWeight: 'bold' }}>✓ EQUIPPED</div>
-                    )}
-                  </div>
-                );
-              })}
+            {level === 10 ? (
+              <div style={{ background: 'rgba(255,0,0,0.15)', padding: '16px', borderRadius: '12px', marginBottom: '25px', textAlign: 'left' }}>
+                <p>⚠️ <strong>Boss Strategy:</strong></p>
+                <p>1. Dodge the Titan's sweeping laser and jump over expanding shockwaves.</p>
+                <p>2. Run to all <strong>4 Power Pylons</strong> in the arena corners to shatter the force field.</p>
+                <p>3. Grab the exposed <strong>Master Core Crystal</strong> to win the game!</p>
+              </div>
+            ) : (
+              <div style={{ background: 'rgba(255,255,255,0.08)', padding: '16px', borderRadius: '12px', marginBottom: '25px', textAlign: 'left' }}>
+                <div>💎 Goal: Collect crystals to complete the level</div>
+                <div>🚀 Trampolines: Launch high to reach floating bonus items</div>
+                <div>🪶 Double Jump: Tap Spacebar again mid-air</div>
+                <div>🔥 Watch out for lava hazard pools and moving blocks!</div>
+              </div>
+            )}
+
+            <button className="hud-btn" onClick={startLevel} style={{ background: '#00ff88', color: '#000', fontSize: '22px', padding: '16px 40px', width: '100%' }}>
+              ▶️ START LEVEL
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- SHOP 2.0 MODAL --- */}
+      {showShop && (
+        <div className="modal-backdrop">
+          <div className="hud-panel" style={{ padding: '30px', maxWidth: '750px', width: '92%', maxHeight: '88vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0, fontSize: '30px', color: '#ffd700' }}>🛒 ARCADE SHOP 2.0</h2>
+              <div style={{ fontSize: '22px', color: '#ffd700', fontWeight: 'bold' }}>🪙 {savedData.totalCoins} Coins</div>
             </div>
 
-            <h3 style={{ color: '#ff69b4', marginBottom: '15px', fontSize: '24px' }}>🎩 Hats Collection</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '15px', marginBottom: '20px' }}>
-              {shopHats.map((item) => {
-                const owned = ownedHats.includes(item.id) || item.cost === 0;
-                const isEquipped = currentHat === item.id;
-                const canBuy = totalCoins >= item.cost && !owned;
-                return (
-                  <div key={item.id} style={{
-                    background: isEquipped ? 'linear-gradient(135deg, #4a2a4a, #3a1a3a)' : '#2a2a2a',
-                    padding: '15px', borderRadius: '12px',
-                    textAlign: 'center', 
-                    border: isEquipped ? '3px solid #ff69b4' : owned ? '2px solid #555' : '1px solid #444',
-                    transition: 'transform 0.2s',
-                    cursor: owned ? 'pointer' : 'default',
-                    boxShadow: isEquipped ? '0 0 15px rgba(255,105,180,0.3)' : 'none'
-                  }}
-                  onClick={() => owned && setCurrentHat(item.id)}
-                  onMouseEnter={(e) => owned && (e.currentTarget.style.transform = 'scale(1.05)')}
-                  onMouseLeave={(e) => owned && (e.currentTarget.style.transform = 'scale(1)')}>
-                    <div style={{ fontSize: '50px', marginBottom: '10px', filter: owned ? 'none' : 'grayscale(100%)' }}>
-                      {item.id === 'cap' ? '🧢' : item.id === 'tophat' ? '🎩' : item.id === 'crown' ? '👑' : '🎅'}
-                    </div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '16px' }}>{item.name}</div>
-                    <div style={{ color: owned ? '#00ff00' : item.cost === 0 ? '#00ff00' : '#ffd700', marginBottom: '10px', fontSize: '14px', fontWeight: 'bold' }}>
-                      {owned ? '✓ OWNED' : item.cost === 0 ? 'FREE!' : `🪙 ${item.cost}`}
-                    </div>
-                    {!owned && item.cost > 0 && (
-                      <button onClick={(e) => {e.stopPropagation(); buyHat(item.id, item.cost);}} disabled={!canBuy} style={{
-                        padding: '8px 15px', width: '100%',
-                        background: canBuy ? 'linear-gradient(135deg, #ffd700, #ffed4e)' : '#555',
-                        border: 'none', borderRadius: '8px',
-                        cursor: canBuy ? 'pointer' : 'not-allowed',
-                        fontWeight: 'bold', color: 'black',
-                        opacity: canBuy ? 1 : 0.5,
-                        transition: 'transform 0.2s'
-                      }}
-                      onMouseEnter={(e) => canBuy && (e.target.style.transform = 'scale(1.05)')}
-                      onMouseLeave={(e) => canBuy && (e.target.style.transform = 'scale(1)')}>
-                        BUY NOW
-                      </button>
-                    )}
-                    {owned && !isEquipped && (
-                      <div style={{ color: '#aaa', fontSize: '12px', marginTop: '5px' }}>Click to equip</div>
-                    )}
-                    {isEquipped && (
-                      <div style={{ color: '#ff69b4', fontSize: '14px', marginTop: '5px', fontWeight: 'bold' }}>✓ EQUIPPED</div>
-                    )}
-                  </div>
-                );
-              })}
+            {/* Shop Tabs */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+              <button className={`shop-tab-btn ${shopTab === 'colors' ? 'active' : ''}`} onClick={() => setShopTab('colors')}>🎨 Skins</button>
+              <button className={`shop-tab-btn ${shopTab === 'hats' ? 'active' : ''}`} onClick={() => setShopTab('hats')}>🎩 3D Hats</button>
+              <button className={`shop-tab-btn ${shopTab === 'pets' ? 'active' : ''}`} onClick={() => setShopTab('pets')}>🐾 Pets</button>
+              <button className={`shop-tab-btn ${shopTab === 'trails' ? 'active' : ''}`} onClick={() => setShopTab('trails')}>✨ Trails</button>
+              <button className={`shop-tab-btn ${shopTab === 'upgrades' ? 'active' : ''}`} onClick={() => setShopTab('upgrades')}>🏋️ Upgrades</button>
             </div>
 
-            <button onClick={() => setShowShop(false)} style={{
-              width: '100%', padding: '15px', fontSize: '20px',
-              background: 'linear-gradient(135deg, #ff0000, #cc0000)', border: 'none', borderRadius: '12px',
-              cursor: 'pointer', fontWeight: 'bold', color: 'white',
-              transition: 'transform 0.2s', boxShadow: '0 4px 15px rgba(255,0,0,0.3)'
-            }}
-            onMouseEnter={(e) => e.target.style.transform = 'scale(1.02)'}
-            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}>
+            {/* Skins Tab */}
+            {shopTab === 'colors' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '15px' }}>
+                {shopColors.map(item => {
+                  const owned = savedData.ownedColors.includes(item.color);
+                  const isEquipped = savedData.playerColor === item.color;
+                  return (
+                    <div key={item.color} style={{ background: '#1c1c28', padding: '14px', borderRadius: '12px', textAlign: 'center', border: isEquipped ? '2px solid #00ff88' : '1px solid #333' }}>
+                      <div style={{ width: '50px', height: '50px', background: item.color, borderRadius: '50%', margin: '0 auto 10px', boxShadow: `0 0 15px ${item.color}` }} />
+                      <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{item.name}</div>
+                      <div style={{ color: '#ffd700', margin: '6px 0', fontSize: '13px' }}>{owned ? 'OWNED' : `🪙 ${item.cost}`}</div>
+                      {owned ? (
+                        <button className="hud-btn" onClick={() => setSavedData(prev => ({ ...prev, playerColor: item.color }))} style={{ background: isEquipped ? '#444' : '#00ff88', color: isEquipped ? '#aaa' : '#000', width: '100%', padding: '6px' }}>
+                          {isEquipped ? 'EQUIPPED' : 'EQUIP'}
+                        </button>
+                      ) : (
+                        <button className="hud-btn" disabled={savedData.totalCoins < item.cost} onClick={() => buyItem('color', item.color, item.cost)} style={{ background: savedData.totalCoins >= item.cost ? '#ffd700' : '#444', color: '#000', width: '100%', padding: '6px' }}>
+                          BUY
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Hats Tab */}
+            {shopTab === 'hats' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '15px' }}>
+                {shopHats.map(item => {
+                  const owned = savedData.ownedHats.includes(item.id);
+                  const isEquipped = savedData.currentHat === item.id;
+                  return (
+                    <div key={item.id} style={{ background: '#1c1c28', padding: '14px', borderRadius: '12px', textAlign: 'center', border: isEquipped ? '2px solid #ff00aa' : '1px solid #333' }}>
+                      <div style={{ fontSize: '40px', margin: '0 auto 8px' }}>{item.icon}</div>
+                      <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{item.name}</div>
+                      <div style={{ color: '#ffd700', margin: '6px 0', fontSize: '13px' }}>{owned ? 'OWNED' : item.cost === 0 ? 'FREE' : `🪙 ${item.cost}`}</div>
+                      {owned ? (
+                        <button className="hud-btn" onClick={() => setSavedData(prev => ({ ...prev, currentHat: isEquipped ? null : item.id }))} style={{ background: isEquipped ? '#ff00aa' : '#00ff88', color: '#000', width: '100%', padding: '6px' }}>
+                          {isEquipped ? 'UNEQUIP' : 'EQUIP'}
+                        </button>
+                      ) : (
+                        <button className="hud-btn" disabled={savedData.totalCoins < item.cost} onClick={() => buyItem('hat', item.id, item.cost)} style={{ background: savedData.totalCoins >= item.cost ? '#ffd700' : '#444', color: '#000', width: '100%', padding: '6px' }}>
+                          BUY
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Pets Tab */}
+            {shopTab === 'pets' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px' }}>
+                {shopPets.map(item => {
+                  const owned = savedData.ownedPets.includes(item.id);
+                  const isEquipped = savedData.currentPet === item.id;
+                  return (
+                    <div key={item.id} style={{ background: '#1c1c28', padding: '16px', borderRadius: '12px', textAlign: 'center', border: isEquipped ? '2px solid #00f0ff' : '1px solid #333' }}>
+                      <div style={{ fontSize: '44px', marginBottom: '8px' }}>{item.icon}</div>
+                      <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{item.name}</div>
+                      <div style={{ fontSize: '12px', color: '#aaa', margin: '6px 0' }}>{item.desc}</div>
+                      <div style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '10px' }}>{owned ? 'OWNED' : `🪙 ${item.cost}`}</div>
+                      {owned ? (
+                        <button className="hud-btn" onClick={() => setSavedData(prev => ({ ...prev, currentPet: isEquipped ? null : item.id }))} style={{ background: isEquipped ? '#00f0ff' : '#00ff88', color: '#000', width: '100%', padding: '8px' }}>
+                          {isEquipped ? 'DISMISS' : 'SUMMON'}
+                        </button>
+                      ) : (
+                        <button className="hud-btn" disabled={savedData.totalCoins < item.cost} onClick={() => buyItem('pet', item.id, item.cost)} style={{ background: savedData.totalCoins >= item.cost ? '#ffd700' : '#444', color: '#000', width: '100%', padding: '8px' }}>
+                          BUY PET
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Trails Tab */}
+            {shopTab === 'trails' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '15px' }}>
+                {shopTrails.map(item => {
+                  const owned = savedData.ownedTrails.includes(item.id);
+                  const isEquipped = savedData.currentTrail === item.id;
+                  return (
+                    <div key={item.id} style={{ background: '#1c1c28', padding: '16px', borderRadius: '12px', textAlign: 'center', border: isEquipped ? '2px solid #ffd700' : '1px solid #333' }}>
+                      <div style={{ width: '40px', height: '8px', background: item.color, borderRadius: '4px', margin: '15px auto', boxShadow: `0 0 15px ${item.color}` }} />
+                      <div style={{ fontWeight: 'bold', fontSize: '15px' }}>{item.name}</div>
+                      <div style={{ color: '#ffd700', margin: '8px 0' }}>{owned ? 'OWNED' : `🪙 ${item.cost}`}</div>
+                      {owned ? (
+                        <button className="hud-btn" onClick={() => setSavedData(prev => ({ ...prev, currentTrail: isEquipped ? null : item.id }))} style={{ background: isEquipped ? '#ffd700' : '#00ff88', color: '#000', width: '100%', padding: '8px' }}>
+                          {isEquipped ? 'UNEQUIP' : 'EQUIP'}
+                        </button>
+                      ) : (
+                        <button className="hud-btn" disabled={savedData.totalCoins < item.cost} onClick={() => buyItem('trail', item.id, item.cost)} style={{ background: savedData.totalCoins >= item.cost ? '#ffd700' : '#444', color: '#000', width: '100%', padding: '8px' }}>
+                          BUY TRAIL
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Upgrades Tab */}
+            {shopTab === 'upgrades' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ background: '#1c1c28', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', fontSize: '16px' }}>❤️ Vitality Boost (+1 Max Heart)</div>
+                    <div style={{ color: '#aaa', fontSize: '13px' }}>Current: {savedData.upgrades?.maxHearts || 3} / 5 Hearts</div>
+                  </div>
+                  {(savedData.upgrades?.maxHearts || 3) < 5 ? (
+                    <button className="hud-btn" disabled={savedData.totalCoins < 100} onClick={() => buyUpgrade('maxHearts', 100, 1)} style={{ background: '#ffd700', color: '#000', padding: '10px 20px' }}>
+                      UPGRADE (100 🪙)
+                    </button>
+                  ) : (
+                    <span style={{ color: '#00ff88', fontWeight: 'bold' }}>MAXED OUT</span>
+                  )}
+                </div>
+
+                <div style={{ background: '#1c1c28', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', fontSize: '16px' }}>⚡ Stamina Tank (+25 Capacity)</div>
+                    <div style={{ color: '#aaa', fontSize: '13px' }}>Current: {savedData.upgrades?.maxStamina || 100} / 150 Stamina</div>
+                  </div>
+                  {(savedData.upgrades?.maxStamina || 100) < 150 ? (
+                    <button className="hud-btn" disabled={savedData.totalCoins < 100} onClick={() => buyUpgrade('maxStamina', 100, 25)} style={{ background: '#ffd700', color: '#000', padding: '10px 20px' }}>
+                      UPGRADE (100 🪙)
+                    </button>
+                  ) : (
+                    <span style={{ color: '#00ff88', fontWeight: 'bold' }}>MAXED OUT</span>
+                  )}
+                </div>
+
+                <div style={{ background: '#1c1c28', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', fontSize: '16px' }}>🧲 Natural Magnet Reach (+3m Radius)</div>
+                    <div style={{ color: '#aaa', fontSize: '13px' }}>Current: +{savedData.upgrades?.magnetRadius || 0}m Reach</div>
+                  </div>
+                  {(savedData.upgrades?.magnetRadius || 0) < 9 ? (
+                    <button className="hud-btn" disabled={savedData.totalCoins < 120} onClick={() => buyUpgrade('magnetRadius', 120, 3)} style={{ background: '#ffd700', color: '#000', padding: '10px 20px' }}>
+                      UPGRADE (120 🪙)
+                    </button>
+                  ) : (
+                    <span style={{ color: '#00ff88', fontWeight: 'bold' }}>MAXED OUT</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <button className="hud-btn" onClick={() => setShowShop(false)} style={{ width: '100%', background: '#ff3344', color: '#fff', padding: '14px', marginTop: '25px', fontSize: '18px' }}>
               ✖ CLOSE SHOP
             </button>
           </div>
         </div>
       )}
 
-      {showAchievements && !showComplete && !gameOver && !showLevelStart && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'rgba(0,0,0,0.95)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000
-        }}>
-          <div style={{
-            background: '#1a1a1a', padding: '30px', borderRadius: '20px',
-            maxWidth: '500px', width: '90%', color: 'white', border: '3px solid #9d4edd'
-          }}>
-            <h2 style={{ textAlign: 'center', marginTop: 0 }}>🏆 ACHIEVEMENTS</h2>
-            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-              {achievementsList.map((ach) => (
-                <div key={ach.id} style={{
-                  background: achievements[ach.id] ? '#2d4a2b' : '#2a2a2a',
-                  padding: '15px', marginBottom: '10px', borderRadius: '10px',
-                  border: achievements[ach.id] ? '2px solid #00ff00' : '1px solid #444'
-                }}>
-                  <div style={{ fontSize: '30px', marginBottom: '5px' }}>{ach.icon}</div>
-                  <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{ach.name}</div>
-                  <div style={{ fontSize: '14px', color: '#aaa' }}>{ach.desc}</div>
-                  {achievements[ach.id] && (
-                    <div style={{ color: '#00ff00', marginTop: '5px', fontSize: '12px' }}>✓ UNLOCKED</div>
-                  )}
-                </div>
-              ))}
+      {/* --- ACHIEVEMENTS MODAL --- */}
+      {showAchievements && (
+        <div className="modal-backdrop">
+          <div className="hud-panel" style={{ padding: '30px', maxWidth: '540px', width: '90%', maxHeight: '80vh', overflowY: 'auto' }}>
+            <h2 style={{ textAlign: 'center', margin: '0 0 20px', color: '#9d4edd' }}>🏆 BADGES & ACHIEVEMENTS</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {achievementsList.map(a => {
+                const unlocked = !!savedData.achievements[a.id];
+                return (
+                  <div key={a.id} style={{ background: unlocked ? '#1a3a2a' : '#1a1a24', padding: '14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '15px', border: unlocked ? '1px solid #00ff88' : '1px solid #333' }}>
+                    <div style={{ fontSize: '32px' }}>{a.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '16px', color: unlocked ? '#00ff88' : '#fff' }}>{a.name}</div>
+                      <div style={{ fontSize: '13px', color: '#aaa' }}>{a.desc}</div>
+                    </div>
+                    {unlocked && <span style={{ color: '#00ff88', fontWeight: 'bold', fontSize: '13px' }}>✓ UNLOCKED</span>}
+                  </div>
+                );
+              })}
             </div>
-            <button onClick={() => setShowAchievements(false)} style={{
-              width: '100%', padding: '15px', fontSize: '18px', marginTop: '20px',
-              background: '#ff0000', border: 'none', borderRadius: '10px',
-              cursor: 'pointer', fontWeight: 'bold', color: 'white'
-            }}>✖ CLOSE</button>
+            <button className="hud-btn" onClick={() => setShowAchievements(false)} style={{ width: '100%', background: '#444', color: '#fff', padding: '12px', marginTop: '20px' }}>
+              CLOSE
+            </button>
           </div>
         </div>
       )}
 
+      {/* --- PAUSE MENU MODAL --- */}
+      {isPaused && (
+        <div className="modal-backdrop">
+          <div className="hud-panel" style={{ padding: '35px', maxWidth: '440px', width: '90%', textAlign: 'center' }}>
+            <h2 style={{ fontSize: '32px', color: '#00f0ff', marginBottom: '25px' }}>⏸️ GAME PAUSED</h2>
+
+            <div style={{ textAlign: 'left', marginBottom: '25px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div>
+                <div style={{ fontSize: '14px', marginBottom: '6px' }}>🎵 Music Volume: {Math.round(savedData.musicVolume * 100)}%</div>
+                <input type="range" min="0" max="1" step="0.05" value={savedData.musicVolume} onChange={e => setSavedData(prev => ({ ...prev, musicVolume: parseFloat(e.target.value) }))} />
+              </div>
+              <div>
+                <div style={{ fontSize: '14px', marginBottom: '6px' }}>🔊 Sound FX Volume: {Math.round(savedData.sfxVolume * 100)}%</div>
+                <input type="range" min="0" max="1" step="0.05" value={savedData.sfxVolume} onChange={e => setSavedData(prev => ({ ...prev, sfxVolume: parseFloat(e.target.value) }))} />
+              </div>
+              <div>
+                <div style={{ fontSize: '14px', marginBottom: '6px' }}>🖱️ Mouse Sensitivity</div>
+                <input type="range" min="0.001" max="0.008" step="0.0005" value={savedData.sensitivity || 0.003} onChange={e => setSavedData(prev => ({ ...prev, sensitivity: parseFloat(e.target.value) }))} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button className="hud-btn" onClick={() => setIsPaused(false)} style={{ background: '#00ff88', color: '#000', padding: '14px', fontSize: '18px' }}>
+                ▶️ RESUME
+              </button>
+              <button className="hud-btn" onClick={() => { setIsPaused(false); retryCurrentLevel(); }} style={{ background: '#ffd700', color: '#000', padding: '12px' }}>
+                🔄 RESTART LEVEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- GAME OVER SCREEN --- */}
       {gameOver && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'rgba(0,0,0,0.95)', display: 'flex', flexDirection: 'column',
-          justifyContent: 'center', alignItems: 'center', color: 'white', zIndex: 1000
-        }}>
-          <h1 style={{ fontSize: '60px', marginBottom: '20px', color: '#ff0000' }}>💔 GAME OVER</h1>
-          <p style={{ fontSize: '24px' }}>Level {level}</p>
-          <p style={{ fontSize: '20px', color: '#ffd700' }}>Total Coins: {totalCoins}</p>
-          <div style={{ display: 'flex', gap: '20px', marginTop: '20px' }}>
-            <button onClick={retryCurrentLevel} style={{
-              padding: '20px 40px', fontSize: '20px', background: '#ff9900',
-              border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold'
-            }}>🔄 RETRY</button>
-            <button onClick={restartGame} style={{
-              padding: '20px 40px', fontSize: '20px', background: '#00ff00',
-              border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', color: 'black'
-            }}>🔁 RESTART</button>
+        <div className="modal-backdrop">
+          <div className="hud-panel" style={{ padding: '40px', maxWidth: '480px', width: '90%', textAlign: 'center', border: '2px solid #ff3344' }}>
+            <h1 style={{ fontSize: '56px', color: '#ff3344', marginBottom: '10px' }}>💔 GAME OVER</h1>
+            <p style={{ fontSize: '20px', color: '#aaa', marginBottom: '20px' }}>You ran out of hearts on Level {level}!</p>
+            <div style={{ fontSize: '24px', color: '#ffd700', marginBottom: '30px' }}>🪙 Banked Coins: {savedData.totalCoins}</div>
+            <div style={{ display: 'flex', gap: '15px' }}>
+              <button className="hud-btn" onClick={retryCurrentLevel} style={{ flex: 1, background: '#ffd700', color: '#000', padding: '14px', fontSize: '18px' }}>
+                🔄 RETRY
+              </button>
+              <button className="hud-btn" onClick={restartGame} style={{ flex: 1, background: '#00ff88', color: '#000', padding: '14px', fontSize: '18px' }}>
+                🔁 RESTART
+              </button>
+            </div>
           </div>
         </div>
       )}
 
+      {/* --- LEVEL COMPLETE SCREEN --- */}
       {showComplete && !gameOver && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'rgba(0,0,0,0.95)', display: 'flex', flexDirection: 'column',
-          justifyContent: 'center', alignItems: 'center', color: 'white', zIndex: 1000
-        }}>
-          <h1 style={{ fontSize: '60px', marginBottom: '20px' }}>🎉 COMPLETE!</h1>
-          <p style={{ fontSize: '28px' }}>Crystals: {score}</p>
-          <p style={{ fontSize: '24px', color: '#ffd700' }}>Coins: {coins}</p>
-          {level < 10 ? (
-            <button onClick={nextLevel} style={{
-              marginTop: '30px', padding: '20px 40px', fontSize: '24px', background: '#00ff00',
-              border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', color: 'black'
-            }}>NEXT LEVEL ➡️</button>
-          ) : (
-            <>
-              <h2 style={{ fontSize: '40px', marginTop: '30px', color: '#ffd700' }}>🏆 YOU WIN! 🏆</h2>
-              <button onClick={restartGame} style={{
-                marginTop: '30px', padding: '20px 40px', fontSize: '24px', background: '#00ff00',
-                border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', color: 'black'
-              }}>PLAY AGAIN</button>
-            </>
-          )}
+        <div className="modal-backdrop">
+          <div className="hud-panel" style={{ padding: '40px', maxWidth: '520px', width: '90%', textAlign: 'center', border: '2px solid #00ff88' }}>
+            <h1 style={{ fontSize: '50px', color: '#00ff88', marginBottom: '10px' }}>
+              {level === 10 ? '🏆 GRAND VICTORY! 🏆' : '🎉 LEVEL COMPLETE!'}
+            </h1>
+            <p style={{ fontSize: '22px', color: '#00ffff' }}>Crystals Collected: {score}</p>
+            <p style={{ fontSize: '20px', color: '#ffd700' }}>Coins Earned: +{coins} 🪙</p>
+
+            {level < 10 ? (
+              <button className="hud-btn" onClick={nextLevel} style={{ background: '#00ff88', color: '#000', padding: '16px 40px', fontSize: '22px', marginTop: '20px' }}>
+                NEXT LEVEL ➡️
+              </button>
+            ) : (
+              <div>
+                <h2 style={{ color: '#ffd700', margin: '20px 0 10px' }}>You beat all 10 Levels & the Crystal Titan!</h2>
+                <button className="hud-btn" onClick={restartGame} style={{ background: '#00ff88', color: '#000', padding: '16px 40px', fontSize: '22px', marginTop: '20px' }}>
+                  PLAY AGAIN 🔁
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
