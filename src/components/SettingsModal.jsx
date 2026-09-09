@@ -85,6 +85,43 @@ export const SettingsModal = ({ savedData, setSavedData, onClose }) => {
               onChange={e => setSavedData(prev => ({ ...prev, sensitivity: parseFloat(e.target.value) }))}
             />
           </div>
+
+          {/* Graphics Quality Preset */}
+          <div>
+            <div style={{ fontSize: '14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+              <span>✨ Graphics & Shadows Quality</span>
+              <span style={{ color: '#00f0ff', fontWeight: 700 }}>{(savedData.graphicsQuality || 'ultra').toUpperCase()}</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {['ultra', 'high', 'performance'].map(q => (
+                <button
+                  key={q}
+                  className={`graphics-preset-btn ${(savedData.graphicsQuality || 'ultra') === q ? 'active' : ''}`}
+                  onClick={() => {
+                    soundEngine.playUIClick();
+                    setSavedData(prev => ({ ...prev, graphicsQuality: q }));
+                  }}
+                >
+                  {q === 'ultra' ? '🔥 ULTRA (60+ FPS)' : q === 'high' ? '⚡ HIGH' : '🚀 FAST'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Show FPS Toggle */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '14px' }}>📊 Show Real-Time FPS Counter</span>
+            <button
+              className={`graphics-preset-btn ${savedData.showFPS !== false ? 'active' : ''}`}
+              style={{ flex: 'none', width: '90px' }}
+              onClick={() => {
+                soundEngine.playUIClick();
+                setSavedData(prev => ({ ...prev, showFPS: prev.showFPS === false ? true : false }));
+              }}
+            >
+              {savedData.showFPS !== false ? 'ON (60 FPS)' : 'OFF'}
+            </button>
+          </div>
         </div>
 
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
