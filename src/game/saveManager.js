@@ -23,7 +23,8 @@ const defaultState = {
   musicEnabled: true,
   musicVolume: 0.25,
   sfxVolume: 0.5,
-  sensitivity: 0.003
+  sensitivity: 0.003,
+  unlockedLevels: 1
 };
 
 export const loadGameState = () => {
