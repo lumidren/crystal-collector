@@ -1,6 +1,7 @@
 import React from 'react';
 import { BiomeGenerator } from '../world/biomeGenerator.js';
 import { soundEngine } from '../audio/soundEngine.js';
+import { HolographicRadar } from './HolographicRadar.jsx';
 
 export const InGameHUD = ({
   level,
@@ -19,6 +20,8 @@ export const InGameHUD = ({
   fps = 60,
   spawnGraceTime = 0,
   elapsedTime = 0,
+  radarDataRef,
+  isPaused = false,
   onPause,
   onOpenShop,
   onOpenAchievements,
@@ -185,8 +188,27 @@ export const InGameHUD = ({
         </div>
       </div>
 
-      {/* Bottom-Left: Power-up Timers */}
-      <div className="hud-interactive" style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      {/* Bottom-Left: Holographic Radar Mini-Map */}
+      <HolographicRadar
+        radarDataRef={radarDataRef}
+        crystalsCount={Math.max(0, targetCrystals - score)}
+        coinsCount={coins}
+        isPaused={isPaused}
+      />
+
+      {/* Bottom-Left: Power-up Timers (Neatly stacked above Holographic Radar) */}
+      <div
+        className="hud-interactive"
+        style={{
+          position: 'absolute',
+          bottom: '228px',
+          left: '24px',
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'wrap',
+          zIndex: 85
+        }}
+      >
         {shieldTime > 0 && (
           <div className="powerup-pill" style={{ background: 'rgba(0, 240, 255, 0.2)', border: '1px solid #00f0ff', color: '#00f0ff' }}>
             🛡️ SHIELD {Math.ceil(shieldTime)}s
