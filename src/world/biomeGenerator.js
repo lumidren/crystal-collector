@@ -428,6 +428,11 @@ export class BiomeGenerator {
       repulsor.position.y = -p.height / 2 - 0.7;
       pGroup.add(repulsor);
 
+      // Soft under-platform repulsor light illuminating the ground beneath the island
+      const underLight = new THREE.PointLight(p.color, 1.2, 16, 1.8);
+      underLight.position.set(0, -p.height / 2 - 0.75, 0);
+      pGroup.add(underLight);
+
       // Corner Holographic Landing Beacons
       [
         [-p.width / 2 + 0.3, p.depth / 2 - 0.3],
