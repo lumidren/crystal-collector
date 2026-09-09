@@ -381,7 +381,7 @@ const CrystalCollectorGame = () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.25;
 
     const isUltra = (currentSaved.graphicsQuality || 'ultra') === 'ultra';
     const isHigh = (currentSaved.graphicsQuality || 'ultra') === 'high';
@@ -394,11 +394,15 @@ const CrystalCollectorGame = () => {
     // Particle VFX Engine
     const particleManager = new ParticleManager(scene);
 
-    // Dynamic Environmental Lighting (Hemisphere + Directional + Soft Shadows)
-    const hemiLight = new THREE.HemisphereLight(biome.skyColor, biome.groundColor, 0.75);
+    // Dynamic Environmental Lighting (Ambient Fill + Hemisphere + Directional Soft Shadows)
+    // Soft ambient fill light ensures all cast shadows remain light, luminous, and clearly visible underneath
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.62);
+    scene.add(ambientLight);
+
+    const hemiLight = new THREE.HemisphereLight(biome.skyColor, 0x48586c, 0.85);
     scene.add(hemiLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.35);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.10);
     dirLight.position.set(16, 26, 16);
     dirLight.castShadow = shadowsEnabled;
     dirLight.shadow.mapSize.width = isUltra ? 2048 : 1024;
@@ -418,8 +422,8 @@ const CrystalCollectorGame = () => {
       new THREE.PlaneGeometry(50, 50),
       new THREE.MeshStandardMaterial({
         color: biome.groundColor,
-        roughness: 0.85,
-        metalness: 0.1
+        roughness: 0.75,
+        metalness: 0.08
       })
     );
     ground.rotation.x = -Math.PI / 2;
