@@ -121,8 +121,10 @@ const CrystalCollectorGame = () => {
   ];
 
   const shopPets = [
+    { name: 'Cyber Dog (Robo-Pup)', id: 'dog', cost: 280, icon: '🐕', desc: 'Trots on 4 paws, wags tail & huge 11m fetch reach!' },
     { name: 'Cyber Drone', id: 'drone', cost: 150, icon: '🛸', desc: 'Vacuums coins from 6m away' },
     { name: 'Magic Pixie', id: 'pixie', cost: 200, icon: '🧚', desc: 'Attracts crystals from 8m away' },
+    { name: 'Cyber Falcon', id: 'falcon', cost: 220, icon: '🦅', desc: 'Avian scout with flapping wings & 9m reach' },
     { name: 'Fire Sprite', id: 'sprite', cost: 250, icon: '🔥', desc: 'Super magnet reach up to 10m' }
   ];
 
