@@ -13,6 +13,19 @@ import { InGameHUD } from './components/InGameHUD.jsx';
 import { SettingsModal } from './components/SettingsModal.jsx';
 import './App.css';
 
+const levelConfigs = [
+  { crystals: 8, coins: 15, obs: 5, speed: 4, hearts: 2 },
+  { crystals: 10, coins: 20, obs: 8, speed: 5, hearts: 2 },
+  { crystals: 12, coins: 25, obs: 10, speed: 6, hearts: 3 },
+  { crystals: 15, coins: 30, obs: 12, speed: 7, hearts: 3 },
+  { crystals: 18, coins: 35, obs: 14, speed: 8, hearts: 3 },
+  { crystals: 20, coins: 40, obs: 16, speed: 9, hearts: 4 },
+  { crystals: 22, coins: 45, obs: 18, speed: 10, hearts: 4 },
+  { crystals: 25, coins: 50, obs: 20, speed: 11, hearts: 4 },
+  { crystals: 28, coins: 55, obs: 22, speed: 12, hearts: 5 },
+  { crystals: 30, coins: 60, obs: 12, speed: 10, hearts: 5 } // Titan Guardian Boss Level!
+];
+
 const CrystalCollectorGame = () => {
   const mountRef = useRef(null);
 
@@ -34,6 +47,7 @@ const CrystalCollectorGame = () => {
   const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
   const [level, setLevel] = useState(1);
+  const cfg = levelConfigs[level - 1] || levelConfigs[0];
   const [hearts, setHearts] = useState(savedData.upgrades?.maxHearts || 3);
   const [stamina, setStamina] = useState(savedData.upgrades?.maxStamina || 100);
   const staminaRef = useRef(savedData.upgrades?.maxStamina || 100);
@@ -259,21 +273,6 @@ const CrystalCollectorGame = () => {
     const maxStamina = currentSaved.upgrades?.maxStamina || 100;
     const sprintSpeedMult = currentSaved.upgrades?.sprintMultiplier || 1.8;
     const baseMagnetRadius = currentSaved.upgrades?.magnetRadius || 0;
-
-    // Level configuration
-    const levelConfigs = [
-      { crystals: 8, coins: 15, obs: 5, speed: 4, hearts: 2 },
-      { crystals: 10, coins: 20, obs: 8, speed: 5, hearts: 2 },
-      { crystals: 12, coins: 25, obs: 10, speed: 6, hearts: 3 },
-      { crystals: 15, coins: 30, obs: 12, speed: 7, hearts: 3 },
-      { crystals: 18, coins: 35, obs: 14, speed: 8, hearts: 3 },
-      { crystals: 20, coins: 40, obs: 16, speed: 9, hearts: 4 },
-      { crystals: 22, coins: 45, obs: 18, speed: 10, hearts: 4 },
-      { crystals: 25, coins: 50, obs: 20, speed: 11, hearts: 4 },
-      { crystals: 28, coins: 55, obs: 22, speed: 12, hearts: 5 },
-      { crystals: 30, coins: 60, obs: 12, speed: 10, hearts: 5 } // Titan Guardian Boss Level!
-    ];
-    const cfg = levelConfigs[level - 1] || levelConfigs[0];
 
     // Scene & Camera
     scene = new THREE.Scene();
