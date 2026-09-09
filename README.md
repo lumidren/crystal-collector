@@ -4,11 +4,12 @@
 
 ![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![Three.js](https://img.shields.io/badge/Three.js-r182-black?style=for-the-badge&logo=threedotjs&logoColor=white)
+![Electron](https://img.shields.io/badge/Electron-Windows%20Desktop-47848F?style=for-the-badge&logo=electron&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-Build%20Tool-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Web Audio](https://img.shields.io/badge/Web%20Audio-Procedural%20BGM-ff00aa?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge)
 
-**A high-energy, low-poly 3D arcade platformer with dynamic biomes, platforming mechanics, procedural synthwave soundtrack, pet companions, and an epic Level 10 boss fight.**
+**A high-energy, low-poly 3D arcade platformer available both in web browsers and as a native standalone Windows desktop application (`.exe`), featuring dynamic biomes, platforming mechanics, procedural synthwave soundtrack, pet companions, and an epic Level 10 boss fight.**
 
 [🎮 **Play Live on Netlify**](https://3dcrystalcollector.netlify.app/) · [Report Bug](https://github.com/lumidren/crystal-collector/issues) · [Request Feature](https://github.com/lumidren/crystal-collector/issues)
 
@@ -17,6 +18,11 @@
 ---
 
 ## 🌟 What's New in 2.0
+
+* **💻 Standalone Windows Desktop App (`.exe`)**:
+  * Run Crystal Collector natively on Windows as a dedicated standalone app.
+  * Ultra-clean arcade window with hardware-accelerated Three.js rendering and zero browser URL bars or tabs.
+  * One-click portable build: double-click `Crystal Collector.exe` and jump right in!
 
 * **🌍 5 Distinct Themed Biomes**:
   * **Forest Valley (Lvl 1–2)**: Pine trees, mossy stepping boulders, and sunny atmosphere.
@@ -128,12 +134,23 @@ crystal-collector/
    npm install
    ```
 
-3. **Start the local arcade server**:
+3. **Start the local arcade server (Web Browser)**:
    ```bash
    npm run dev
    ```
 
-4. **Build for production**:
+4. **Launch as Standalone Windows Desktop App**:
+   ```bash
+   npm run app:dev
+   ```
+
+5. **Build Standalone Windows Portable Executable (`.exe`)**:
+   ```bash
+   npm run app:dist
+   ```
+   *The portable binary will be generated directly in the `release/` directory ready to run anywhere on Windows!*
+
+6. **Build for Web production**:
    ```bash
    npm run build
    ```
