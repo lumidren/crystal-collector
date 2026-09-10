@@ -1,7 +1,6 @@
 import React from 'react';
 import { BiomeGenerator } from '../world/biomeGenerator.js';
 import { soundEngine } from '../audio/soundEngine.js';
-import { HolographicRadar } from './HolographicRadar.jsx';
 
 export const InGameHUD = ({
   level,
@@ -20,7 +19,6 @@ export const InGameHUD = ({
   fps = 60,
   spawnGraceTime = 0,
   elapsedTime = 0,
-  radarDataRef,
   isPaused = false,
   onPause,
   onOpenShop,
@@ -206,20 +204,12 @@ export const InGameHUD = ({
         </div>
       </div>
 
-      {/* Bottom-Left: Holographic Radar Mini-Map */}
-      <HolographicRadar
-        radarDataRef={radarDataRef}
-        crystalsCount={Math.max(0, targetCrystals - score)}
-        coinsCount={coins}
-        isPaused={isPaused}
-      />
-
-      {/* Bottom-Left: Power-up Timers (Neatly stacked above Holographic Radar) */}
+      {/* Bottom-Left: Power-up Timers */}
       <div
         className="hud-interactive"
         style={{
           position: 'absolute',
-          bottom: '228px',
+          bottom: '24px',
           left: '24px',
           display: 'flex',
           gap: '8px',
