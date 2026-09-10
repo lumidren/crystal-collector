@@ -54,12 +54,14 @@ test('saveManager - loadGameState returns complete default state when empty', ()
   assert.equal(state.hasSeenFirstTimeGuide, false);
   assert.equal(state.showFPS, true);
   assert.equal(state.graphicsQuality, 'ultra');
+  assert.equal(state.difficulty, 'hard');
 });
 
 test('saveManager - saveGameState and loadGameState persist round-trip', () => {
   localStorage.clear();
   const modified = {
     totalCoins: 350,
+    difficulty: 'easy',
     playerColor: '#0080ff',
     ownedColors: ['#00ff00', '#0080ff'],
     currentPet: 'dog',
@@ -73,14 +75,14 @@ test('saveManager - saveGameState and loadGameState persist round-trip', () => {
     },
     achievements: { first_crystal: true, trampoline_ace: true },
     levelBestTimes: { 1: 12.4, 2: 18.2 },
-    showFPS: false,
-    graphicsQuality: 'high'
+    graphicsQuality: 'high',
+    showFPS: false
   };
-
   saveGameState(modified);
   const loaded = loadGameState();
 
   assert.equal(loaded.totalCoins, 350);
+  assert.equal(loaded.difficulty, 'easy');
   assert.equal(loaded.playerColor, '#0080ff');
   assert.equal(loaded.currentPet, 'dog');
   assert.ok(loaded.ownedPets.includes('dog'));
