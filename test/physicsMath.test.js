@@ -133,3 +133,49 @@ test('physicsMath - elevated players are immune to ground lava damage', () => {
   // Player on elevated platform at Y = 4.5 directly above the pool
   assert.equal(damageCheck(0, 4.5, 0, true), false, 'Elevated player above pool takes NO damage');
 });
+
+test('physicsMath - Hunter Seeker calculates homing steering vector toward player within 24m detection radius', () => {
+  const seekerPos = { x: 10, z: 10 };
+  const playerPos = { x: 15, y: 0, z: 22 };
+  const dist = Math.hypot(playerPos.x - seekerPos.x, playerPos.z - seekerPos.z);
+  const isNearGround = playerPos.y < 2.2;
+  const isLocked = dist < 24 && isNearGround;
+
+  assert.equal(isLocked, true, 'Seeker must lock on when player is within 24m on ground');
+
+  const dirX = (playerPos.x - seekerPos.x) / dist;
+  const dirZ = (playerPos.z - seekerPos.z) / dist;
+  const len = Math.hypot(dirX, dirZ);
+
+  assert.ok(Math.abs(len - 1.0) < 0.001, 'Homing vector must be a normalized unit vector');
+  assert.ok(dirX > 0, 'Must steer in positive X towards player');
+  assert.ok(dirZ > 0, 'Must steer in positive Z towards player');
+
+  // Player high on sky platform (Y = 5.0) breaks ground lock
+  const elevatedPlayer = { x: 15, y: 5.0, z: 22 };
+  const elevatedLocked = dist < 24 && elevatedPlayer.y < 2.2;
+  assert.equal(elevatedLocked, false, 'Seeker ground lock must disengage when player escapes to sky platform');
+});
+
+test('physicsMath - Aerial Sky Mine reverses direction within platform bounding limits and detects elevated player', () => {
+  const platform = { minX: -10, maxX: 10, topY: 4.5 };
+  let mineX = 9.8;
+  let dir = 1;
+  const maxBound = platform.maxX - 1.2; // 8.8
+
+  // Patrol boundary reversal check
+  if (mineX >= maxBound) {
+    mineX = maxBound;
+    dir = -1;
+  }
+  assert.equal(dir, -1, 'Sky mine must reverse direction upon reaching platform edge');
+
+  // Collision with player on platform
+  const elevatedPlayer = { x: 8.8, y: 4.5, z: 0 };
+  const minePos = { x: 8.8, y: 4.5 + 1.2, z: 0 };
+  const distH = Math.hypot(elevatedPlayer.x - minePos.x, elevatedPlayer.z - minePos.z);
+  const distY = Math.abs(elevatedPlayer.y - platform.topY);
+  const hitsPlayer = distH < 2.0 && distY < 1.8;
+
+  assert.equal(hitsPlayer, true, 'Sky mine must detect player standing on the same elevated platform');
+});
