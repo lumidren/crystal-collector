@@ -1174,43 +1174,43 @@ const CrystalCollectorGame = () => {
     // --- Main Game Animation Loop ---
     const animate = () => {
       if (!mounted) return;
+      animId = requestAnimationFrame(animate);
 
-      const dt = Math.min(clock.getDelta(), 0.033);
-      const t = clock.getElapsedTime();
+      try {
+        const dt = Math.min(clock.getDelta(), 0.033);
+        const t = clock.getElapsedTime();
 
-      // Home Screen or Level Start Idle 3D orbit
-      if (currentScreen === 'home' || showLevelStart) {
-        idleAngle += dt * 0.22;
-        camera.position.x = Math.sin(idleAngle) * 20;
-        camera.position.z = Math.cos(idleAngle) * 20;
-        camera.position.y = 9;
-        camera.lookAt(0, 1.5, 0);
+        // Home Screen or Level Start Idle 3D orbit
+        if (currentScreen === 'home' || showLevelStart) {
+          idleAngle += dt * 0.22;
+          camera.position.x = Math.sin(idleAngle) * 20;
+          camera.position.z = Math.cos(idleAngle) * 20;
+          camera.position.y = 9;
+          camera.lookAt(0, 1.5, 0);
 
-        crystals.forEach(c => {
-          if (c.mesh) {
-            c.mesh.rotation.y += dt * 1.5;
-            if (c.mesh.userData?.innerCore) c.mesh.userData.innerCore.rotation.y -= dt * 2.5;
-          }
-        });
-        coinObjs.forEach(cn => {
-          if (cn.mesh) {
-            cn.mesh.rotation.y += dt * 2.5;
-            cn.mesh.rotation.x = Math.sin(t * 2.5 + (cn.phase || 0)) * 0.2;
-          }
-        });
+          crystals.forEach(c => {
+            if (c.mesh) {
+              c.mesh.rotation.y += dt * 1.5;
+              if (c.mesh.userData?.innerCore) c.mesh.userData.innerCore.rotation.y -= dt * 2.5;
+            }
+          });
+          coinObjs.forEach(cn => {
+            if (cn.mesh) {
+              cn.mesh.rotation.y += dt * 2.5;
+              cn.mesh.rotation.x = Math.sin(t * 2.5 + (cn.phase || 0)) * 0.2;
+            }
+          });
 
-        particleManager.update(dt);
-        renderer.render(scene, camera);
-        animId = requestAnimationFrame(animate);
-        return;
-      }
+          particleManager.update(dt);
+          renderer.render(scene, camera);
+          return;
+        }
 
-      // If game is frozen (reading instructions/field manual, in menus, or paused), freeze all gameplay and render stationary scene
-      if (isGameFrozenRef.current) {
-        renderer.render(scene, camera);
-        animId = requestAnimationFrame(animate);
-        return;
-      }
+        // If game is frozen (reading instructions/field manual, in menus, or paused), freeze all gameplay and render stationary scene
+        if (isGameFrozenRef.current) {
+          renderer.render(scene, camera);
+          return;
+        }
 
       // Performance Monitor (60 FPS tracker)
       frameCount++;
@@ -1664,7 +1664,7 @@ const CrystalCollectorGame = () => {
               const len = Math.hypot(dX, dZ) || 1;
               o.lungeDir = { x: dX / len, z: dZ / len };
               o.mesh.rotation.y = Math.atan2(dX, dZ);
-              soundEngine.playHazard();
+              soundEngine.playHazard?.();
             }
           } else {
             // Normal Stalking or Patrol
@@ -1819,8 +1819,10 @@ const CrystalCollectorGame = () => {
       particleManager.update(dt);
 
       renderer.render(scene, camera);
-      animId = requestAnimationFrame(animate);
-    };
+    } catch (loopErr) {
+      console.error('Render loop encountered error:', loopErr);
+    }
+  };
 
     animate();
 
