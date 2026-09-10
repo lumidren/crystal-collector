@@ -448,8 +448,14 @@ function createAntiGravSkyMine() {
 const CrystalCollectorGame = () => {
   const mountRef = useRef(null);
 
-  // Persistent user state
-  const [savedData, setSavedData] = useState(() => loadGameState());
+  // Persistent user state: always start from the beginning (Level 1) when application opens
+  const [savedData, setSavedData] = useState(() => {
+    const loaded = loadGameState();
+    return {
+      ...loaded,
+      unlockedLevels: 1
+    };
+  });
   const savedDataRef = useRef(savedData);
   useEffect(() => {
     savedDataRef.current = savedData;
@@ -516,15 +522,6 @@ const CrystalCollectorGame = () => {
   const maxComboRef = useRef(1);
   const [damageTakenThisLevel, setDamageTakenThisLevel] = useState(0);
   const damageTakenRef = useRef(0);
-  const radarDataRef = useRef({
-    player: { x: 0, z: 0, rot: 0 },
-    crystals: [],
-    coins: [],
-    jumpPads: [],
-    hazards: [],
-    obstacles: [],
-    boss: null
-  });
   const [shopTab, setShopTab] = useState('colors'); // 'colors', 'hats', 'pets', 'trails', 'upgrades'
   const [isEndless, setIsEndless] = useState(false);
   const [endlessSurviveTime, setEndlessSurviveTime] = useState(0);
@@ -1621,39 +1618,21 @@ const CrystalCollectorGame = () => {
             }
           }
         } else if (o.type === 'seeker') {
-          // Hunter Seeker Drone: Target tracking & homing AI
-          const distToPlayer = Math.hypot(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
-          const isPlayerNearGround = player.position.y < 2.2;
+          // Patrol Drone: smooth autonomous flight (no homing / no chasing player)
+          o.mesh.rotation.y += dt * 2.5 * slowMultiplier;
+          o.mesh.rotation.x += dt * 1.5 * slowMultiplier;
 
-          if (distToPlayer < 24 && isPlayerNearGround) {
-            o.isLocked = true;
-            const dirX = (player.position.x - o.mesh.position.x) / distToPlayer;
-            const dirZ = (player.position.z - o.mesh.position.z) / distToPlayer;
-            const targetSpeed = cfg.speed * 0.95;
-
-            // Smooth steering acceleration towards player
-            o.velocity.x += (dirX * targetSpeed - o.velocity.x) * dt * 3.5;
-            o.velocity.z += (dirZ * targetSpeed - o.velocity.z) * dt * 3.5;
-
-            o.mesh.rotation.y += dt * 6 * slowMultiplier;
-            o.mesh.rotation.x += dt * 4 * slowMultiplier;
-          } else {
-            o.isLocked = false;
-            o.mesh.rotation.y += dt * 2 * slowMultiplier;
-            o.mesh.rotation.x += dt * 1.5 * slowMultiplier;
-          }
-
-          // Animate ion thrusters & ocular laser sight
+          // Animate ion thrusters
           if (o.mesh.userData?.flame1 && o.mesh.userData?.flame2) {
-            const flScale = o.isLocked ? 1.4 + Math.sin(t * 20) * 0.3 : 0.8;
+            const flScale = 0.9 + Math.sin(t * 12) * 0.2;
             o.mesh.userData.flame1.scale.set(flScale, flScale, flScale);
             o.mesh.userData.flame2.scale.set(flScale, flScale, flScale);
           }
           if (o.mesh.userData?.laserSight) {
-            o.mesh.userData.laserSight.visible = o.isLocked;
+            o.mesh.userData.laserSight.visible = false;
           }
           if (o.mesh.userData?.eye) {
-            o.mesh.userData.eye.material.color.setHex(o.isLocked ? 0xff0000 : 0xff5500);
+            o.mesh.userData.eye.material.color.setHex(0xff5500);
           }
 
           o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
@@ -1664,7 +1643,8 @@ const CrystalCollectorGame = () => {
 
           if (o.cooldown > 0) o.cooldown -= dt;
 
-          if (distToPlayer < 2.4 && o.cooldown <= 0 && player.position.y < 1.2) {
+          const distToPlayer = Math.hypot(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
+          if (distToPlayer < 2.2 && o.cooldown <= 0 && player.position.y < 1.2) {
             if (spawnGraceRef.current > 0) {
               o.cooldown = 0.5;
               return;
@@ -1677,7 +1657,7 @@ const CrystalCollectorGame = () => {
             } else {
               o.cooldown = 2.0;
               handlePlayerDamage();
-              particleManager.createFloatingText(player.position, 'SEEKER HIT! ⚠️', '#ff0033');
+              particleManager.createFloatingText(player.position, 'HIT! ⚠️', '#ff0033');
             }
           }
         } else {
@@ -1757,17 +1737,6 @@ const CrystalCollectorGame = () => {
       // Update Particle Systems
       particleManager.update(dt);
 
-      // Update Holographic Radar Real-Time Detection
-      radarDataRef.current.player.x = player.position.x;
-      radarDataRef.current.player.z = player.position.z;
-      radarDataRef.current.player.rot = mouseX;
-      radarDataRef.current.crystals = crystals;
-      radarDataRef.current.coins = coinObjs;
-      radarDataRef.current.jumpPads = jumpPads;
-      radarDataRef.current.hazards = hazardZones;
-      radarDataRef.current.obstacles = obstacles;
-      radarDataRef.current.boss = bossInstance;
-
       renderer.render(scene, camera);
       animId = requestAnimationFrame(animate);
     };
@@ -1834,6 +1803,19 @@ const CrystalCollectorGame = () => {
           setSavedData={setSavedData}
           onToggleDifficulty={(d) => setSavedData(prev => ({ ...prev, difficulty: d }))}
           onPlay={() => {
+            setLevel(1);
+            setScore(0);
+            setCoins(0);
+            setCombo(1);
+            setPylonsDeactivated(0);
+            setShieldTime(0);
+            setMagnetTime(0);
+            setSlowMoTime(0);
+            setFeverTime(0);
+            spawnGraceRef.current = 3.0;
+            setSpawnGraceTime(3.0);
+            levelElapsedRef.current = 0;
+            setLevelElapsedTime(0);
             setCurrentScreen('playing');
             setShowLevelStart(true);
           }}
@@ -1866,7 +1848,6 @@ const CrystalCollectorGame = () => {
           fps={fps}
           spawnGraceTime={spawnGraceTime}
           elapsedTime={levelElapsedTime}
-          radarDataRef={radarDataRef}
           isPaused={isPaused}
           onPause={() => setIsPaused(true)}
           onOpenShop={() => setShowShop(true)}
