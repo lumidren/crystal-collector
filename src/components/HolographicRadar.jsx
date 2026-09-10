@@ -146,13 +146,15 @@ export const HolographicRadar = ({
         const dz = wz - pZ;
         const dist = Math.hypot(dx, dz);
 
-        // Player forward is oriented UP
-        const angle = Math.atan2(dz, dx) - (pRot - Math.PI / 2);
+        // In Three.js, -Z is forward, +X is right.
+        // On 2D Canvas, -Y is UP, +X is right.
+        // Player forward is oriented UP on radar screen.
+        const relAngle = Math.atan2(dx, -dz) - pRot;
         const rDist = Math.min(dist, RADAR_RANGE) / RADAR_RANGE * (RADIUS - 6);
 
         return {
-          x: CENTER_X + Math.cos(angle) * rDist,
-          y: CENTER_Y + Math.sin(angle) * rDist,
+          x: CENTER_X + Math.sin(relAngle) * rDist,
+          y: CENTER_Y - Math.cos(relAngle) * rDist,
           inRange: dist <= RADAR_RANGE,
           dist
         };
