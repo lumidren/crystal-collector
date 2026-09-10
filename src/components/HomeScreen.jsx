@@ -38,36 +38,41 @@ export const HomeScreen = ({
   return (
     <div className="home-overlay">
       {/* Top Bar: Player Loadout & Coins Profile */}
-      <div className="home-top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="home-top-bar">
         <div className="player-profile-card">
           <div
             className="player-avatar-circle"
             style={{
               background: savedData.playerColor || '#00ff00',
-              boxShadow: `0 0 15px ${savedData.playerColor || '#00ff00'}`
+              boxShadow: `0 0 12px ${savedData.playerColor || '#00ff00'}`
             }}
           >
             {currentHatObj ? currentHatObj.icon : '🧢'}
           </div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '15px', color: '#fff' }}>
+            <div style={{ fontWeight: 800, fontSize: '14px', color: '#ffffff' }}>
               Level {highestLevel} Explorer
             </div>
-            <div style={{ fontSize: '12px', color: '#8fa0b5' }}>
+            <div style={{ fontSize: '12px', color: '#7e93ab' }}>
               Pet: {currentPetObj ? `${currentPetObj.icon} ${currentPetObj.name}` : 'None'}
             </div>
           </div>
         </div>
 
+        {/* Creator Brand Tag */}
+        <div className="home-brand-tag">
+          ⚡ MADE BY LUMIDREN ⚡
+        </div>
+
         {/* Currency & Trophies */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <div className="stat-pill">
             <span>🪙</span>
             <span>{savedData.totalCoins}</span>
           </div>
           <div
             className="stat-pill"
-            style={{ color: '#00f0ff', background: 'rgba(0, 240, 255, 0.12)', borderColor: 'rgba(0, 240, 255, 0.25)' }}
+            style={{ color: '#00f0ff', background: '#0e1828', borderColor: '#1c2d47' }}
           >
             <span>🏆</span>
             <span>{unlockedAchievementsCount} Badges</span>
@@ -78,44 +83,18 @@ export const HomeScreen = ({
       {/* Center Hero: Title & Action Menu */}
       <div className="home-center-content">
         <div className="home-logo-container">
-          <div className="home-crystal-icon">💎</div>
+          <div className="home-crystal-badge">💎</div>
           <h1 className="home-title">CRYSTAL COLLECTOR</h1>
-          <div className="home-version-badge">2.0 DEFINITIVE EDITION</div>
-          <p className="home-subtitle">
-            ARCADE 3D PLATFORMER · PROCEDURAL BIOMES · GUARDIAN TITAN
-          </p>
-          <div style={{ fontSize: '12px', fontWeight: 800, color: '#00f0ff', letterSpacing: '2px', marginTop: '6px', textTransform: 'uppercase', textShadow: '0 0 10px rgba(0, 240, 255, 0.5)' }}>
-            ⚡ MADE BY LUMIDREN ⚡
+          <div style={{ fontSize: '12px', fontWeight: 700, color: '#687f9d', letterSpacing: '2px', marginTop: '6px', textTransform: 'uppercase' }}>
+            ARCADE 3D PLATFORMER · PROCEDURAL BIOMES
           </div>
         </div>
 
         {/* Difficulty Quick Toggle */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
-          <div
-            className="difficulty-toggle-pill"
-            style={{
-              display: 'inline-flex',
-              background: 'rgba(10, 20, 35, 0.75)',
-              padding: '4px',
-              borderRadius: '24px',
-              border: '1px solid rgba(0, 240, 255, 0.25)',
-              boxShadow: '0 0 15px rgba(0, 240, 255, 0.1)',
-              gap: '4px'
-            }}
-          >
+        <div className="home-difficulty-container">
+          <div className="home-diff-switch">
             <button
-              style={{
-                background: (savedData.difficulty || 'hard') === 'easy' ? 'rgba(0, 255, 136, 0.25)' : 'transparent',
-                border: (savedData.difficulty || 'hard') === 'easy' ? '1px solid #00ff88' : '1px solid transparent',
-                color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#64748b',
-                padding: '7px 16px',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                letterSpacing: '0.5px'
-              }}
+              className={`home-diff-btn ${(savedData.difficulty || 'hard') === 'easy' ? 'active-easy' : ''}`}
               onMouseEnter={handleHover}
               onClick={() => {
                 soundEngine.playUIClick();
@@ -126,18 +105,7 @@ export const HomeScreen = ({
               🟢 EASY (NO MINES)
             </button>
             <button
-              style={{
-                background: (savedData.difficulty || 'hard') === 'hard' ? 'rgba(255, 0, 85, 0.25)' : 'transparent',
-                border: (savedData.difficulty || 'hard') === 'hard' ? '1px solid #ff0055' : '1px solid transparent',
-                color: (savedData.difficulty || 'hard') === 'hard' ? '#ff4d6d' : '#64748b',
-                padding: '7px 16px',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                letterSpacing: '0.5px'
-              }}
+              className={`home-diff-btn ${(savedData.difficulty || 'hard') === 'hard' ? 'active-hard' : ''}`}
               onMouseEnter={handleHover}
               onClick={() => {
                 soundEngine.playUIClick();
@@ -148,66 +116,69 @@ export const HomeScreen = ({
               ⚡ HARD (ARCADE)
             </button>
           </div>
-          <span style={{ fontSize: '11px', color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff758f', fontWeight: 600 }}>
-            {(savedData.difficulty || 'hard') === 'easy' ? '🌿 Relaxed Biomes · No Sky Mines · No Seeker Tracking' : '🔥 Arcade Rush · Hunter Seekers · Aerial Sky Mines Active'}
+          <span
+            className="home-diff-hint"
+            style={{ color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff4d6d' }}
+          >
+            {(savedData.difficulty || 'hard') === 'easy'
+              ? '🌿 Relaxed Biomes · No Sky Mines · No Seeker Tracking'
+              : '🔥 Arcade Rush · Aerial Sky Mines · Hunter Seekers'}
           </span>
         </div>
 
-        <div className="home-menu-list">
+        {/* Action Hub - Uncrowded, Solid 2-tier Grid */}
+        <div className="home-action-deck">
           <button
-            className="btn-primary home-btn-play"
+            className="home-btn-play-solid"
             onMouseEnter={handleHover}
             onClick={() => handleClick(onPlay)}
           >
-            ▶️ PLAY CAMPAIGN
+            ▶ PLAY CAMPAIGN
           </button>
 
-          <button
-            className="btn-secondary home-btn-item"
-            onMouseEnter={handleHover}
-            onClick={() => handleClick(onOpenLevelSelect)}
-          >
-            🗺️ SELECT LEVEL ({highestLevel}/10)
-          </button>
-
-          <button
-            className="btn-secondary home-btn-item"
-            onMouseEnter={handleHover}
-            onClick={() => handleClick(onOpenShop)}
-          >
-            🛒 ARCADE SHOP
-          </button>
-
-          <button
-            className="btn-secondary home-btn-item"
-            onMouseEnter={handleHover}
-            onClick={() => handleClick(onOpenAchievements)}
-          >
-            🏆 ACHIEVEMENTS & BADGES
-          </button>
-
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="home-btn-grid">
             <button
-              className="btn-secondary home-btn-item"
-              style={{ flex: 1 }}
+              className="home-btn-solid"
               onMouseEnter={handleHover}
-              onClick={() => handleClick(onOpenHowToPlay)}
+              onClick={() => handleClick(onOpenLevelSelect)}
             >
-              📖 HOW TO PLAY
+              🗺️ LEVELS ({highestLevel}/10)
             </button>
             <button
-              className="btn-secondary home-btn-item"
-              style={{ flex: 1 }}
+              className="home-btn-solid"
+              onMouseEnter={handleHover}
+              onClick={() => handleClick(onOpenShop)}
+            >
+              🛒 ARCADE SHOP
+            </button>
+          </div>
+
+          <div className="home-btn-grid-3">
+            <button
+              className="home-btn-solid"
+              onMouseEnter={handleHover}
+              onClick={() => handleClick(onOpenAchievements)}
+            >
+              🏆 BADGES
+            </button>
+            <button
+              className="home-btn-solid"
               onMouseEnter={handleHover}
               onClick={() => handleClick(onOpenSettings)}
             >
               ⚙️ SETTINGS
             </button>
+            <button
+              className="home-btn-solid"
+              onMouseEnter={handleHover}
+              onClick={() => handleClick(onOpenHowToPlay)}
+            >
+              📖 GUIDE
+            </button>
           </div>
 
           <button
-            className="btn-secondary home-btn-item"
-            style={{ color: '#ff6b81', borderColor: 'rgba(255, 107, 129, 0.25)' }}
+            className="home-btn-solid exit-btn"
             onMouseEnter={handleHover}
             onClick={handleQuit}
           >
@@ -216,12 +187,10 @@ export const HomeScreen = ({
         </div>
       </div>
 
-      {/* Bottom Bar: Platform & Controls Hint & Credits */}
-      <div className="home-bottom-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 36px', color: '#64748b', fontSize: '13px' }}>
-        <span>WASD: Move · Space: Jump & Double Jump · Mouse: Look · Shift: Sprint</span>
-        <span style={{ color: '#00f0ff', fontWeight: 700, letterSpacing: '0.5px' }}>
-          Made with 💎 by <strong style={{ color: '#fff' }}>lumidren</strong>
-        </span>
+      {/* Bottom Bar: Platform Controls Hint & Version */}
+      <div className="home-bottom-bar">
+        <span>WASD: Move · Space: Jump & Double Jump · Shift: Sprint · Mouse: Look</span>
+        <span>Crystal Collector 2.0 • Made by <strong style={{ color: '#00f0ff' }}>lumidren</strong></span>
       </div>
     </div>
   );
