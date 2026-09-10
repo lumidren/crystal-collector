@@ -23,7 +23,7 @@ export class PetCompanion {
       // Drone Body
       const body = new THREE.Mesh(
         new THREE.CylinderGeometry(0.35, 0.4, 0.3, 16),
-        new THREE.MeshPhongMaterial({ color: 0x222222, metalness: 0.8 })
+        new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.3 })
       );
       this.group.add(body);
 
