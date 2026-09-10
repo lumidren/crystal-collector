@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
  * HolographicRadar Component
  * 
  * High-tech circular sci-fi radar HUD widget:
- * - 45-meter omnidirectional detection radius
+ * - 55-meter omnidirectional detection radius across 76x76 arena
  * - Rotating sweep beam with phosphorus fading trail
  * - Real-time tracking of:
  *   - Player position & heading
@@ -30,7 +30,7 @@ export const HolographicRadar = ({
     let animationId;
     let sweepAngle = 0;
 
-    const RADAR_RANGE = 45; // 45 meters max detection
+    const RADAR_RANGE = 55; // 55 meters max detection across 76x76 arena
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
     const CENTER_X = WIDTH / 2;
@@ -58,15 +58,14 @@ export const HolographicRadar = ({
       ctx.stroke();
 
       // Tick marks on bezel
-      const numTicks = 24;
-      for (let i = 0; i < numTicks; i++) {
-        const tickAngle = (i / numTicks) * Math.PI * 2;
-        const isMajor = i % 6 === 0;
-        const innerR = RADIUS - (isMajor ? 6 : 3);
-        const x1 = CENTER_X + Math.cos(tickAngle) * innerR;
-        const y1 = CENTER_Y + Math.sin(tickAngle) * innerR;
-        const x2 = CENTER_X + Math.cos(tickAngle) * RADIUS;
-        const y2 = CENTER_Y + Math.sin(tickAngle) * RADIUS;
+      for (let i = 0; i < 36; i++) {
+        const angle = (i / 36) * Math.PI * 2;
+        const isMajor = i % 9 === 0;
+        const tickLen = isMajor ? 6 : 3;
+        const x1 = CENTER_X + Math.cos(angle) * (RADIUS - 1);
+        const y1 = CENTER_Y + Math.sin(angle) * (RADIUS - 1);
+        const x2 = CENTER_X + Math.cos(angle) * (RADIUS - 1 - tickLen);
+        const y2 = CENTER_Y + Math.sin(angle) * (RADIUS - 1 - tickLen);
 
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -76,7 +75,7 @@ export const HolographicRadar = ({
         ctx.stroke();
       }
 
-      // Concentric range circles (15m, 30m, 45m)
+      // Concentric range circles (18m, 36m, 55m)
       [0.33, 0.66, 1.0].forEach((ratio) => {
         ctx.beginPath();
         ctx.arc(CENTER_X, CENTER_Y, RADIUS * ratio, 0, Math.PI * 2);
@@ -94,7 +93,7 @@ export const HolographicRadar = ({
       ctx.moveTo(CENTER_X - RADIUS, CENTER_Y);
       ctx.lineTo(CENTER_X + RADIUS, CENTER_Y);
       ctx.moveTo(CENTER_X, CENTER_Y - RADIUS);
-      ctx.lineTo(CENTER_X + RADIUS, CENTER_Y);
+      ctx.lineTo(CENTER_X, CENTER_Y + RADIUS);
       ctx.stroke();
 
       // Cardinal direction letters
