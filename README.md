@@ -11,7 +11,7 @@
 ![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge)
 
 **A high-octane 3D cyberpunk arcade platformer built with React, Three.js & Electron.**  
-Traverse 10 procedural sci-fi biomes across a massive 76×76 arena, scale multi-tier vertical sky islands, track targets with a 55m holographic radar, adopt animated 3D cyber pets, conquer the Crystal Titan guardian boss, and compete for S-Rank speedrun glory!
+Traverse 10 procedural sci-fi biomes across a massive 76×76 arena, scale multi-tier vertical sky islands, adopt animated 3D cyber pets, conquer the Crystal Titan guardian boss, and compete for S-Rank speedrun glory!
 
 [🎮 **Play in Browser**](https://3dcrystalcollector.netlify.app/) · [📦 **Download Windows Portable (.exe)**](https://github.com/lumidren/crystal-collector/releases/latest) · [🐛 **Report Bug**](https://github.com/lumidren/crystal-collector/issues)
 
@@ -45,18 +45,9 @@ Traverse 10 procedural sci-fi biomes across a massive 76×76 arena, scale multi-
 - **True 3D Platform Collision & Physics**: Axis-aligned platform boundary snapping, organic ledge falling physics, vertical 3D distance gating (preventing ground looting of sky caches), and catapult trampoline jump pads ($V = 28$).
 - **High-Altitude Hazard Immunity**: Standing on elevated platforms grants complete immunity to ground molten lava pools and ground hazard drones below.
 
-### 📡 3. 55-Meter Holographic Radar & Mini-Map Scanner
-- **Omnidirectional 360° Scanning**: Positioned in the bottom-left HUD, featuring an animated phosphorus sweep beam and concentric 15m, 30m, and 45m distance rings.
-- **Player-Forward Orientation**: Dynamically aligns with your third-person camera orientation so your character's forward line of sight is always **UP**.
-- **Real-Time Blip Signatures**:
-  - 💎 **Cyan Diamonds**: Crystals (tagged with `^` altitude markers when floating on sky islands).
-  - 🌈 **Magenta Diamonds**: Rainbow Fever crystals.
-  - 🪙 **Gold Rings**: Collectible arcade coins.
-  - 🚀 **Yellow Rings**: Super trampoline jump pads.
-  - 🟥 **Red Hazard Diamonds / Brackets**: Ground hazard cubes, Hunter Seeker drones, and molten lava zones.
-  - 🛸 **Amber Hazard Rings**: Patrolling Aerial Sky Mines with elevated altitude indicators.
-  - 👑 **Crimson Skull & Energy Nodes**: Level 10 Guardian Titan boss and the 4 corner shield pylons.
-- **High-Performance Canvas Loop**: Zero-overhead 60 FPS rendering utilizing an internal entity reference stream, bypassing React diffing.
+### 🕹️ 3. Fresh Run From The Beginning & Clean Minimalist HUD
+- **Fresh Arcade Run on Launch**: Each time the application opens, the player starts from the beginning (Level 1) for a clean, authentic campaign progression.
+- **Uncluttered Clean Viewport**: Removed intrusive radar overlays to give the player an open, distraction-free view of the 3D world with neatly anchored bottom-left power-up status badges.
 
 ### 🗺️ 4. Expanded Arena ($76 \times 76$, $5,776\text{ m}^2$) & 5 Unique Biome Platform Topologies
 The entire playable world has been expanded by **+131%**, and every biome features its own handcrafted platform architecture and elevation profile:
@@ -66,21 +57,20 @@ The entire playable world has been expanded by **+131%**, and every biome featur
 4. **🌋 Volcanic Caldera (Levels 7–8)**: Concentric fortress ring with a central caldera citadel ($5.0\text{m}$) enclosed by a molten lava moat, basalt stepping stones ($2.5\text{m}$), and outer perimeter battlements ($4.1\text{m}$).
 5. **🌌 Cosmic Void & Titan Gauntlet (Levels 9–10)**: Hexagonal orbital satellite platforms ($4.3\text{m}$ up to $10.9\text{m}$) connected by cyber light bridges, leading into the Titan Colosseum Throne ($3.9\text{m}$) and 4 elevated shield towers ($5.8\text{m}$).
 
-### ⚔️ 5. Easy / Hard Difficulty Switch & Hazard Suppression System
-Tailor your session between casual relaxed platforming and hardcore arcade mastery:
+### ⚔️ 5. Easy / Hard Difficulty Switch & Hazard Rebalance
+Tailor your session between casual relaxed platforming and hardcore arcade challenge:
 - **🟢 Easy Mode (Relaxed & Safe)**:
   - **Zero Sky Mines**: Completely suppresses all aerial sky mines across all sky islands.
-  - **Zero Seeker Tracking**: Completely suppresses hunter seeker homing and tracking AI.
   - **Rebalanced Swarms**: Reduces obstacle counts by ~55% and slows movement speeds to 55% for peaceful, stress-free exploration.
 - **⚡ Hard Mode (The Full Arcade Challenge)**:
-  - **Hunter Seeker Drones**: Ground tracking AI locks on within 24m and steers towards the player with red laser targeting sights.
   - **Aerial Sky Mines**: Hovering gyroscopic mines actively patrol sky decks and bridges, reversing at platform edges.
+  - **High-Speed Patrol Drones**: Autonomous stealth interceptor drones cruise the arena airspace.
   - **Full Swarm Density**: Scales up to 44 high-speed hazards ($7 \rightarrow 15\text{ m/s}$) for adrenaline-fueled runs.
 - **1-Click Accessibility**: Toggle instantly on the Home Screen command deck, in the Settings modal, or observe the real-time badge on the in-game HUD (`🟢 EASY` / `⚡ HARD`).
 
 ### 🎨 6. Next-Gen 3D Sci-Fi Visual Overhaul
 - **Quantum Sentinel Cubes**: Heavy carbon-fiber armored exoskeleton with beveled corners, glowing amber hazard chevrons, and an inner **Magma Plasma Reactor Core** that counter-rotates and breathes light.
-- **Hunter Interceptor Drones**: Aerodynamic stealth fuselage, red laser targeting beam, cyclops ocular eye, and dual ion plasma thrusters.
+- **Patrol Interceptor Drones**: Aerodynamic stealth fuselage with swept-back wings, dual ion plasma thrusters, and autonomous flight routes.
 - **Anti-Grav Quantum Sky Mines**: Heavy naval armor core, 6 Cartesian detonation spires, dual counter-rotating gyroscopic gimbal rings, and pulsing hazard strobes.
 - **Prismatic Crystal Clusters**: Refractive double-ended hexagonal crystal spires with clearcoat transmission ($0.72$), base crystal shards, luminous core, and spinning orbital particle energy rings.
 - **Radiant Aurora Fever Crystals**: Hyper-faceted star gems with dynamic real-time HSV rainbow hue rotation and dual intersecting ribbon halos.
@@ -124,7 +114,7 @@ Tailor your session between casual relaxed platforming and hardcore arcade maste
 | **1** | Forest Valley | 8 | 15 | Canopy treehouses ($3.7\text{m}$, $5.5\text{m}$), bridge ($4.5\text{m}$), terrace ($7.55\text{m}$) | 3 Bouncy mushroom jump pads |
 | **2** | Forest Valley (Deep) | 10 | 20 | Multi-level redwood deck & high treetop cache ($7.55\text{m}$) | Roving cubes & canopy traversal |
 | **3** | Crystal Cavern | 12 | 25 | Subterranean catwalks ($4.3\text{m}$, $5.7\text{m}$), crystal bridge ($6.85\text{m}$), stalactite ($8.9\text{m}$) | 4 Pulsing geode launch pads |
-| **4** | Crystal Cavern (Depths) | 15 | 30 | High crystal spire climb & suspended catwalk network | Hunter Seeker drones active |
+| **4** | Crystal Cavern (Depths) | 15 | 30 | High crystal spire climb & suspended catwalk network | Patrol interceptor drones active |
 | **5** | Frozen Tundra | 18 | 35 | 3-Tiered Glacier Mountain Peak ($3.55\text{m} \rightarrow 6.15\text{m} \rightarrow 9.0\text{m}$ summit!) | 4 Blizzard geysers & slick ice physics |
 | **6** | Frozen Tundra (Blizzard) | 20 | 40 | Glacier summit crossing with twin outer ice outposts ($4.65\text{m}$) | Ice sliding & aerial platform jumps |
 | **7** | Volcanic Caldera | 22 | 45 | Concentric caldera citadel ($5.0\text{m}$), moat, basalt stones ($2.5\text{m}$), battlements ($4.1\text{m}$) | 4 Molten lava pools (Damage on touch!) |
@@ -154,10 +144,10 @@ The game codebase is verified by an automated test suite executed with Node's na
 
 | Test Suite | File | Tests | Status | Scope & Verifications |
 | :--- | :--- | :---: | :---: | :--- |
-| **Difficulty Scaling** | `test/difficultyMath.test.js` | 2/2 | ✅ Pass | Easy mode hazard suppression (disables sky mines & seeker homing), speed/density scaling; Hard mode arcade swarms |
+| **Difficulty Scaling** | `test/difficultyMath.test.js` | 2/2 | ✅ Pass | Easy mode hazard suppression (disables sky mines), speed/density scaling; Hard mode arcade swarms |
 | **World & Biome** | `test/biomeGenerator.test.js` | 3/3 | ✅ Pass | 10 biome configurations, 5 unique platform architectures, jump pad placement, and lava hazard zones |
-| **Physics & Bounds** | `test/physicsMath.test.js` | 8/8 | ✅ Pass | Platform floor snapping, ledge falling, 3D distance gating, jump velocity ($V=28$), $76\times 76$ arena clamping, lava damage immunity, Hunter Seeker homing vectors, and Sky Mine patrol bounds |
-| **Holographic Radar** | `test/radarMath.test.js` | 2/2 | ✅ Pass | 55m omnidirectional scanner projection relative to camera forward, perimeter clamping, and altitude markers (`^`) |
+| **Physics & Bounds** | `test/physicsMath.test.js` | 8/8 | ✅ Pass | Platform floor snapping, ledge falling, 3D distance gating, jump velocity ($V=28$), $76\times 76$ arena clamping, lava damage immunity, and Sky Mine patrol bounds |
+| **Radar & Orientation** | `test/radarMath.test.js` | 2/2 | ✅ Pass | 55m projection math relative to camera forward, perimeter clamping, and altitude markers (`^`) |
 | **Companions & Pets** | `test/pets.test.js` | 3/3 | ✅ Pass | Cyber Dog (Robo-Pup) 4-leg trotting kinematics & 11m reach, Cyber Falcon flight & 9m reach, Drone, Pixie, and Sprite magnet radiuses |
 | **Save Manager** | `test/saveManager.test.js` | 3/3 | ✅ Pass | Default state schema integrity, `difficulty` mode persistence, round-trip serialization, and corrupted JSON recovery |
 | **Scoreboard & Timer** | `test/scoreboardMath.test.js` | 2/2 | ✅ Pass | S/A/B/C letter grade boundary logic, and sub-second millisecond timer formatting precision (`mm:ss.ms`) |
@@ -181,10 +171,10 @@ crystal-collector/
 ├── public/                       # Static web assets & icons
 ├── test/
 │   ├── biomeGenerator.test.js    # Biome platform layouts & hazard testing
-│   ├── difficultyMath.test.js    # Easy vs Hard difficulty math & suppression tests
+│   ├── difficultyMath.test.js    # Easy vs Hard difficulty math tests
 │   ├── pets.test.js              # Cyber Dog, Cyber Falcon & pet mechanics tests
-│   ├── physicsMath.test.js       # 3D collision, ledge falling & seeker homing tests
-│   ├── radarMath.test.js         # Radar coordinate projection & altitude tests
+│   ├── physicsMath.test.js       # 3D collision, ledge falling & physics tests
+│   ├── radarMath.test.js         # Orientation projection & altitude math tests
 │   ├── saveManager.test.js       # Save state persistence & recovery tests
 │   ├── scoreboardMath.test.js    # S/A/B/C ranks & formatTime precision tests
 │   └── soundEngineMath.test.js   # Procedural Web Audio synthwave tests
@@ -198,7 +188,6 @@ crystal-collector/
     ├── components/
     │   ├── HomeScreen.jsx        # Solid obsidian command deck & 2-tier action grid
     │   ├── InGameHUD.jsx         # Live telemetry, stamina, combo & difficulty badge
-    │   ├── HolographicRadar.jsx  # 55m omnidirectional radar scanner canvas
     │   ├── ScoreboardModal.jsx   # End-of-run S/A/B/C letter grade debrief
     │   ├── LevelSelectModal.jsx  # 10-level campaign world map selector
     │   ├── SettingsModal.jsx     # Audio volumes, difficulty toggle & FPS display
