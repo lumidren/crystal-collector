@@ -462,11 +462,11 @@ export class BiomeGenerator {
         width: p.width,
         depth: p.depth,
         height: p.height,
-        topY: p.y + p.height / 2,
-        minX: p.x - p.width / 2,
-        maxX: p.x + p.width / 2,
-        minZ: p.z - p.depth / 2,
-        maxZ: p.z + p.depth / 2
+        topY: Math.round((p.y + p.height / 2) * 100) / 100,
+        minX: Math.round((p.x - p.width / 2) * 100) / 100,
+        maxX: Math.round((p.x + p.width / 2) * 100) / 100,
+        minZ: Math.round((p.z - p.depth / 2) * 100) / 100,
+        maxZ: Math.round((p.z + p.depth / 2) * 100) / 100
       });
     });
 
