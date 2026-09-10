@@ -108,6 +108,51 @@ export const SettingsModal = ({ savedData, setSavedData, onClose }) => {
             </div>
           </div>
 
+          {/* Difficulty Mode Selector */}
+          <div>
+            <div style={{ fontSize: '14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+              <span>🎮 Game Difficulty</span>
+              <span style={{ color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff0055', fontWeight: 800 }}>
+                {(savedData.difficulty || 'hard') === 'easy' ? '🟢 EASY (CHILL)' : '⚡ HARD (ARCADE)'}
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                className={`graphics-preset-btn ${(savedData.difficulty || 'hard') === 'easy' ? 'active' : ''}`}
+                style={{
+                  flex: 1,
+                  borderColor: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : 'rgba(255,255,255,0.15)',
+                  color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#8fa0b5'
+                }}
+                onClick={() => {
+                  soundEngine.playUIClick();
+                  setSavedData(prev => ({ ...prev, difficulty: 'easy' }));
+                }}
+              >
+                🟢 EASY (NO MINES / RELAXED)
+              </button>
+              <button
+                className={`graphics-preset-btn ${(savedData.difficulty || 'hard') === 'hard' ? 'active' : ''}`}
+                style={{
+                  flex: 1,
+                  borderColor: (savedData.difficulty || 'hard') === 'hard' ? '#ff0055' : 'rgba(255,255,255,0.15)',
+                  color: (savedData.difficulty || 'hard') === 'hard' ? '#ff4d6d' : '#8fa0b5'
+                }}
+                onClick={() => {
+                  soundEngine.playUIClick();
+                  setSavedData(prev => ({ ...prev, difficulty: 'hard' }));
+                }}
+              >
+                ⚡ HARD (MINES & SEEKERS)
+              </button>
+            </div>
+            <div style={{ fontSize: '11px', color: '#8fa0b5', marginTop: '6px' }}>
+              {(savedData.difficulty || 'hard') === 'easy'
+                ? '✨ Easy Mode: Disables all aerial sky mines and seeker homing, lowers obstacle speed & density.'
+                : '🔥 Hard Mode: Full arcade challenge with tracking Hunter Seekers, Sky Mines on bridges, and max speeds.'}
+            </div>
+          </div>
+
           {/* Show FPS Toggle */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '14px' }}>📊 Show Real-Time FPS Counter</span>
