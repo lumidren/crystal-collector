@@ -17,16 +17,16 @@ import { ScoreboardModal } from './components/ScoreboardModal.jsx';
 import './App.css';
 
 const levelConfigs = [
-  { crystals: 8, coins: 15, obs: 5, speed: 4, hearts: 2 },
-  { crystals: 10, coins: 20, obs: 8, speed: 5, hearts: 2 },
-  { crystals: 12, coins: 25, obs: 10, speed: 6, hearts: 3 },
-  { crystals: 15, coins: 30, obs: 12, speed: 7, hearts: 3 },
-  { crystals: 18, coins: 35, obs: 14, speed: 8, hearts: 3 },
-  { crystals: 20, coins: 40, obs: 16, speed: 9, hearts: 4 },
-  { crystals: 22, coins: 45, obs: 18, speed: 10, hearts: 4 },
-  { crystals: 25, coins: 50, obs: 20, speed: 11, hearts: 4 },
-  { crystals: 28, coins: 55, obs: 22, speed: 12, hearts: 5 },
-  { crystals: 30, coins: 60, obs: 12, speed: 10, hearts: 5 } // Titan Guardian Boss Level!
+  { crystals: 8, coins: 15, obs: 12, speed: 7, hearts: 2 },
+  { crystals: 10, coins: 20, obs: 16, speed: 8, hearts: 2 },
+  { crystals: 12, coins: 25, obs: 20, speed: 9, hearts: 3 },
+  { crystals: 15, coins: 30, obs: 24, speed: 10, hearts: 3 },
+  { crystals: 18, coins: 35, obs: 28, speed: 11, hearts: 3 },
+  { crystals: 20, coins: 40, obs: 32, speed: 12, hearts: 4 },
+  { crystals: 22, coins: 45, obs: 36, speed: 13, hearts: 4 },
+  { crystals: 25, coins: 50, obs: 40, speed: 14, hearts: 4 },
+  { crystals: 28, coins: 55, obs: 44, speed: 15, hearts: 5 },
+  { crystals: 30, coins: 60, obs: 24, speed: 12, hearts: 5 } // Titan Guardian Boss Level!
 ];
 
 const CrystalCollectorGame = () => {
@@ -550,19 +550,105 @@ const CrystalCollectorGame = () => {
       powerupObjs.push({ mesh: pGroup, type, collected: false });
     });
 
-    // Spawn Obstacles (unless boss stage)
+    // Spawn Obstacles (Roaming Cubes, Hunter Seekers & Aerial Sky Mines)
     for (let i = 0; i < cfg.obs; i++) {
-      const obs = new THREE.Mesh(
-        new THREE.BoxGeometry(2, 2, 2),
-        new THREE.MeshPhongMaterial({ color: 0xff0044, emissive: 0x440011 })
-      );
+      const isSeeker = i % 3 === 0; // ~33% are Hunter Seekers!
+      let obsMesh;
+      if (isSeeker) {
+        // Hunter Seeker Drone (Spiked crimson dodecahedron with glowing core)
+        const seekerGroup = new THREE.Group();
+        const core = new THREE.Mesh(
+          new THREE.DodecahedronGeometry(1.2),
+          new THREE.MeshStandardMaterial({
+            color: 0xff1100,
+            emissive: 0xff3300,
+            emissiveIntensity: 0.85,
+            metalness: 0.6,
+            roughness: 0.25
+          })
+        );
+        seekerGroup.add(core);
+
+        const eye = new THREE.Mesh(
+          new THREE.SphereGeometry(0.4, 12, 12),
+          new THREE.MeshBasicMaterial({ color: 0xffffff })
+        );
+        eye.position.set(0, 0, 1.0);
+        seekerGroup.add(eye);
+
+        obsMesh = seekerGroup;
+      } else {
+        // Roaming Hazard Cube
+        obsMesh = new THREE.Mesh(
+          new THREE.BoxGeometry(2, 2, 2),
+          new THREE.MeshPhongMaterial({ color: 0xff0044, emissive: 0x440011 })
+        );
+      }
+
       const angle = (i / cfg.obs) * Math.PI * 2;
-      obs.position.set(Math.cos(angle) * 7, 1.5, Math.sin(angle) * 7);
-      scene.add(obs);
+      const r = 12 + Math.random() * 20;
+      obsMesh.position.set(Math.cos(angle) * r, 1.5, Math.sin(angle) * r);
+      obsMesh.castShadow = true;
+      scene.add(obsMesh);
+
       obstacles.push({
-        mesh: obs,
-        velocity: { x: (Math.random() - 0.5) * cfg.speed, z: (Math.random() - 0.5) * cfg.speed },
-        cooldown: 0
+        type: isSeeker ? 'seeker' : 'roaming',
+        mesh: obsMesh,
+        velocity: {
+          x: (Math.random() - 0.5) * cfg.speed,
+          z: (Math.random() - 0.5) * cfg.speed
+        },
+        cooldown: 0,
+        isLocked: false
+      });
+    }
+
+    // Spawn Aerial Sky Patrol Mines on elevated platforms (unless boss stage)
+    if (platforms && platforms.length > 0 && level < 10) {
+      platforms.forEach((p, pIdx) => {
+        // Place 1 Sky Mine on alternating platforms and wider decks
+        if (pIdx % 2 === 0 || p.width >= 12) {
+          const mineGroup = new THREE.Group();
+          const mineBody = new THREE.Mesh(
+            new THREE.IcosahedronGeometry(0.85),
+            new THREE.MeshStandardMaterial({
+              color: 0x221100,
+              emissive: 0xff8800,
+              emissiveIntensity: 0.8,
+              roughness: 0.3,
+              metalness: 0.8
+            })
+          );
+          mineGroup.add(mineBody);
+
+          const hazardRing = new THREE.Mesh(
+            new THREE.TorusGeometry(1.2, 0.08, 8, 24),
+            new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+          );
+          mineGroup.add(hazardRing);
+
+          const startX = p.x;
+          const startY = p.topY + 1.2;
+          const startZ = p.z;
+          mineGroup.position.set(startX, startY, startZ);
+          mineGroup.castShadow = true;
+          scene.add(mineGroup);
+
+          const useX = p.width >= p.depth;
+          obstacles.push({
+            type: 'skymine',
+            mesh: mineGroup,
+            baseY: startY,
+            axis: useX ? 'x' : 'z',
+            min: useX ? p.minX + 1.2 : p.minZ + 1.2,
+            max: useX ? p.maxX - 1.2 : p.maxZ - 1.2,
+            speed: 3.5 + (pIdx % 3),
+            dir: 1,
+            phase: pIdx * 1.5,
+            cooldown: 0,
+            platformTopY: p.topY
+          });
+        }
       });
     }
 
@@ -1128,34 +1214,118 @@ const CrystalCollectorGame = () => {
         }
       });
 
-      // Move Obstacles
+      // Move Obstacles (Roaming Cubes, Hunter Seekers & Aerial Sky Mines)
       const slowMultiplier = localSlowMoTime > 0 ? 0.4 : 1.0;
       obstacles.forEach(o => {
-        o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
-        o.mesh.position.z += o.velocity.z * dt * slowMultiplier;
-
-        if (o.mesh.position.x > 36 || o.mesh.position.x < -36) o.velocity.x *= -1;
-        if (o.mesh.position.z > 36 || o.mesh.position.z < -36) o.velocity.z *= -1;
-
-        o.mesh.rotation.x += dt * 2 * slowMultiplier;
-        o.mesh.rotation.y += dt * 2 * slowMultiplier;
-
-        if (o.cooldown > 0) o.cooldown -= dt;
-
-        const distToPlayer = Math.hypot(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
-        if (distToPlayer < 2.5 && o.cooldown <= 0 && player.position.y < 1.2) {
-          if (spawnGraceRef.current > 0) {
-            o.cooldown = 0.5;
-            return; // 100% immune during spawn grace!
+        if (o.type === 'skymine') {
+          // Aerial Sky Mine: Hover oscillation and platform patrol
+          o.mesh.position.y = o.baseY + Math.sin(t * 3.5 + o.phase) * 0.25;
+          o.mesh.position[o.axis] += o.dir * o.speed * dt * slowMultiplier;
+          if (o.mesh.position[o.axis] >= o.max) {
+            o.mesh.position[o.axis] = o.max;
+            o.dir = -1;
+          } else if (o.mesh.position[o.axis] <= o.min) {
+            o.mesh.position[o.axis] = o.min;
+            o.dir = 1;
           }
-          if (localShieldTime > 0 || localFeverTime > 0) {
-            o.cooldown = 1.0;
-            soundEngine.playPowerup('shield');
-            particleManager.createBurst(o.mesh.position, 0x00ffff, 15, 8);
-            particleManager.createFloatingText(player.position, 'DEFLECTED! 🛡️', '#00ffff');
+          o.mesh.rotation.y += dt * 2.5 * slowMultiplier;
+
+          if (o.cooldown > 0) o.cooldown -= dt;
+
+          // 3D Collision with elevated player on the platform
+          const distH = Math.hypot(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
+          const distY = Math.abs(player.position.y - o.platformTopY);
+          if (distH < 2.0 && distY < 1.8 && o.cooldown <= 0) {
+            if (spawnGraceRef.current > 0) {
+              o.cooldown = 0.5;
+              return;
+            }
+            if (localShieldTime > 0 || localFeverTime > 0) {
+              o.cooldown = 1.0;
+              soundEngine.playPowerup('shield');
+              particleManager.createBurst(o.mesh.position, 0xffaa00, 15, 8);
+              particleManager.createFloatingText(player.position, 'DEFLECTED! 🛡️', '#00ffff');
+            } else {
+              o.cooldown = 2.0;
+              handlePlayerDamage();
+              particleManager.createFloatingText(player.position, 'SKY MINE! 💥', '#ff6600');
+            }
+          }
+        } else if (o.type === 'seeker') {
+          // Hunter Seeker Drone: Target tracking & homing AI
+          const distToPlayer = Math.hypot(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
+          const isPlayerNearGround = player.position.y < 2.2;
+
+          if (distToPlayer < 24 && isPlayerNearGround) {
+            o.isLocked = true;
+            const dirX = (player.position.x - o.mesh.position.x) / distToPlayer;
+            const dirZ = (player.position.z - o.mesh.position.z) / distToPlayer;
+            const targetSpeed = cfg.speed * 0.95;
+
+            // Smooth steering acceleration towards player
+            o.velocity.x += (dirX * targetSpeed - o.velocity.x) * dt * 3.5;
+            o.velocity.z += (dirZ * targetSpeed - o.velocity.z) * dt * 3.5;
+
+            o.mesh.rotation.y += dt * 6 * slowMultiplier;
+            o.mesh.rotation.x += dt * 4 * slowMultiplier;
           } else {
-            o.cooldown = 2.0;
-            handlePlayerDamage();
+            o.isLocked = false;
+            o.mesh.rotation.y += dt * 2 * slowMultiplier;
+            o.mesh.rotation.x += dt * 1.5 * slowMultiplier;
+          }
+
+          o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
+          o.mesh.position.z += o.velocity.z * dt * slowMultiplier;
+
+          if (o.mesh.position.x > 36 || o.mesh.position.x < -36) o.velocity.x *= -1;
+          if (o.mesh.position.z > 36 || o.mesh.position.z < -36) o.velocity.z *= -1;
+
+          if (o.cooldown > 0) o.cooldown -= dt;
+
+          if (distToPlayer < 2.4 && o.cooldown <= 0 && player.position.y < 1.2) {
+            if (spawnGraceRef.current > 0) {
+              o.cooldown = 0.5;
+              return;
+            }
+            if (localShieldTime > 0 || localFeverTime > 0) {
+              o.cooldown = 1.0;
+              soundEngine.playPowerup('shield');
+              particleManager.createBurst(o.mesh.position, 0xff3300, 18, 9);
+              particleManager.createFloatingText(player.position, 'DEFLECTED! 🛡️', '#00ffff');
+            } else {
+              o.cooldown = 2.0;
+              handlePlayerDamage();
+              particleManager.createFloatingText(player.position, 'SEEKER HIT! ⚠️', '#ff0033');
+            }
+          }
+        } else {
+          // Roaming Hazard Cube: Standard Pong bouncing
+          o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
+          o.mesh.position.z += o.velocity.z * dt * slowMultiplier;
+
+          if (o.mesh.position.x > 36 || o.mesh.position.x < -36) o.velocity.x *= -1;
+          if (o.mesh.position.z > 36 || o.mesh.position.z < -36) o.velocity.z *= -1;
+
+          o.mesh.rotation.x += dt * 2 * slowMultiplier;
+          o.mesh.rotation.y += dt * 2 * slowMultiplier;
+
+          if (o.cooldown > 0) o.cooldown -= dt;
+
+          const distToPlayer = Math.hypot(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
+          if (distToPlayer < 2.5 && o.cooldown <= 0 && player.position.y < 1.2) {
+            if (spawnGraceRef.current > 0) {
+              o.cooldown = 0.5;
+              return;
+            }
+            if (localShieldTime > 0 || localFeverTime > 0) {
+              o.cooldown = 1.0;
+              soundEngine.playPowerup('shield');
+              particleManager.createBurst(o.mesh.position, 0x00ffff, 15, 8);
+              particleManager.createFloatingText(player.position, 'DEFLECTED! 🛡️', '#00ffff');
+            } else {
+              o.cooldown = 2.0;
+              handlePlayerDamage();
+            }
           }
         }
       });
