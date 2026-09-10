@@ -22,7 +22,7 @@ class LocalStorageMock {
 
 globalThis.localStorage = new LocalStorageMock();
 
-const { loadGameState, saveGameState } = await import('../src/game/saveManager.js');
+const { loadGameState, saveGameState, resetGameState } = await import('../src/game/saveManager.js');
 
 test('saveManager - loadGameState returns complete default state when empty', () => {
   localStorage.clear();
@@ -104,4 +104,18 @@ test('saveManager - handles corrupted JSON gracefully without crashing', () => {
   assert.ok(state);
   assert.equal(state.totalCoins, 0);
   assert.equal(state.unlockedLevels, 1);
+});
+
+test('saveManager - resetGameState clears localStorage and resets coins and level progress to default', () => {
+  saveGameState({
+    totalCoins: 999,
+    unlockedLevels: 8,
+    achievements: { master: true }
+  });
+  const reset = resetGameState();
+
+  assert.equal(reset.totalCoins, 0);
+  assert.equal(reset.unlockedLevels, 1);
+  assert.deepEqual(reset.achievements, {});
+  assert.equal(localStorage.getItem('crystal_collector_2_save'), null);
 });
