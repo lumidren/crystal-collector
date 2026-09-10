@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { soundEngine } from '../audio/soundEngine.js';
 
 export const HomeScreen = ({
   savedData,
   setSavedData,
   onToggleDifficulty,
+  onResetProgress,
   onPlay,
   onOpenLevelSelect,
   onOpenShop,
@@ -14,6 +15,9 @@ export const HomeScreen = ({
   shopHats,
   shopPets
 }) => {
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [resetTimer, setResetTimer] = useState(null);
+
   const currentHatObj = shopHats.find(h => h.id === savedData.currentHat);
   const currentPetObj = shopPets.find(p => p.id === savedData.currentPet);
   const unlockedAchievementsCount = Object.keys(savedData.achievements || {}).filter(k => savedData.achievements[k]).length;
@@ -26,6 +30,23 @@ export const HomeScreen = ({
   const handleClick = (action) => {
     soundEngine.playUIClick();
     if (action) action();
+  };
+
+  const handleResetClick = () => {
+    soundEngine.playUIClick();
+    if (!confirmReset) {
+      setConfirmReset(true);
+      const timer = setTimeout(() => {
+        setConfirmReset(false);
+      }, 4000);
+      setResetTimer(timer);
+    } else {
+      if (resetTimer) clearTimeout(resetTimer);
+      setConfirmReset(false);
+      if (onResetProgress) {
+        onResetProgress();
+      }
+    }
   };
 
   const handleQuit = () => {
@@ -177,13 +198,31 @@ export const HomeScreen = ({
             </button>
           </div>
 
-          <button
-            className="home-btn-solid exit-btn"
-            onMouseEnter={handleHover}
-            onClick={handleQuit}
-          >
-            ❌ EXIT GAME
-          </button>
+          <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+            <button
+              className="home-btn-solid"
+              style={{
+                flex: 1,
+                background: confirmReset ? '#380a14' : '#14121a',
+                borderColor: confirmReset ? '#ff0055' : '#2a1e2f',
+                color: confirmReset ? '#ff4d6d' : '#a78bfa',
+                fontSize: '13px',
+                padding: '10px 12px'
+              }}
+              onMouseEnter={handleHover}
+              onClick={handleResetClick}
+            >
+              {confirmReset ? '⚠️ SURE? CLICK TO RESET' : '🔄 RESET PROGRESS'}
+            </button>
+            <button
+              className="home-btn-solid exit-btn"
+              style={{ flex: 1 }}
+              onMouseEnter={handleHover}
+              onClick={handleQuit}
+            >
+              ❌ EXIT GAME
+            </button>
+          </div>
         </div>
       </div>
 
