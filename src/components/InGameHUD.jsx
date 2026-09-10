@@ -33,9 +33,11 @@ export const InGameHUD = ({
   const progressPercent = Math.min(100, Math.round((score / targetCrystals) * 100));
 
   const formatTime = (secs) => {
-    const m = Math.floor(secs / 60);
-    const s = Math.floor(secs % 60);
-    const ms = Math.floor((secs % 1) * 10);
+    if (!secs || isNaN(secs)) return '00:00.0';
+    const totalSecs = Math.floor(secs);
+    const m = Math.floor(totalSecs / 60);
+    const s = totalSecs % 60;
+    const ms = Math.round((secs - totalSecs) * 10) % 10;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms}`;
   };
 
