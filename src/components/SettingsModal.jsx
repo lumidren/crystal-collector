@@ -143,13 +143,13 @@ export const SettingsModal = ({ savedData, setSavedData, onClose }) => {
                   setSavedData(prev => ({ ...prev, difficulty: 'hard' }));
                 }}
               >
-                ⚡ HARD (MINES & SEEKERS)
+                ⚡ HARD (FAST & SKY MINES)
               </button>
             </div>
             <div style={{ fontSize: '11px', color: '#8fa0b5', marginTop: '6px' }}>
               {(savedData.difficulty || 'hard') === 'easy'
-                ? '✨ Easy Mode: Disables all aerial sky mines and seeker homing, lowers obstacle speed & density.'
-                : '🔥 Hard Mode: Full arcade challenge with tracking Hunter Seekers, Sky Mines on bridges, and max speeds.'}
+                ? '✨ Easy Mode: Disables all aerial sky mines, lowers obstacle speed & density for relaxed exploration.'
+                : '🔥 Hard Mode: Full arcade challenge with Sky Mines on bridges, higher obstacle counts, and max speeds.'}
             </div>
           </div>
 
