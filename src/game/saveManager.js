@@ -29,7 +29,8 @@ const defaultState = {
   levelBestTimes: {},
   graphicsQuality: 'ultra',
   showFps: true,
-  showFPS: true
+  showFPS: true,
+  difficulty: 'hard'
 };
 
 export const loadGameState = () => {
