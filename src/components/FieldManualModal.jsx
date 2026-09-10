@@ -115,11 +115,16 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
           {activeTab === 'skyislands' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div className="manual-card">
-                <div className="manual-card-icon" style={{ background: 'rgba(0, 240, 255, 0.15)', color: '#00f0ff' }}>🏝️</div>
+                <div className="manual-card-icon" style={{ background: 'rgba(0, 240, 255, 0.15)', color: '#00f0ff' }}>🗺️</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#00f0ff' }}>Multi-Tier Sky Islands & Bridges</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#00f0ff' }}>Expanded 76×76 World & 5 Unique Biome Layouts</div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    The realm now expands vertically into full 3D space! Explore 4 floating decks elevated at <strong>3.8m, 4.6m, 5.8m, and 7.5m</strong>. Each island features pulsing anti-gravity repulsors underneath and neon landing beacon pillars.
+                    The world has expanded by <strong>2.3x (5,776 m²)</strong>! Every biome now features a completely custom, handcrafted architectural layout:
+                    <br />• <strong>🌿 Forest Valley</strong>: Redwood canopy treehouses (3.7m & 5.5m), wooden suspension bridges, and bouncy mushroom pads.
+                    <br />• <strong>🔮 Crystal Cavern</strong>: Subterranean canyon catwalks (4.3m & 5.7m), glowing arch bridges, and luminescent stalactite decks.
+                    <br />• <strong>❄️ Frozen Tundra</strong>: A massive 3-tier stepped <strong>Glacier Summit (up to 9.0m)</strong> and corner ice shelf outposts.
+                    <br />• <strong>🌋 Volcanic Caldera</strong>: A concentric ring of fire with a central fortress island (5.0m), perimeter ramparts, and basalt stepping stones crossing a lava moat.
+                    <br />• <strong>🌌 Cosmic Void & Titan Colosseum</strong>: Shattered orbital docks (up to 10.9m) and elevated defense towers housing the Boss Shield Pylons!
                   </div>
                 </div>
               </div>
@@ -129,7 +134,7 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#ffd700' }}>Trampoline Super-Launch</div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    Step onto ground trampolines to trigger a super-boost high into the sky! Combine with your <strong>Spacebar Double Jump</strong> to cross the high bridge and reach the highest Apex Peak cache.
+                    Step onto ground trampolines to trigger a super-boost high into the sky! Combine with your <strong>Spacebar Double Jump</strong> to cross high skyways and reach apex peaks.
                   </div>
                 </div>
               </div>
@@ -151,9 +156,9 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
               <div className="manual-card">
                 <div className="manual-card-icon" style={{ background: 'rgba(0, 240, 255, 0.15)', color: '#00f0ff' }}>📡</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#00f0ff' }}>45m Holographic Scanner</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#00f0ff' }}>55m Holographic Scanner</div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    Mounted in the bottom-left HUD. The radar sweeps 360° every 2.5s with phosphorus fade trails, tracking all items and threats within 45 meters. Orienting dynamically so your character forward is always <strong>UP</strong>.
+                    Mounted in the bottom-left HUD. The radar sweeps 360° every 2.5s with phosphorus fade trails, tracking all items and threats across the expanded 76x76 arena within 55 meters. Orienting dynamically so your character forward is always <strong>UP</strong>.
                   </div>
                 </div>
               </div>
