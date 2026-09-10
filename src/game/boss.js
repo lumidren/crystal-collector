@@ -173,7 +173,7 @@ export class CrystalTitanBoss {
     this.shieldBroken = true;
     this.shieldMesh.visible = false;
     this.laserMesh.visible = false;
-    soundEngine.playFever();
+    soundEngine?.playFever?.();
     particleManager.addTrauma(0.6);
     particleManager.createBurst({ x: 0, y: 4.5, z: 0 }, 0xff00ff, 40, 12);
     particleManager.createFloatingText({ x: 0, y: 5, z: 0 }, 'SHIELD SHATTERED! GRAB THE CORE!', '#ff00ff', 44);
