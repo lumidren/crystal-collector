@@ -65,3 +65,14 @@ export const saveGameState = (state) => {
     console.warn('Failed to save state:', e);
   }
 };
+
+export const resetGameState = () => {
+  try {
+    localStorage.removeItem(SAVE_KEY);
+  } catch (e) {
+    console.warn('Failed to reset save state:', e);
+  }
+  return { ...defaultState };
+};
+
+export { defaultState };
