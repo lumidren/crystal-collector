@@ -84,6 +84,9 @@ export const HomeScreen = ({
           <p className="home-subtitle">
             ARCADE 3D PLATFORMER · PROCEDURAL BIOMES · GUARDIAN TITAN
           </p>
+          <div style={{ fontSize: '12px', fontWeight: 800, color: '#00f0ff', letterSpacing: '2px', marginTop: '6px', textTransform: 'uppercase', textShadow: '0 0 10px rgba(0, 240, 255, 0.5)' }}>
+            ⚡ MADE BY LUMIDREN ⚡
+          </div>
         </div>
 
         {/* Difficulty Quick Toggle */}
@@ -213,9 +216,12 @@ export const HomeScreen = ({
         </div>
       </div>
 
-      {/* Bottom Bar: Platform & Controls Hint */}
-      <div className="home-bottom-bar" style={{ textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
+      {/* Bottom Bar: Platform & Controls Hint & Credits */}
+      <div className="home-bottom-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 36px', color: '#64748b', fontSize: '13px' }}>
         <span>WASD: Move · Space: Jump & Double Jump · Mouse: Look · Shift: Sprint</span>
+        <span style={{ color: '#00f0ff', fontWeight: 700, letterSpacing: '0.5px' }}>
+          Made with 💎 by <strong style={{ color: '#fff' }}>lumidren</strong>
+        </span>
       </div>
     </div>
   );
