@@ -3,6 +3,8 @@ import { soundEngine } from '../audio/soundEngine.js';
 
 export const HomeScreen = ({
   savedData,
+  setSavedData,
+  onToggleDifficulty,
   onPlay,
   onOpenLevelSelect,
   onOpenShop,
@@ -82,6 +84,70 @@ export const HomeScreen = ({
           <p className="home-subtitle">
             ARCADE 3D PLATFORMER · PROCEDURAL BIOMES · GUARDIAN TITAN
           </p>
+        </div>
+
+        {/* Difficulty Quick Toggle */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
+          <div
+            className="difficulty-toggle-pill"
+            style={{
+              display: 'inline-flex',
+              background: 'rgba(10, 20, 35, 0.75)',
+              padding: '4px',
+              borderRadius: '24px',
+              border: '1px solid rgba(0, 240, 255, 0.25)',
+              boxShadow: '0 0 15px rgba(0, 240, 255, 0.1)',
+              gap: '4px'
+            }}
+          >
+            <button
+              style={{
+                background: (savedData.difficulty || 'hard') === 'easy' ? 'rgba(0, 255, 136, 0.25)' : 'transparent',
+                border: (savedData.difficulty || 'hard') === 'easy' ? '1px solid #00ff88' : '1px solid transparent',
+                color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#64748b',
+                padding: '7px 16px',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                letterSpacing: '0.5px'
+              }}
+              onMouseEnter={handleHover}
+              onClick={() => {
+                soundEngine.playUIClick();
+                if (onToggleDifficulty) onToggleDifficulty('easy');
+                else if (setSavedData) setSavedData(prev => ({ ...prev, difficulty: 'easy' }));
+              }}
+            >
+              🟢 EASY (NO MINES)
+            </button>
+            <button
+              style={{
+                background: (savedData.difficulty || 'hard') === 'hard' ? 'rgba(255, 0, 85, 0.25)' : 'transparent',
+                border: (savedData.difficulty || 'hard') === 'hard' ? '1px solid #ff0055' : '1px solid transparent',
+                color: (savedData.difficulty || 'hard') === 'hard' ? '#ff4d6d' : '#64748b',
+                padding: '7px 16px',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                letterSpacing: '0.5px'
+              }}
+              onMouseEnter={handleHover}
+              onClick={() => {
+                soundEngine.playUIClick();
+                if (onToggleDifficulty) onToggleDifficulty('hard');
+                else if (setSavedData) setSavedData(prev => ({ ...prev, difficulty: 'hard' }));
+              }}
+            >
+              ⚡ HARD (ARCADE)
+            </button>
+          </div>
+          <span style={{ fontSize: '11px', color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff758f', fontWeight: 600 }}>
+            {(savedData.difficulty || 'hard') === 'easy' ? '🌿 Relaxed Biomes · No Sky Mines · No Seeker Tracking' : '🔥 Arcade Rush · Hunter Seekers · Aerial Sky Mines Active'}
+          </span>
         </div>
 
         <div className="home-menu-list">
