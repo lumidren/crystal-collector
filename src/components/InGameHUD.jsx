@@ -56,8 +56,24 @@ export const InGameHUD = ({
       <div className="hud-top-bar hud-interactive">
         {/* Top-Left: Level info, Hearts, Stamina */}
         <div className="hud-panel" style={{ padding: '14px 18px', minWidth: '220px' }}>
-          <div style={{ fontSize: '15px', fontWeight: 800, color: '#00f0ff', marginBottom: '4px' }}>
-            {level === 10 ? '👑 LEVEL 10: CRYSTAL TITAN' : `LEVEL ${level}: ${biomeData.name.toUpperCase()}`}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <div style={{ fontSize: '15px', fontWeight: 800, color: '#00f0ff' }}>
+              {level === 10 ? '👑 LEVEL 10: CRYSTAL TITAN' : `LEVEL ${level}: ${biomeData.name.toUpperCase()}`}
+            </div>
+            <span
+              style={{
+                fontSize: '10px',
+                fontWeight: 800,
+                padding: '2px 8px',
+                borderRadius: '12px',
+                letterSpacing: '0.5px',
+                background: (savedData?.difficulty || 'hard') === 'easy' ? 'rgba(0, 255, 136, 0.18)' : 'rgba(255, 0, 85, 0.18)',
+                color: (savedData?.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff4d6d',
+                border: (savedData?.difficulty || 'hard') === 'easy' ? '1px solid #00ff88' : '1px solid #ff0055'
+              }}
+            >
+              {(savedData?.difficulty || 'hard') === 'easy' ? '🟢 EASY' : '⚡ HARD'}
+            </span>
           </div>
 
           {/* Hearts Display */}
