@@ -191,14 +191,45 @@ export const HolographicRadar = ({
         });
       }
 
-      // 3. Draw Moving Obstacles (Bright red diamond)
+      // 3. Draw Moving Obstacles (Seekers, Aerial Sky Mines, and Roaming Cubes)
       if (data?.obstacles) {
         data.obstacles.forEach(o => {
           if (!o.mesh) return;
           const pt = toRadarCoords(o.mesh.position.x, o.mesh.position.z);
           if (pt.inRange) {
-            ctx.fillStyle = '#ff1744';
-            ctx.fillRect(pt.x - 2.5, pt.y - 2.5, 5, 5);
+            if (o.type === 'skymine') {
+              // Aerial Sky Mine: Amber hazard circle with elevation cue
+              ctx.beginPath();
+              ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+              ctx.fillStyle = '#ff9100';
+              ctx.fill();
+              ctx.strokeStyle = '#ffea00';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+
+              // High-altitude marker
+              ctx.fillStyle = '#ffea00';
+              ctx.font = '8px monospace';
+              ctx.textAlign = 'center';
+              ctx.fillText('^', pt.x, pt.y - 4);
+            } else if (o.type === 'seeker') {
+              // Hunter Seeker: Pulsing crimson diamond with target lock indicator
+              ctx.save();
+              ctx.translate(pt.x, pt.y);
+              ctx.rotate(Math.PI / 4);
+              ctx.fillStyle = o.isLocked ? '#ff0033' : '#ff3d00';
+              ctx.fillRect(-3, -3, 6, 6);
+              if (o.isLocked) {
+                ctx.strokeStyle = '#ff0055';
+                ctx.lineWidth = 1.2;
+                ctx.strokeRect(-5, -5, 10, 10);
+              }
+              ctx.restore();
+            } else {
+              // Roaming Hazard Cube
+              ctx.fillStyle = '#ff1744';
+              ctx.fillRect(pt.x - 2.5, pt.y - 2.5, 5, 5);
+            }
           }
         });
       }
