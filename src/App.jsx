@@ -29,6 +29,422 @@ const levelConfigs = [
   { crystals: 30, coins: 60, obs: 24, speed: 12, hearts: 5 } // Titan Guardian Boss Level!
 ];
 
+// --- 3D HIGH-TECH COLLECTIBLE BUILDERS ---
+
+function createCrystalCluster(isRainbow) {
+  const group = new THREE.Group();
+
+  const crystalMat = new THREE.MeshPhysicalMaterial({
+    color: isRainbow ? 0xff00ff : 0x00f0ff,
+    emissive: isRainbow ? 0xff00bb : 0x00aacc,
+    emissiveIntensity: 0.85,
+    roughness: 0.08,
+    metalness: 0.15,
+    transmission: 0.72,
+    transparent: true,
+    opacity: 0.94,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.08
+  });
+
+  // Main double-ended hexagonal crystal spire
+  const spireBody = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1.2, 6), crystalMat);
+  const spireTop = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.6, 6), crystalMat);
+  spireTop.position.y = 0.9;
+  const spireBot = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.6, 6), crystalMat);
+  spireBot.position.y = -0.9;
+  spireBot.rotation.x = Math.PI;
+
+  group.add(spireBody);
+  group.add(spireTop);
+  group.add(spireBot);
+
+  // Satellite smaller side crystals
+  const shard1 = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.7, 5), crystalMat);
+  shard1.position.set(0.48, -0.2, 0.2);
+  shard1.rotation.set(0.3, 0.2, -0.4);
+  const shard2 = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.6, 5), crystalMat);
+  shard2.position.set(-0.45, -0.3, -0.2);
+  shard2.rotation.set(-0.2, 0.4, 0.5);
+  group.add(shard1);
+  group.add(shard2);
+
+  // Inner floating luminous core
+  const innerCore = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.32),
+    new THREE.MeshBasicMaterial({ color: isRainbow ? 0xffffff : 0xccffff })
+  );
+  group.add(innerCore);
+
+  // Floating tilted orbital energy ring
+  const haloRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.85, 0.025, 8, 24),
+    new THREE.MeshBasicMaterial({ color: isRainbow ? 0xff88ff : 0x88ffff })
+  );
+  haloRing.rotation.x = Math.PI / 4;
+  group.add(haloRing);
+
+  group.userData = { innerCore, haloRing, rainbowMat: isRainbow ? crystalMat : null };
+  return group;
+}
+
+function createCyberCoin() {
+  const group = new THREE.Group();
+
+  // Beveled outer coin rim with notched arcade edge
+  const rim = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.58, 0.58, 0.14, 28),
+    new THREE.MeshStandardMaterial({
+      color: 0xffd700,
+      emissive: 0xff8800,
+      emissiveIntensity: 0.35,
+      metalness: 0.95,
+      roughness: 0.14
+    })
+  );
+  rim.rotation.x = Math.PI / 2;
+  group.add(rim);
+
+  // Embossed crystal star emblem in center
+  const star = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.26),
+    new THREE.MeshStandardMaterial({
+      color: 0xffea00,
+      emissive: 0xffaa00,
+      emissiveIntensity: 0.7,
+      metalness: 0.8,
+      roughness: 0.2
+    })
+  );
+  group.add(star);
+
+  // Glowing neon groove ring
+  const groove = new THREE.Mesh(
+    new THREE.TorusGeometry(0.46, 0.03, 8, 24),
+    new THREE.MeshBasicMaterial({ color: 0xfffa66 })
+  );
+  group.add(groove);
+
+  group.userData = { star, groove };
+  return group;
+}
+
+function createCyberHeart() {
+  const group = new THREE.Group();
+
+  const heartMat = new THREE.MeshPhysicalMaterial({
+    color: 0xff0044,
+    emissive: 0xcc0033,
+    emissiveIntensity: 0.6,
+    roughness: 0.2,
+    metalness: 0.3,
+    clearcoat: 0.8
+  });
+
+  // Left & Right curved upper lobes
+  const leftLobe = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), heartMat);
+  leftLobe.position.set(-0.22, 0.2, 0);
+  const rightLobe = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), heartMat);
+  rightLobe.position.set(0.22, 0.2, 0);
+
+  // Inverted lower cone forming the tapered bottom point
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.48, 0.75, 16), heartMat);
+  tip.position.set(0, -0.15, 0);
+  tip.rotation.z = Math.PI;
+
+  group.add(leftLobe);
+  group.add(rightLobe);
+  group.add(tip);
+
+  // Glowing medical cross emblem on front
+  const crossV = new THREE.Mesh(
+    new THREE.BoxGeometry(0.1, 0.32, 0.08),
+    new THREE.MeshBasicMaterial({ color: 0xffffff })
+  );
+  crossV.position.set(0, 0.05, 0.28);
+  const crossH = new THREE.Mesh(
+    new THREE.BoxGeometry(0.32, 0.1, 0.08),
+    new THREE.MeshBasicMaterial({ color: 0xffffff })
+  );
+  crossH.position.set(0, 0.05, 0.28);
+  group.add(crossV);
+  group.add(crossH);
+
+  return group;
+}
+
+function createPowerupRelic(type) {
+  const group = new THREE.Group();
+
+  if (type === 'shield') {
+    // Aegis Energy Buckler (Hexagonal translucent shield)
+    const shieldPlate = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.75, 0.75, 0.1, 6),
+      new THREE.MeshPhysicalMaterial({
+        color: 0x00ffff,
+        emissive: 0x0088cc,
+        emissiveIntensity: 0.7,
+        transmission: 0.65,
+        transparent: true,
+        opacity: 0.88,
+        roughness: 0.1
+      })
+    );
+    shieldPlate.rotation.x = Math.PI / 2;
+    group.add(shieldPlate);
+
+    const shieldCrest = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.3),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    group.add(shieldCrest);
+  } else if (type === 'magnet') {
+    // Graviton Horseshoe Magnet
+    const uArch = new THREE.Mesh(
+      new THREE.TorusGeometry(0.45, 0.14, 12, 24, Math.PI),
+      new THREE.MeshStandardMaterial({ color: 0x222233, metalness: 0.8, roughness: 0.3 })
+    );
+    group.add(uArch);
+
+    // North (Red) and South (Cyan/Blue) magnetic pole tips
+    const poleN = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.15, 0.15, 0.35, 12),
+      new THREE.MeshStandardMaterial({ color: 0xff0044, emissive: 0xaa0022, emissiveIntensity: 0.5 })
+    );
+    poleN.position.set(-0.45, -0.18, 0);
+    const poleS = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.15, 0.15, 0.35, 12),
+      new THREE.MeshStandardMaterial({ color: 0x0088ff, emissive: 0x0044aa, emissiveIntensity: 0.5 })
+    );
+    poleS.position.set(0.45, -0.18, 0);
+    group.add(poleN);
+    group.add(poleS);
+  } else {
+    // Chrono Gyroscope
+    const ring1 = new THREE.Mesh(
+      new THREE.TorusGeometry(0.65, 0.05, 8, 24),
+      new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.85, roughness: 0.2 })
+    );
+    const ring2 = new THREE.Mesh(
+      new THREE.TorusGeometry(0.5, 0.04, 8, 24),
+      new THREE.MeshStandardMaterial({ color: 0xffaa00, metalness: 0.85, roughness: 0.2 })
+    );
+    ring2.rotation.x = Math.PI / 2;
+    const timeGem = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.28),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    group.add(ring1);
+    group.add(ring2);
+    group.add(timeGem);
+    group.userData = { ring1, ring2 };
+  }
+
+  return group;
+}
+
+// --- 3D HIGH-TECH OBSTACLE BUILDERS ---
+
+function createQuantumSentinelCube() {
+  const group = new THREE.Group();
+
+  // Dark obsidian exoskeleton armor box
+  const armor = new THREE.Mesh(
+    new THREE.BoxGeometry(1.9, 1.9, 1.9),
+    new THREE.MeshStandardMaterial({
+      color: 0x14141e,
+      roughness: 0.3,
+      metalness: 0.85
+    })
+  );
+  group.add(armor);
+
+  // 8 Corner Reinforcement Brackets with red glowing trim
+  const cornerMat = new THREE.MeshStandardMaterial({
+    color: 0x252535,
+    emissive: 0xff0044,
+    emissiveIntensity: 0.3,
+    roughness: 0.4
+  });
+  [-0.9, 0.9].forEach(x => {
+    [-0.9, 0.9].forEach(y => {
+      [-0.9, 0.9].forEach(z => {
+        const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.45), cornerMat);
+        bracket.position.set(x, y, z);
+        group.add(bracket);
+      });
+    });
+  });
+
+  // Inner floating Magma Plasma Reactor Core
+  const innerCore = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.88),
+    new THREE.MeshStandardMaterial({
+      color: 0xff0044,
+      emissive: 0xff1100,
+      emissiveIntensity: 1.6,
+      roughness: 0.1,
+      metalness: 0.2
+    })
+  );
+  group.add(innerCore);
+
+  // Glowing amber hazard chevron stripes on 4 sides
+  const chevronMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+  const chevrons = [
+    { pos: [0, 0, 0.96], rot: [0, 0, 0] },
+    { pos: [0, 0, -0.96], rot: [0, Math.PI, 0] },
+    { pos: [0.96, 0, 0], rot: [0, Math.PI / 2, 0] },
+    { pos: [-0.96, 0, 0], rot: [0, -Math.PI / 2, 0] }
+  ];
+  chevrons.forEach(c => {
+    const ch = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.18, 0.02), chevronMat);
+    ch.position.set(...c.pos);
+    ch.rotation.set(...c.rot);
+    group.add(ch);
+  });
+
+  group.userData = { innerCore };
+  return group;
+}
+
+function createHunterInterceptorDrone() {
+  const group = new THREE.Group();
+
+  // Aerodynamic Stealth Fuselage
+  const hull = new THREE.Mesh(
+    new THREE.ConeGeometry(0.7, 1.8, 4),
+    new THREE.MeshStandardMaterial({
+      color: 0x1a0505,
+      emissive: 0x330005,
+      roughness: 0.35,
+      metalness: 0.8
+    })
+  );
+  hull.rotation.x = Math.PI / 2;
+  group.add(hull);
+
+  // Ocular Targeting Socket & Cyclops Eye
+  const eye = new THREE.Mesh(
+    new THREE.SphereGeometry(0.35, 16, 16),
+    new THREE.MeshBasicMaterial({ color: 0xff0033 })
+  );
+  eye.position.set(0, 0.1, 0.9);
+  group.add(eye);
+
+  // Forward Laser Targeting Sight Beam
+  const laserSight = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.015, 0.12, 2.5),
+    new THREE.MeshBasicMaterial({ color: 0xff0033, transparent: true, opacity: 0.75 })
+  );
+  laserSight.position.set(0, 0.1, 2.15);
+  laserSight.rotation.x = Math.PI / 2;
+  group.add(laserSight);
+
+  // Swept Predator Wings
+  const wingMat = new THREE.MeshStandardMaterial({
+    color: 0x2b0808,
+    emissive: 0xff1100,
+    emissiveIntensity: 0.4,
+    metalness: 0.7
+  });
+  const leftWing = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.08, 0.6), wingMat);
+  leftWing.position.set(-1.0, 0, -0.2);
+  leftWing.rotation.y = 0.3;
+  const rightWing = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.08, 0.6), wingMat);
+  rightWing.position.set(1.0, 0, -0.2);
+  rightWing.rotation.y = -0.3;
+  group.add(leftWing);
+  group.add(rightWing);
+
+  // Dual Rear Ion Thrusters & Plasma Flames
+  const thrusterMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9 });
+  const flameMat = new THREE.MeshBasicMaterial({ color: 0xff5500 });
+
+  [-0.35, 0.35].forEach((x, idx) => {
+    const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.14, 0.4, 12), thrusterMat);
+    nozzle.position.set(x, 0, -0.9);
+    nozzle.rotation.x = Math.PI / 2;
+    group.add(nozzle);
+
+    const flame = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.6, 12), flameMat);
+    flame.position.set(x, 0, -1.35);
+    flame.rotation.x = -Math.PI / 2;
+    group.add(flame);
+    if (idx === 0) group.userData.flame1 = flame;
+    else group.userData.flame2 = flame;
+  });
+
+  group.userData.eye = eye;
+  group.userData.laserSight = laserSight;
+  group.userData.leftWing = leftWing;
+  group.userData.rightWing = rightWing;
+
+  return group;
+}
+
+function createAntiGravSkyMine() {
+  const group = new THREE.Group();
+
+  // Dark Naval Armor Core Sphere
+  const core = new THREE.Mesh(
+    new THREE.SphereGeometry(0.78, 16, 16),
+    new THREE.MeshStandardMaterial({
+      color: 0x1c1508,
+      emissive: 0x332200,
+      roughness: 0.4,
+      metalness: 0.85
+    })
+  );
+  group.add(core);
+
+  // 6 Magnetic Detonation Spires along ±X, ±Y, ±Z
+  const spikeMat = new THREE.MeshStandardMaterial({
+    color: 0x2b2210,
+    emissive: 0xffaa00,
+    emissiveIntensity: 0.6,
+    metalness: 0.8
+  });
+  const dirs = [
+    { pos: [0.95, 0, 0], rot: [0, 0, -Math.PI / 2] },
+    { pos: [-0.95, 0, 0], rot: [0, 0, Math.PI / 2] },
+    { pos: [0, 0.95, 0], rot: [0, 0, 0] },
+    { pos: [0, -0.95, 0], rot: [Math.PI, 0, 0] },
+    { pos: [0, 0, 0.95], rot: [Math.PI / 2, 0, 0] },
+    { pos: [0, 0, -0.95], rot: [-Math.PI / 2, 0, 0] }
+  ];
+  dirs.forEach(d => {
+    const spike = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.55, 6), spikeMat);
+    spike.position.set(...d.pos);
+    spike.rotation.set(...d.rot);
+    group.add(spike);
+  });
+
+  // Dual Counter-Rotating Gyroscopic Rings
+  const ring1 = new THREE.Mesh(
+    new THREE.TorusGeometry(1.2, 0.05, 8, 28),
+    new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+  );
+  const ring2 = new THREE.Mesh(
+    new THREE.TorusGeometry(1.4, 0.04, 8, 28),
+    new THREE.MeshBasicMaterial({ color: 0xff7700 })
+  );
+  ring2.rotation.x = Math.PI / 2;
+  group.add(ring1);
+  group.add(ring2);
+
+  // Flashing Danger Strobe Beacon on top
+  const strobe = new THREE.Mesh(
+    new THREE.SphereGeometry(0.24, 12, 12),
+    new THREE.MeshBasicMaterial({ color: 0xffea00 })
+  );
+  strobe.position.set(0, 0.9, 0);
+  group.add(strobe);
+
+  group.userData = { ring1, ring2, strobe };
+  return group;
+}
+
 const CrystalCollectorGame = () => {
   const mountRef = useRef(null);
 
@@ -451,6 +867,7 @@ const CrystalCollectorGame = () => {
     });
 
     // Spawn Crystals (Ground and High-Altitude Sky Islands across 76x76 Arena)
+    // Spawn Crystals (Ground and High-Altitude Sky Islands across 76x76 Arena)
     for (let i = 0; i < cfg.crystals; i++) {
       let posX, posY = 1.2, posZ;
       if (platforms && platforms.length > 0 && i < platforms.length) {
@@ -466,25 +883,11 @@ const CrystalCollectorGame = () => {
       }
       const isRainbow = Math.random() < 0.15; // 15% chance for Rainbow Fever Crystal!
 
-      const crystal = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.85),
-        new THREE.MeshPhysicalMaterial({
-          color: isRainbow ? 0xff00ff : 0x00f0ff,
-          emissive: isRainbow ? 0xff00bb : 0x00aacc,
-          emissiveIntensity: 0.8,
-          roughness: 0.12,
-          metalness: 0.18,
-          transmission: 0.55,
-          transparent: true,
-          opacity: 0.92,
-          clearcoat: 1.0,
-          clearcoatRoughness: 0.1
-        })
-      );
-      crystal.position.set(posX, posY, posZ);
-      crystal.castShadow = true;
-      scene.add(crystal);
-      crystals.push({ mesh: crystal, collected: false, isRainbow });
+      const crystalGroup = createCrystalCluster(isRainbow);
+      crystalGroup.position.set(posX, posY, posZ);
+      crystalGroup.castShadow = true;
+      scene.add(crystalGroup);
+      crystals.push({ mesh: crystalGroup, collected: false, isRainbow, startY: posY, phase: i * 0.8 });
     }
 
     // Spawn Coins (Ground and Elevated Sky Decks across 76x76 Arena)
@@ -499,93 +902,51 @@ const CrystalCollectorGame = () => {
         cX = (Math.random() - 0.5) * 64;
         cZ = (Math.random() - 0.5) * 64;
       }
-      const coin = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 0.5, 0.2, 24),
-        new THREE.MeshStandardMaterial({
-          color: 0xffd700,
-          emissive: 0xff9900,
-          emissiveIntensity: 0.25,
-          metalness: 0.92,
-          roughness: 0.18
-        })
-      );
-      coin.position.set(cX, cY, cZ);
-      coin.rotation.x = Math.PI / 2;
-      coin.castShadow = true;
-      scene.add(coin);
-      coinObjs.push({ mesh: coin, collected: false });
+      const coinGroup = createCyberCoin();
+      coinGroup.position.set(cX, cY, cZ);
+      coinGroup.castShadow = true;
+      scene.add(coinGroup);
+      coinObjs.push({ mesh: coinGroup, collected: false, startY: cY, phase: i * 0.4 });
     }
 
     // Spawn Health Hearts (Distributed across wider arena)
     for (let i = 0; i < cfg.hearts; i++) {
-      const heart = new THREE.Mesh(
-        new THREE.SphereGeometry(0.5, 16, 16),
-        new THREE.MeshPhongMaterial({ color: 0xff0000, emissive: 0x660000 })
-      );
+      const heartGroup = createCyberHeart();
       const angle = (i / cfg.hearts) * Math.PI * 2 + Math.PI / 4;
       const r = 16 + Math.random() * 14;
-      heart.position.set(Math.cos(angle) * r, 1, Math.sin(angle) * r);
-      scene.add(heart);
-      heartObjs.push({ mesh: heart, collected: false });
+      heartGroup.position.set(Math.cos(angle) * r, 1.2, Math.sin(angle) * r);
+      scene.add(heartGroup);
+      heartObjs.push({ mesh: heartGroup, collected: false, startY: 1.2, phase: i });
     }
 
-    // Spawn Powerups (Shield, Magnet 🧲, Chrono Slow-Mo ⏳)
+    // Spawn Powerups (Shield 🛡️, Magnet 🧲, Chrono Slow-Mo ⏳)
     const powerTypes = ['shield', 'magnet', 'slowmo'];
     powerTypes.forEach((type, idx) => {
-      const pGroup = new THREE.Group();
-      let pColor = 0x00ffff;
-      if (type === 'magnet') pColor = 0xff0055;
-      if (type === 'slowmo') pColor = 0xffd700;
-
-      const pMesh = new THREE.Mesh(
-        new THREE.TorusGeometry(0.5, 0.2, 8, 16),
-        new THREE.MeshPhongMaterial({ color: pColor, emissive: pColor, emissiveIntensity: 0.6 })
-      );
-      pGroup.add(pMesh);
-
+      const pGroup = createPowerupRelic(type);
       const angle = (idx / 3) * Math.PI * 2 + 1.0;
       const r = 18 + Math.random() * 12;
       pGroup.position.set(Math.cos(angle) * r, 1.4, Math.sin(angle) * r);
       scene.add(pGroup);
-      powerupObjs.push({ mesh: pGroup, type, collected: false });
+      powerupObjs.push({ mesh: pGroup, type, collected: false, startY: 1.4, phase: idx * 2 });
     });
 
-    // Spawn Obstacles (Roaming Cubes, Hunter Seekers & Aerial Sky Mines)
-    for (let i = 0; i < cfg.obs; i++) {
-      const isSeeker = i % 3 === 0; // ~33% are Hunter Seekers!
+    // Spawn Obstacles (Quantum Sentinel Cubes, Hunter Interceptors & Anti-Grav Sky Mines)
+    const isEasy = (currentSaved.difficulty || 'hard') === 'easy';
+    const obsCount = isEasy ? Math.max(4, Math.round(cfg.obs * 0.45)) : cfg.obs;
+    const obsBaseSpeed = isEasy ? cfg.speed * 0.55 : cfg.speed;
+
+    for (let i = 0; i < obsCount; i++) {
+      // In Easy mode: 0 seekers spawn! All are Sentinel Cubes.
+      // In Hard mode: ~33% are Hunter Interceptor Drones.
+      const isSeeker = !isEasy && (i % 3 === 0);
       let obsMesh;
       if (isSeeker) {
-        // Hunter Seeker Drone (Spiked crimson dodecahedron with glowing core)
-        const seekerGroup = new THREE.Group();
-        const core = new THREE.Mesh(
-          new THREE.DodecahedronGeometry(1.2),
-          new THREE.MeshStandardMaterial({
-            color: 0xff1100,
-            emissive: 0xff3300,
-            emissiveIntensity: 0.85,
-            metalness: 0.6,
-            roughness: 0.25
-          })
-        );
-        seekerGroup.add(core);
-
-        const eye = new THREE.Mesh(
-          new THREE.SphereGeometry(0.4, 12, 12),
-          new THREE.MeshBasicMaterial({ color: 0xffffff })
-        );
-        eye.position.set(0, 0, 1.0);
-        seekerGroup.add(eye);
-
-        obsMesh = seekerGroup;
+        obsMesh = createHunterInterceptorDrone();
       } else {
-        // Roaming Hazard Cube
-        obsMesh = new THREE.Mesh(
-          new THREE.BoxGeometry(2, 2, 2),
-          new THREE.MeshPhongMaterial({ color: 0xff0044, emissive: 0x440011 })
-        );
+        obsMesh = createQuantumSentinelCube();
       }
 
-      const angle = (i / cfg.obs) * Math.PI * 2;
+      const angle = (i / obsCount) * Math.PI * 2;
       const r = 12 + Math.random() * 20;
       obsMesh.position.set(Math.cos(angle) * r, 1.5, Math.sin(angle) * r);
       obsMesh.castShadow = true;
@@ -595,38 +956,21 @@ const CrystalCollectorGame = () => {
         type: isSeeker ? 'seeker' : 'roaming',
         mesh: obsMesh,
         velocity: {
-          x: (Math.random() - 0.5) * cfg.speed,
-          z: (Math.random() - 0.5) * cfg.speed
+          x: (Math.random() - 0.5) * obsBaseSpeed,
+          z: (Math.random() - 0.5) * obsBaseSpeed
         },
+        speed: obsBaseSpeed,
         cooldown: 0,
         isLocked: false
       });
     }
 
-    // Spawn Aerial Sky Patrol Mines on elevated platforms (unless boss stage)
-    if (platforms && platforms.length > 0 && level < 10) {
+    // Spawn Aerial Sky Patrol Mines on elevated platforms (Hard mode only! Easy mode disables all sky mines!)
+    if (!isEasy && platforms && platforms.length > 0 && level < 10) {
       platforms.forEach((p, pIdx) => {
         // Place 1 Sky Mine on alternating platforms and wider decks
         if (pIdx % 2 === 0 || p.width >= 12) {
-          const mineGroup = new THREE.Group();
-          const mineBody = new THREE.Mesh(
-            new THREE.IcosahedronGeometry(0.85),
-            new THREE.MeshStandardMaterial({
-              color: 0x221100,
-              emissive: 0xff8800,
-              emissiveIntensity: 0.8,
-              roughness: 0.3,
-              metalness: 0.8
-            })
-          );
-          mineGroup.add(mineBody);
-
-          const hazardRing = new THREE.Mesh(
-            new THREE.TorusGeometry(1.2, 0.08, 8, 24),
-            new THREE.MeshBasicMaterial({ color: 0xffaa00 })
-          );
-          mineGroup.add(hazardRing);
-
+          const mineGroup = createAntiGravSkyMine();
           const startX = p.x;
           const startY = p.topY + 1.2;
           const startZ = p.z;
@@ -843,10 +1187,16 @@ const CrystalCollectorGame = () => {
         camera.lookAt(0, 1.5, 0);
 
         crystals.forEach(c => {
-          if (c.mesh) c.mesh.rotation.y += dt * 1.5;
+          if (c.mesh) {
+            c.mesh.rotation.y += dt * 1.5;
+            if (c.mesh.userData?.innerCore) c.mesh.userData.innerCore.rotation.y -= dt * 2.5;
+          }
         });
         coinObjs.forEach(cn => {
-          if (cn.mesh) cn.mesh.rotation.y += dt * 2;
+          if (cn.mesh) {
+            cn.mesh.rotation.y += dt * 2.5;
+            cn.mesh.rotation.x = Math.sin(t * 2.5 + (cn.phase || 0)) * 0.2;
+          }
         });
 
         particleManager.update(dt);
@@ -1084,7 +1434,13 @@ const CrystalCollectorGame = () => {
       // Collect Crystals
       crystals.forEach(c => {
         if (!c.collected) {
-          c.mesh.rotation.y += dt * 2.5;
+          c.mesh.rotation.y += dt * 2.2;
+          if (c.mesh.userData?.innerCore) c.mesh.userData.innerCore.rotation.y -= dt * 3.5;
+          if (c.mesh.userData?.haloRing) c.mesh.userData.haloRing.rotation.z += dt * 3.0;
+          if (c.isRainbow && c.mesh.userData?.rainbowMat) {
+            c.mesh.userData.rainbowMat.color.setHSL((t * 0.3) % 1, 0.95, 0.6);
+            c.mesh.userData.rainbowMat.emissive.setHSL((t * 0.3) % 1, 0.95, 0.4);
+          }
 
           // Magnet pull (must be within vertical range so ground player doesn't pull sky crystals)
           const distToPlayer = Math.hypot(c.mesh.position.x - player.position.x, c.mesh.position.z - player.position.z);
@@ -1142,7 +1498,8 @@ const CrystalCollectorGame = () => {
       // Collect Coins
       coinObjs.forEach(cn => {
         if (!cn.collected) {
-          cn.mesh.rotation.y += dt * 3;
+          cn.mesh.rotation.y += dt * 3.6;
+          cn.mesh.rotation.x = Math.sin(t * 3.5 + (cn.phase || 0)) * 0.25;
 
           const distToPlayer = Math.hypot(cn.mesh.position.x - player.position.x, cn.mesh.position.z - player.position.z);
           const distY = Math.abs(cn.mesh.position.y - (player.position.y + 1.0));
@@ -1172,7 +1529,10 @@ const CrystalCollectorGame = () => {
       // Collect Hearts
       heartObjs.forEach(h => {
         if (!h.collected) {
-          h.mesh.rotation.y += dt * 2;
+          h.mesh.rotation.y += dt * 2.2;
+          const hPulse = 1.0 + (Math.sin(t * 7) > 0.45 ? 0.16 : 0.0) + Math.sin(t * 3.5) * 0.04;
+          h.mesh.scale.set(hPulse, hPulse, hPulse);
+
           const distToPlayer = Math.hypot(h.mesh.position.x - player.position.x, h.mesh.position.z - player.position.z);
           const distY = Math.abs(h.mesh.position.y - (player.position.y + 1.0));
           if (distToPlayer < 1.6 && distY < 2.2) {
@@ -1189,7 +1549,11 @@ const CrystalCollectorGame = () => {
       // Collect Powerups (Shield, Magnet, Slow-Mo)
       powerupObjs.forEach(p => {
         if (!p.collected) {
-          p.mesh.rotation.y += dt * 3;
+          p.mesh.rotation.y += dt * 2.8;
+          if (p.mesh.userData?.ring1) p.mesh.userData.ring1.rotation.x += dt * 3.0;
+          if (p.mesh.userData?.ring2) p.mesh.userData.ring2.rotation.y += dt * 3.5;
+          p.mesh.position.y = (p.startY || 1.4) + Math.sin(t * 3 + (p.phase || 0)) * 0.15;
+
           const distToPlayer = Math.hypot(p.mesh.position.x - player.position.x, p.mesh.position.z - player.position.z);
           const distY = Math.abs(p.mesh.position.y - (player.position.y + 1.0));
           if (distToPlayer < 1.8 && distY < 2.2) {
@@ -1214,7 +1578,7 @@ const CrystalCollectorGame = () => {
         }
       });
 
-      // Move Obstacles (Roaming Cubes, Hunter Seekers & Aerial Sky Mines)
+      // Move Obstacles (Quantum Sentinel Cubes, Hunter Interceptors & Aerial Sky Mines)
       const slowMultiplier = localSlowMoTime > 0 ? 0.4 : 1.0;
       obstacles.forEach(o => {
         if (o.type === 'skymine') {
@@ -1229,6 +1593,11 @@ const CrystalCollectorGame = () => {
             o.dir = 1;
           }
           o.mesh.rotation.y += dt * 2.5 * slowMultiplier;
+          if (o.mesh.userData?.ring1) o.mesh.userData.ring1.rotation.x += dt * 3.5 * slowMultiplier;
+          if (o.mesh.userData?.ring2) o.mesh.userData.ring2.rotation.z += dt * 3.0 * slowMultiplier;
+          if (o.mesh.userData?.strobe) {
+            o.mesh.userData.strobe.material.color.setHex(Math.sin(t * 12) > 0.2 ? 0xffea00 : 0x442200);
+          }
 
           if (o.cooldown > 0) o.cooldown -= dt;
 
@@ -1274,6 +1643,19 @@ const CrystalCollectorGame = () => {
             o.mesh.rotation.x += dt * 1.5 * slowMultiplier;
           }
 
+          // Animate ion thrusters & ocular laser sight
+          if (o.mesh.userData?.flame1 && o.mesh.userData?.flame2) {
+            const flScale = o.isLocked ? 1.4 + Math.sin(t * 20) * 0.3 : 0.8;
+            o.mesh.userData.flame1.scale.set(flScale, flScale, flScale);
+            o.mesh.userData.flame2.scale.set(flScale, flScale, flScale);
+          }
+          if (o.mesh.userData?.laserSight) {
+            o.mesh.userData.laserSight.visible = o.isLocked;
+          }
+          if (o.mesh.userData?.eye) {
+            o.mesh.userData.eye.material.color.setHex(o.isLocked ? 0xff0000 : 0xff5500);
+          }
+
           o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
           o.mesh.position.z += o.velocity.z * dt * slowMultiplier;
 
@@ -1299,7 +1681,7 @@ const CrystalCollectorGame = () => {
             }
           }
         } else {
-          // Roaming Hazard Cube: Standard Pong bouncing
+          // Quantum Sentinel Cube: Standard bouncing & tumbling
           o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
           o.mesh.position.z += o.velocity.z * dt * slowMultiplier;
 
@@ -1308,6 +1690,14 @@ const CrystalCollectorGame = () => {
 
           o.mesh.rotation.x += dt * 2 * slowMultiplier;
           o.mesh.rotation.y += dt * 2 * slowMultiplier;
+
+          // Inner plasma reactor core counter-rotation and light pulse
+          if (o.mesh.userData?.innerCore) {
+            o.mesh.userData.innerCore.rotation.y -= dt * 3.5 * slowMultiplier;
+            o.mesh.userData.innerCore.rotation.x += dt * 2.5 * slowMultiplier;
+            const corePulse = 0.88 + Math.sin(t * 6) * 0.14;
+            o.mesh.userData.innerCore.scale.set(corePulse, corePulse, corePulse);
+          }
 
           if (o.cooldown > 0) o.cooldown -= dt;
 
@@ -1431,7 +1821,7 @@ const CrystalCollectorGame = () => {
         } catch {}
       }
     };
-  }, [level, showComplete, gameOver, showLevelStart, currentScreen]);
+  }, [level, showComplete, gameOver, showLevelStart, currentScreen, savedData.difficulty]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: '#05050f' }}>
@@ -1441,6 +1831,8 @@ const CrystalCollectorGame = () => {
       {currentScreen === 'home' && (
         <HomeScreen
           savedData={savedData}
+          setSavedData={setSavedData}
+          onToggleDifficulty={(d) => setSavedData(prev => ({ ...prev, difficulty: d }))}
           onPlay={() => {
             setCurrentScreen('playing');
             setShowLevelStart(true);
