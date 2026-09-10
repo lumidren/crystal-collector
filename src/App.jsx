@@ -408,18 +408,18 @@ const CrystalCollectorGame = () => {
     dirLight.shadow.mapSize.width = isUltra ? 2048 : 1024;
     dirLight.shadow.mapSize.height = isUltra ? 2048 : 1024;
     dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 70;
-    dirLight.shadow.camera.left = -28;
-    dirLight.shadow.camera.right = 28;
-    dirLight.shadow.camera.top = 28;
-    dirLight.shadow.camera.bottom = -28;
+    dirLight.shadow.camera.far = 90;
+    dirLight.shadow.camera.left = -42;
+    dirLight.shadow.camera.right = 42;
+    dirLight.shadow.camera.top = 42;
+    dirLight.shadow.camera.bottom = -42;
     dirLight.shadow.bias = -0.0005;
     dirLight.shadow.normalBias = 0.02;
     scene.add(dirLight);
 
-    // Ground Floor with PBR Texture
+    // Ground Floor with PBR Texture (76x76 Arena)
     const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(50, 50),
+      new THREE.PlaneGeometry(76, 76),
       new THREE.MeshStandardMaterial({
         color: biome.groundColor,
         roughness: 0.75,
@@ -430,14 +430,14 @@ const CrystalCollectorGame = () => {
     ground.receiveShadow = true;
     scene.add(ground);
 
-    const grid = new THREE.GridHelper(50, 25, 0x555555, 0x222222);
+    const grid = new THREE.GridHelper(76, 38, 0x555555, 0x222222);
     grid.position.y = 0.01;
     scene.add(grid);
 
-    // Boundary Walls
-    [[0, 2.5, -25], [0, 2.5, 25], [-25, 2.5, 0], [25, 2.5, 0]].forEach((pos, i) => {
+    // Boundary Walls (76x76 Arena with walls at +/- 38m)
+    [[0, 2.5, -38], [0, 2.5, 38], [-38, 2.5, 0], [38, 2.5, 0]].forEach((pos, i) => {
       const wall = new THREE.Mesh(
-        new THREE.BoxGeometry(50, 5, 1),
+        new THREE.BoxGeometry(76, 5, 1),
         new THREE.MeshStandardMaterial({
           color: biome.wallColor,
           roughness: 0.7,
@@ -450,7 +450,7 @@ const CrystalCollectorGame = () => {
       scene.add(wall);
     });
 
-    // Spawn Crystals (Ground and High-Altitude Sky Islands)
+    // Spawn Crystals (Ground and High-Altitude Sky Islands across 76x76 Arena)
     for (let i = 0; i < cfg.crystals; i++) {
       let posX, posY = 1.2, posZ;
       if (platforms && platforms.length > 0 && i < platforms.length) {
@@ -460,7 +460,7 @@ const CrystalCollectorGame = () => {
         posZ = p.z + (Math.random() - 0.5) * (p.depth - 2.5);
       } else {
         const angle = (i / cfg.crystals) * Math.PI * 2;
-        const r = 8 + Math.random() * 11;
+        const r = 10 + Math.random() * 22;
         posX = Math.cos(angle) * r;
         posZ = Math.sin(angle) * r;
       }
@@ -487,7 +487,7 @@ const CrystalCollectorGame = () => {
       crystals.push({ mesh: crystal, collected: false, isRainbow });
     }
 
-    // Spawn Coins (Ground and Elevated Sky Decks)
+    // Spawn Coins (Ground and Elevated Sky Decks across 76x76 Arena)
     for (let i = 0; i < cfg.coins; i++) {
       let cX, cY = 1, cZ;
       if (platforms && platforms.length > 0 && i < platforms.length * 2) {
@@ -496,8 +496,8 @@ const CrystalCollectorGame = () => {
         cY = p.topY + 1;
         cZ = p.z + (Math.random() - 0.5) * (p.depth - 2);
       } else {
-        cX = (Math.random() - 0.5) * 40;
-        cZ = (Math.random() - 0.5) * 40;
+        cX = (Math.random() - 0.5) * 64;
+        cZ = (Math.random() - 0.5) * 64;
       }
       const coin = new THREE.Mesh(
         new THREE.CylinderGeometry(0.5, 0.5, 0.2, 24),
@@ -516,14 +516,14 @@ const CrystalCollectorGame = () => {
       coinObjs.push({ mesh: coin, collected: false });
     }
 
-    // Spawn Health Hearts
+    // Spawn Health Hearts (Distributed across wider arena)
     for (let i = 0; i < cfg.hearts; i++) {
       const heart = new THREE.Mesh(
         new THREE.SphereGeometry(0.5, 16, 16),
         new THREE.MeshPhongMaterial({ color: 0xff0000, emissive: 0x660000 })
       );
       const angle = (i / cfg.hearts) * Math.PI * 2 + Math.PI / 4;
-      const r = 12 + Math.random() * 8;
+      const r = 16 + Math.random() * 14;
       heart.position.set(Math.cos(angle) * r, 1, Math.sin(angle) * r);
       scene.add(heart);
       heartObjs.push({ mesh: heart, collected: false });
@@ -544,7 +544,7 @@ const CrystalCollectorGame = () => {
       pGroup.add(pMesh);
 
       const angle = (idx / 3) * Math.PI * 2 + 1.0;
-      const r = 13 + Math.random() * 6;
+      const r = 18 + Math.random() * 12;
       pGroup.position.set(Math.cos(angle) * r, 1.4, Math.sin(angle) * r);
       scene.add(pGroup);
       powerupObjs.push({ mesh: pGroup, type, collected: false });
@@ -890,8 +890,8 @@ const CrystalCollectorGame = () => {
         }
       }
 
-      player.position.x = Math.max(-23, Math.min(23, player.position.x + mx));
-      player.position.z = Math.max(-23, Math.min(23, player.position.z + mz));
+      player.position.x = Math.max(-36, Math.min(36, player.position.x + mx));
+      player.position.z = Math.max(-36, Math.min(36, player.position.z + mz));
 
       // Multi-Tier Sky Platform & Ground Floor Detection
       let currentFloorY = 0;
@@ -1134,8 +1134,8 @@ const CrystalCollectorGame = () => {
         o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
         o.mesh.position.z += o.velocity.z * dt * slowMultiplier;
 
-        if (o.mesh.position.x > 23 || o.mesh.position.x < -23) o.velocity.x *= -1;
-        if (o.mesh.position.z > 23 || o.mesh.position.z < -23) o.velocity.z *= -1;
+        if (o.mesh.position.x > 36 || o.mesh.position.x < -36) o.velocity.x *= -1;
+        if (o.mesh.position.z > 36 || o.mesh.position.z < -36) o.velocity.z *= -1;
 
         o.mesh.rotation.x += dt * 2 * slowMultiplier;
         o.mesh.rotation.y += dt * 2 * slowMultiplier;
