@@ -17,6 +17,7 @@ test('biomeGenerator - getBiomeData returns valid configurations for all 10 leve
     assert.equal(typeof biome.friction, 'number', `Level ${lvl} friction must be number`);
     assert.ok(biome.weather, `Level ${lvl} missing weather`);
     assert.ok(biome.weather.count > 0, `Level ${lvl} weather count must be > 0`);
+    assert.ok(biome.fog.far >= 80, `Level ${lvl} fog distance should cover 76x76 arena`);
   }
 
   // Level 1-2: Forest
@@ -43,53 +44,91 @@ test('biomeGenerator - getBiomeData returns valid configurations for all 10 leve
   assert.equal(BiomeGenerator.getBiomeData(10).hasLava, true);
 });
 
-test('biomeGenerator - buildBiome instantiates 4 multi-tier sky platforms with correct elevations', () => {
-  const scene = new THREE.Scene();
-  const env = BiomeGenerator.buildBiome(1, scene);
+test('biomeGenerator - generates distinct platform topologies across all 5 biomes', () => {
+  // Biome 1: Forest Valley (Level 1)
+  const sceneForest = new THREE.Scene();
+  const envForest = BiomeGenerator.buildBiome(1, sceneForest);
+  assert.equal(envForest.platforms.length, 4);
+  const forestIds = envForest.platforms.map(p => p.id);
+  assert.ok(forestIds.includes('treehouse-north'));
+  assert.ok(forestIds.includes('treehouse-south'));
+  assert.ok(forestIds.includes('bridge-canopy'));
+  assert.ok(forestIds.includes('terrace-lookout'));
 
-  assert.ok(Array.isArray(env.platforms));
-  assert.equal(env.platforms.length, 4);
+  // Biome 2: Crystal Cavern (Level 3)
+  const sceneCavern = new THREE.Scene();
+  const envCavern = BiomeGenerator.buildBiome(3, sceneCavern);
+  assert.equal(envCavern.platforms.length, 4);
+  const cavernIds = envCavern.platforms.map(p => p.id);
+  assert.ok(cavernIds.includes('catwalk-west'));
+  assert.ok(cavernIds.includes('crystal-arch'));
+  assert.ok(cavernIds.includes('stalactite-perch'));
 
-  const [westDeck, eastDeck, midBridge, apexPeak] = env.platforms;
+  // Biome 3: Frozen Tundra (Level 5 - 3-tier stepped glacier peak + ice shelves)
+  const sceneTundra = new THREE.Scene();
+  const envTundra = BiomeGenerator.buildBiome(5, sceneTundra);
+  assert.equal(envTundra.platforms.length, 5);
+  const tundraIds = envTundra.platforms.map(p => p.id);
+  assert.ok(tundraIds.includes('glacier-base'));
+  assert.ok(tundraIds.includes('glacier-mid'));
+  assert.ok(tundraIds.includes('glacier-peak'));
+  const glacierPeak = envTundra.platforms.find(p => p.id === 'glacier-peak');
+  assert.equal(glacierPeak.topY, 9.0);
 
-  // West Sky Deck (y = 3.8, height = 0.6 => topY = 4.1)
-  assert.equal(westDeck.id, 'island-west');
-  assert.equal(westDeck.y, 3.8);
-  assert.equal(westDeck.topY, 4.1);
-  assert.ok(westDeck.minX < westDeck.maxX);
-  assert.ok(westDeck.minZ < westDeck.maxZ);
+  // Biome 4: Volcanic Caldera (Level 7 - Central citadel, ramparts, basalt stones)
+  const sceneVolcano = new THREE.Scene();
+  const envVolcano = BiomeGenerator.buildBiome(7, sceneVolcano);
+  assert.equal(envVolcano.platforms.length, 5);
+  const volcanoIds = envVolcano.platforms.map(p => p.id);
+  assert.ok(volcanoIds.includes('caldera-citadel'));
+  assert.ok(volcanoIds.includes('rampart-north'));
+  assert.ok(volcanoIds.includes('stepping-stone-west'));
 
-  // East Sky Deck (y = 4.6, height = 0.6 => topY = 4.9)
-  assert.equal(eastDeck.id, 'island-east');
-  assert.equal(eastDeck.y, 4.6);
-  assert.equal(eastDeck.topY, 4.9);
+  // Biome 5A: Cosmic Void (Level 9 - 6 orbital docks)
+  const sceneVoid = new THREE.Scene();
+  const envVoid = BiomeGenerator.buildBiome(9, sceneVoid);
+  assert.equal(envVoid.platforms.length, 6);
+  const voidIds = envVoid.platforms.map(p => p.id);
+  assert.ok(voidIds.includes('orbit-dock-alpha'));
+  assert.ok(voidIds.includes('apex-station'));
 
-  // Mid Bridge (y = 5.8, height = 0.4 => topY = 6.0)
-  assert.equal(midBridge.id, 'bridge-mid');
-  assert.equal(midBridge.y, 5.8);
-  assert.equal(midBridge.topY, 6.0);
-
-  // High Apex Peak (y = 7.5, height = 0.8 => topY = 7.9)
-  assert.equal(apexPeak.id, 'island-apex');
-  assert.equal(apexPeak.y, 7.5);
-  assert.equal(apexPeak.topY, 7.9);
+  // Biome 5B: The Titan Gauntlet (Level 10 - Colosseum & 4 Pylon Towers)
+  const sceneBoss = new THREE.Scene();
+  const envBoss = BiomeGenerator.buildBiome(10, sceneBoss);
+  assert.equal(envBoss.platforms.length, 5);
+  const bossIds = envBoss.platforms.map(p => p.id);
+  assert.ok(bossIds.includes('titan-colosseum'));
+  assert.ok(bossIds.includes('pylon-tower-nw'));
+  assert.ok(bossIds.includes('pylon-tower-ne'));
 });
 
-test('biomeGenerator - buildBiome correctly sets jump pads and hazard zones', () => {
+test('biomeGenerator - buildBiome sets custom jump pads and hazard zones per biome', () => {
+  // Forest has 3 jump pads, 0 lava pools
   const scene1 = new THREE.Scene();
   const env1 = BiomeGenerator.buildBiome(1, scene1);
-  // Levels < 5 have 2 jump pads, 0 lava pools
-  assert.equal(env1.jumpPads.length, 2);
+  assert.equal(env1.jumpPads.length, 3);
   assert.equal(env1.hazardZones.length, 0);
 
+  // Cavern has 4 geode jump pads
+  const scene3 = new THREE.Scene();
+  const env3 = BiomeGenerator.buildBiome(3, scene3);
+  assert.equal(env3.jumpPads.length, 4);
+  assert.equal(env3.hazardZones.length, 0);
+
+  // Volcano has 4 jump pads and 4 lava moat hazard zones
   const scene8 = new THREE.Scene();
   const env8 = BiomeGenerator.buildBiome(8, scene8);
-  // Level 8 has 4 jump pads and 3 lava hazard zones
   assert.equal(env8.jumpPads.length, 4);
-  assert.equal(env8.hazardZones.length, 3);
+  assert.equal(env8.hazardZones.length, 4);
   env8.hazardZones.forEach(h => {
-    assert.equal(h.radius, 2.7);
+    assert.equal(h.radius, 4.5);
     assert.equal(typeof h.x, 'number');
     assert.equal(typeof h.z, 'number');
   });
+
+  // Level 10 has 4 quantum jump pads and 4 void rifts
+  const scene10 = new THREE.Scene();
+  const env10 = BiomeGenerator.buildBiome(10, scene10);
+  assert.equal(env10.jumpPads.length, 4);
+  assert.equal(env10.hazardZones.length, 4);
 });
