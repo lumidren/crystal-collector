@@ -272,9 +272,29 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
               </div>
 
               <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(255, 0, 51, 0.15)', color: '#ff0033' }}>🎯</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff0033' }}>Hunter Seeker Drones</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    Intelligent spiked drones that actively track the player! When you enter their <strong>24m detection radius</strong>, they accelerate and home in directly towards you. Break line-of-sight, jump onto a sky platform, or deflect them with your Shield!
+                  </div>
+                </div>
+              </div>
+
+              <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(255, 170, 0, 0.15)', color: '#ffaa00' }}>🛸</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ffaa00' }}>Aerial Sky Patrol Mines</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    Hovering hazard mines patrolling back and forth across elevated bridges and platforms. Watch your timing when leaping across platforms—elevated platforms are no longer safe havens!
+                  </div>
+                </div>
+              </div>
+
+              <div className="manual-card">
                 <div className="manual-card-icon" style={{ background: 'rgba(255, 0, 68, 0.15)', color: '#ff0044' }}>🟥</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff0044' }}>Hazard Cubes</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff0044' }}>Roaming Hazard Cubes</div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
                     Kinetic cubes that bounce off walls and accelerate each level. Jump over them or deflect them using your Energy Shield!
                   </div>
@@ -286,17 +306,7 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff4400' }}>Molten Lava Pools</div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    Glowing hazard zones on the arena floor. Stepping inside deals rapid burn damage.
-                  </div>
-                </div>
-              </div>
-
-              <div className="manual-card">
-                <div className="manual-card-icon" style={{ background: 'rgba(255, 215, 0, 0.15)', color: '#ffd700' }}>🚀</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ffd700' }}>Trampoline Jump Pads</div>
-                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    Step onto glowing gold launch pads to propel yourself sky-high toward elevated crystals and floating bonus hearts!
+                    Glowing hazard zones on the arena floor. Stepping inside deals rapid burn damage. Elevated players on sky islands or basalt stepping stones are immune.
                   </div>
                 </div>
               </div>
