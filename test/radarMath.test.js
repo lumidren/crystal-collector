@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 test('radarMath - projects world coordinates into radar screen coordinates relative to player forward', () => {
-  const RADAR_RANGE = 45;
+  const RADAR_RANGE = 55;
   const WIDTH = 146;
   const HEIGHT = 146;
   const CENTER_X = WIDTH / 2;
@@ -27,32 +27,32 @@ test('radarMath - projects world coordinates into radar screen coordinates relat
   // Player at origin looking North (pRot = 0)
   const pX = 0, pZ = 0, pRot = 0;
 
-  // 1. Target 20m straight ahead (dx = 0, dz = -20 in Three.js coordinates)
-  const ahead = toRadarCoords(0, -20, pX, pZ, pRot);
+  // 1. Target 25m straight ahead (dx = 0, dz = -25 in Three.js coordinates)
+  const ahead = toRadarCoords(0, -25, pX, pZ, pRot);
   assert.ok(Math.abs(ahead.x - CENTER_X) < 0.01, 'Target straight ahead must be horizontally centered');
   assert.ok(ahead.y < CENTER_Y, 'Target straight ahead must be vertically UP on radar');
   assert.equal(ahead.inRange, true);
 
-  // 2. Target 20m behind (dx = 0, dz = 20)
-  const behind = toRadarCoords(0, 20, pX, pZ, pRot);
+  // 2. Target 25m behind (dx = 0, dz = 25)
+  const behind = toRadarCoords(0, 25, pX, pZ, pRot);
   assert.ok(Math.abs(behind.x - CENTER_X) < 0.01);
   assert.ok(behind.y > CENTER_Y, 'Target behind player must be vertically DOWN on radar');
 
-  // 3. Target 20m to the right (dx = 20, dz = 0)
-  const right = toRadarCoords(20, 0, pX, pZ, pRot);
+  // 3. Target 25m to the right (dx = 25, dz = 0)
+  const right = toRadarCoords(25, 0, pX, pZ, pRot);
   assert.ok(right.x > CENTER_X, 'Target to the right must be on RIGHT of radar');
   assert.ok(Math.abs(right.y - CENTER_Y) < 0.01);
 
-  // 4. Target 20m to the left (dx = -20, dz = 0)
-  const left = toRadarCoords(-20, 0, pX, pZ, pRot);
+  // 4. Target 25m to the left (dx = -25, dz = 0)
+  const left = toRadarCoords(-25, 0, pX, pZ, pRot);
   assert.ok(left.x < CENTER_X, 'Target to the left must be on LEFT of radar');
   assert.ok(Math.abs(left.y - CENTER_Y) < 0.01);
 
-  // 5. Target 60m away (exceeds 45m RADAR_RANGE)
-  const farTarget = toRadarCoords(0, -60, pX, pZ, pRot);
-  assert.equal(farTarget.inRange, false, 'Target beyond 45m must report inRange = false');
+  // 5. Target 70m away (exceeds 55m RADAR_RANGE)
+  const farTarget = toRadarCoords(0, -70, pX, pZ, pRot);
+  assert.equal(farTarget.inRange, false, 'Target beyond 55m must report inRange = false');
   const distFromCenter = Math.hypot(farTarget.x - CENTER_X, farTarget.y - CENTER_Y);
-  assert.ok(distFromCenter <= RADIUS, 'Target beyond 45m must be clamped within radar radius');
+  assert.ok(distFromCenter <= RADIUS, 'Target beyond 55m must be clamped within radar radius');
 });
 
 test('radarMath - distinguishes sky island altitude markers for elevated targets', () => {
