@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { loadGameState, saveGameState } from './game/saveManager.js';
+import { loadGameState, saveGameState, resetGameState } from './game/saveManager.js';
 import { soundEngine } from './audio/soundEngine.js';
 import { ParticleManager } from './game/particles.js';
 import { BiomeGenerator } from './world/biomeGenerator.js';
 import { CrystalTitanBoss } from './game/boss.js';
 import { PetCompanion } from './game/pets.js';
 import { CyberRunner } from './game/character.js';
+import { createCyberCreature } from './game/creatures.js';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { LevelSelectModal } from './components/LevelSelectModal.jsx';
 import { HowToPlayModal } from './components/HowToPlayModal.jsx';
@@ -927,30 +928,30 @@ const CrystalCollectorGame = () => {
       powerupObjs.push({ mesh: pGroup, type, collected: false, startY: 1.4, phase: idx * 2 });
     });
 
-    // Spawn Obstacles (Quantum Sentinel Cubes, Hunter Interceptors & Anti-Grav Sky Mines)
+    // Spawn Obstacles (Quantum Sentinel Cubes, Cyber Stalker Creatures & Anti-Grav Sky Mines)
     const isEasy = (currentSaved.difficulty || 'hard') === 'easy';
     const obsCount = isEasy ? Math.max(4, Math.round(cfg.obs * 0.45)) : cfg.obs;
     const obsBaseSpeed = isEasy ? cfg.speed * 0.55 : cfg.speed;
 
     for (let i = 0; i < obsCount; i++) {
-      // In Easy mode: 0 seekers spawn! All are Sentinel Cubes.
-      // In Hard mode: ~33% are Hunter Interceptor Drones.
-      const isSeeker = !isEasy && (i % 3 === 0);
+      // In Easy mode: Sentinel Cubes only (peaceful bouncing)
+      // In Hard mode: ~35% are Cyber Stalker Creatures (fierce stalking & lunging beasts)
+      const isCreature = !isEasy && (i % 3 === 0);
       let obsMesh;
-      if (isSeeker) {
-        obsMesh = createHunterInterceptorDrone();
+      if (isCreature) {
+        obsMesh = createCyberCreature();
       } else {
         obsMesh = createQuantumSentinelCube();
       }
 
       const angle = (i / obsCount) * Math.PI * 2;
       const r = 12 + Math.random() * 20;
-      obsMesh.position.set(Math.cos(angle) * r, 1.5, Math.sin(angle) * r);
+      obsMesh.position.set(Math.cos(angle) * r, 0, Math.sin(angle) * r);
       obsMesh.castShadow = true;
       scene.add(obsMesh);
 
       obstacles.push({
-        type: isSeeker ? 'seeker' : 'roaming',
+        type: isCreature ? 'creature' : 'roaming',
         mesh: obsMesh,
         velocity: {
           x: (Math.random() - 0.5) * obsBaseSpeed,
@@ -958,7 +959,9 @@ const CrystalCollectorGame = () => {
         },
         speed: obsBaseSpeed,
         cooldown: 0,
-        isLocked: false
+        state: 'patrol', // 'patrol' | 'windup' | 'lunge'
+        stateTimer: 0,
+        lungeDir: { x: 0, z: 0 }
       });
     }
 
@@ -1617,47 +1620,125 @@ const CrystalCollectorGame = () => {
               particleManager.createFloatingText(player.position, 'SKY MINE! 💥', '#ff6600');
             }
           }
-        } else if (o.type === 'seeker') {
-          // Patrol Drone: smooth autonomous flight (no homing / no chasing player)
-          o.mesh.rotation.y += dt * 2.5 * slowMultiplier;
-          o.mesh.rotation.x += dt * 1.5 * slowMultiplier;
-
-          // Animate ion thrusters
-          if (o.mesh.userData?.flame1 && o.mesh.userData?.flame2) {
-            const flScale = 0.9 + Math.sin(t * 12) * 0.2;
-            o.mesh.userData.flame1.scale.set(flScale, flScale, flScale);
-            o.mesh.userData.flame2.scale.set(flScale, flScale, flScale);
-          }
-          if (o.mesh.userData?.laserSight) {
-            o.mesh.userData.laserSight.visible = false;
-          }
-          if (o.mesh.userData?.eye) {
-            o.mesh.userData.eye.material.color.setHex(0xff5500);
-          }
-
-          o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
-          o.mesh.position.z += o.velocity.z * dt * slowMultiplier;
-
-          if (o.mesh.position.x > 36 || o.mesh.position.x < -36) o.velocity.x *= -1;
-          if (o.mesh.position.z > 36 || o.mesh.position.z < -36) o.velocity.z *= -1;
-
-          if (o.cooldown > 0) o.cooldown -= dt;
-
+        } else if (o.type === 'creature') {
+          // Cyber Stalker Creature: Intelligent Stalking & Telegraphed Lunge AI (Hard Mode)
           const distToPlayer = Math.hypot(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
-          if (distToPlayer < 2.2 && o.cooldown <= 0 && player.position.y < 1.2) {
+          const isPlayerOnGround = player.position.y < 2.2;
+          const ud = o.mesh.userData || {};
+
+          // Stalking / Windup / Lunge State Machine
+          if (o.state === 'lunge') {
+            // Rapid high-speed forward strike!
+            o.stateTimer -= dt;
+            o.mesh.position.x += o.lungeDir.x * (o.speed * 1.85) * dt * slowMultiplier;
+            o.mesh.position.z += o.lungeDir.z * (o.speed * 1.85) * dt * slowMultiplier;
+
+            // Thrashing claws and biting mandibles
+            if (ud.leftMandible && ud.rightMandible) {
+              ud.leftMandible.rotation.z = -0.6 + Math.sin(t * 30) * 0.4;
+              ud.rightMandible.rotation.z = 0.6 - Math.sin(t * 30) * 0.4;
+            }
+            if (o.stateTimer <= 0) {
+              o.state = 'patrol';
+              o.cooldown = 1.4; // Recovery breather
+              if (ud.eyeLeft && ud.eyeRight) {
+                ud.eyeLeft.material.color.setHex(0xff0022);
+                ud.eyeRight.material.color.setHex(0xff0022);
+              }
+            }
+          } else if (o.state === 'windup') {
+            // Windup Telegraph: pauses for 0.38s, eyes flare bright crimson, tail shakes!
+            o.stateTimer -= dt;
+            if (ud.eyeLeft && ud.eyeRight) {
+              ud.eyeLeft.material.color.setHex(0xff0000);
+              ud.eyeRight.material.color.setHex(0xff0000);
+            }
+            if (ud.tailGroup) {
+              ud.tailGroup.rotation.y = Math.sin(t * 40) * 0.45;
+            }
+            if (o.stateTimer <= 0) {
+              o.state = 'lunge';
+              o.stateTimer = 0.55; // 0.55 seconds of fierce lunge!
+              const dX = player.position.x - o.mesh.position.x;
+              const dZ = player.position.z - o.mesh.position.z;
+              const len = Math.hypot(dX, dZ) || 1;
+              o.lungeDir = { x: dX / len, z: dZ / len };
+              o.mesh.rotation.y = Math.atan2(dX, dZ);
+              soundEngine.playHazard();
+            }
+          } else {
+            // Normal Stalking or Patrol
+            if (distToPlayer < 12 && isPlayerOnGround && o.cooldown <= 0) {
+              // Initiate telegraphed lunge attack!
+              o.state = 'windup';
+              o.stateTimer = 0.38;
+              o.velocity.x = 0;
+              o.velocity.z = 0;
+            } else if (distToPlayer < 28 && isPlayerOnGround) {
+              // Stalking Phase: smooth pursuit steering toward player
+              const angle = Math.atan2(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
+              o.mesh.rotation.y = angle;
+              const pursuitSpeed = o.speed * 1.15;
+              o.velocity.x += (Math.sin(angle) * pursuitSpeed - o.velocity.x) * dt * 3.5;
+              o.velocity.z += (Math.cos(angle) * pursuitSpeed - o.velocity.z) * dt * 3.5;
+
+              o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
+              o.mesh.position.z += o.velocity.z * dt * slowMultiplier;
+            } else {
+              // Peaceful patrol flight/crawl when player is far away or safe on sky islands
+              o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
+              o.mesh.position.z += o.velocity.z * dt * slowMultiplier;
+              if (Math.hypot(o.velocity.x, o.velocity.z) > 0.1) {
+                o.mesh.rotation.y = Math.atan2(o.velocity.x, o.velocity.z);
+              }
+            }
+
+            if (o.cooldown > 0) o.cooldown -= dt;
+          }
+
+          // Arena boundary bounce
+          if (o.mesh.position.x > 36 || o.mesh.position.x < -36) {
+            o.velocity.x *= -1;
+            if (o.lungeDir) o.lungeDir.x *= -1;
+          }
+          if (o.mesh.position.z > 36 || o.mesh.position.z < -36) {
+            o.velocity.z *= -1;
+            if (o.lungeDir) o.lungeDir.z *= -1;
+          }
+
+          // Procedural limb & tail animations
+          const legSpeed = o.state === 'lunge' ? 32 : (o.state === 'windup' ? 6 : 16);
+          if (ud.legs) {
+            ud.legs.forEach(l => {
+              l.root.rotation.x = Math.sin(t * legSpeed + l.phase) * 0.45;
+            });
+          }
+          if (ud.heartCore) {
+            const pulseSpeed = o.state === 'lunge' ? 18 : 8;
+            ud.heartCore.scale.setScalar(0.9 + Math.sin(t * pulseSpeed) * 0.25);
+          }
+          if (ud.tailGroup && o.state !== 'windup') {
+            ud.tailGroup.rotation.y = Math.sin(t * 6) * 0.3;
+          }
+
+          // Collision Check
+          if (distToPlayer < 2.2 && o.cooldown <= 0 && isPlayerOnGround) {
             if (spawnGraceRef.current > 0) {
               o.cooldown = 0.5;
               return;
             }
             if (localShieldTime > 0 || localFeverTime > 0) {
               o.cooldown = 1.0;
+              o.state = 'patrol';
               soundEngine.playPowerup('shield');
-              particleManager.createBurst(o.mesh.position, 0xff3300, 18, 9);
-              particleManager.createFloatingText(player.position, 'DEFLECTED! 🛡️', '#00ffff');
+              particleManager.createBurst(o.mesh.position, 0xff0044, 20, 10);
+              particleManager.createFloatingText(player.position, 'BEAST DEFLECTED! 🛡️', '#00ffff');
             } else {
               o.cooldown = 2.0;
+              o.state = 'patrol';
               handlePlayerDamage();
-              particleManager.createFloatingText(player.position, 'HIT! ⚠️', '#ff0033');
+              particleManager.createBurst(o.mesh.position, 0xff0033, 16, 8);
+              particleManager.createFloatingText(player.position, 'BEAST STRIKE! 💥', '#ff0033');
             }
           }
         } else {
@@ -1802,6 +1883,21 @@ const CrystalCollectorGame = () => {
           savedData={savedData}
           setSavedData={setSavedData}
           onToggleDifficulty={(d) => setSavedData(prev => ({ ...prev, difficulty: d }))}
+          onResetProgress={() => {
+            const fresh = resetGameState();
+            setSavedData(fresh);
+            setLevel(1);
+            setScore(0);
+            setCoins(0);
+            setCombo(1);
+            setPylonsDeactivated(0);
+            setHearts(fresh.upgrades?.maxHearts || 3);
+            const maxStam = fresh.upgrades?.maxStamina || 100;
+            setStamina(maxStam);
+            staminaRef.current = maxStam;
+            soundEngine.playPowerup('shield');
+            particleManager.createFloatingText({ x: 0, y: 1.5, z: 0 }, 'PROGRESS RESET! 🔄', '#a78bfa', 32);
+          }}
           onPlay={() => {
             setLevel(1);
             setScore(0);
