@@ -262,6 +262,18 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
           {activeTab === 'hazards' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div className="manual-card">
+                <div className="manual-card-icon" style={{ background: 'rgba(0, 255, 136, 0.15)', color: '#00ff88' }}>🎮</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#00ff88' }}>Difficulty Modes (Easy vs Hard)</div>
+                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
+                    Toggle anytime from the <strong>Home Screen</strong> or <strong>Settings</strong>:
+                    <br />• <strong style={{ color: '#00ff88' }}>🟢 Easy Mode</strong>: Disables all aerial sky mines, disables hunter seeker homing, lowers obstacle count and reduces speed for relaxed exploration.
+                    <br />• <strong style={{ color: '#ff4d6d' }}>⚡ Hard Mode</strong>: Full arcade intensity with Hunter Seekers tracking your ground location, Sky Mines patrolling bridges, and high-speed swarms!
+                  </div>
+                </div>
+              </div>
+
+              <div className="manual-card">
                 <div className="manual-card-icon" style={{ background: 'rgba(0, 255, 136, 0.15)', color: '#00ff88' }}>🛡️</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#00ff88' }}>3-Second Spawn Grace Period</div>
@@ -274,9 +286,9 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
               <div className="manual-card">
                 <div className="manual-card-icon" style={{ background: 'rgba(255, 0, 51, 0.15)', color: '#ff0033' }}>🎯</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff0033' }}>Hunter Seeker Drones</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff0033' }}>Hunter Interceptor Drones</div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    Intelligent spiked drones that actively track the player! When you enter their <strong>24m detection radius</strong>, they accelerate and home in directly towards you. Break line-of-sight, jump onto a sky platform, or deflect them with your Shield!
+                    Sleek stealth drones with forward laser target sights and dual plasma afterburners! In Hard mode, entering their <strong>24m detection radius</strong> causes them to lock on and pursue aggressively. Jump onto elevated sky platforms to break their lock!
                   </div>
                 </div>
               </div>
@@ -284,9 +296,9 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
               <div className="manual-card">
                 <div className="manual-card-icon" style={{ background: 'rgba(255, 170, 0, 0.15)', color: '#ffaa00' }}>🛸</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ffaa00' }}>Aerial Sky Patrol Mines</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ffaa00' }}>Anti-Grav Quantum Sky Mines</div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    Hovering hazard mines patrolling back and forth across elevated bridges and platforms. Watch your timing when leaping across platforms—elevated platforms are no longer safe havens!
+                    Naval magnetic dread-mines equipped with 6 detonation spires, dual counter-rotating gyro rings, and a flashing warning beacon. Patrols elevated sky bridges in Hard mode.
                   </div>
                 </div>
               </div>
@@ -294,9 +306,9 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
               <div className="manual-card">
                 <div className="manual-card-icon" style={{ background: 'rgba(255, 0, 68, 0.15)', color: '#ff0044' }}>🟥</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff0044' }}>Roaming Hazard Cubes</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff0044' }}>Quantum Sentinel Cubes</div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    Kinetic cubes that bounce off walls and accelerate each level. Jump over them or deflect them using your Energy Shield!
+                    Segmented obsidian armor exoskeleton encasing a spinning, pulsing magma plasma core with glowing warning chevrons. Bounces off perimeter boundaries.
                   </div>
                 </div>
               </div>
