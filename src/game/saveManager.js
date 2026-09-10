@@ -28,7 +28,8 @@ const defaultState = {
   hasSeenFirstTimeGuide: false,
   levelBestTimes: {},
   graphicsQuality: 'ultra',
-  showFps: true
+  showFps: true,
+  showFPS: true
 };
 
 export const loadGameState = () => {
