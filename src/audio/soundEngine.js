@@ -218,22 +218,55 @@ class SoundEngine {
     this.init();
     if (!this.ctx) return;
 
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
 
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(160, t);
-    osc.frequency.linearRampToValueAtTime(50, t + 0.25);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(160, t);
+      osc.frequency.linearRampToValueAtTime(50, t + 0.25);
 
-    gain.gain.setValueAtTime(0.4 * this.sfxVolume, t);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+      gain.gain.setValueAtTime(0.4 * this.sfxVolume, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
 
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
 
-    osc.start(t);
-    osc.stop(t + 0.25);
+      osc.start(t);
+      osc.stop(t + 0.25);
+    } catch {}
+  }
+
+  playHazard() {
+    if (!this.soundEnabled) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(320, t);
+      osc.frequency.exponentialRampToValueAtTime(70, t + 0.3);
+
+      gain.gain.setValueAtTime(0.35 * this.sfxVolume, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.3);
+    } catch {}
+  }
+
+  playFever() {
+    try {
+      this.playPowerup('fever');
+    } catch {}
   }
 
   playPowerup(type) {
@@ -241,26 +274,28 @@ class SoundEngine {
     this.init();
     if (!this.ctx) return;
 
-    const t = this.ctx.currentTime;
-    const freqs = type === 'fever' ? [523.2, 659.2, 783.9, 1046.5] : [440, 554.3, 659.2];
+    try {
+      const t = this.ctx.currentTime;
+      const freqs = type === 'fever' ? [523.2, 659.2, 783.9, 1046.5] : [440, 554.3, 659.2];
 
-    freqs.forEach((f, i) => {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const start = t + i * 0.08;
+      freqs.forEach((f, i) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const start = t + i * 0.08;
 
-      osc.type = type === 'shield' ? 'sine' : 'triangle';
-      osc.frequency.setValueAtTime(f, start);
+        osc.type = type === 'shield' ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(f, start);
 
-      gain.gain.setValueAtTime(0.25 * this.sfxVolume, start);
-      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+        gain.gain.setValueAtTime(0.25 * this.sfxVolume, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
 
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
 
-      osc.start(start);
-      osc.stop(start + 0.25);
-    });
+        osc.start(start);
+        osc.stop(start + 0.25);
+      });
+    } catch {}
   }
 
   playBossShockwave() {
@@ -268,22 +303,24 @@ class SoundEngine {
     this.init();
     if (!this.ctx) return;
 
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
 
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(80, t);
-    osc.frequency.exponentialRampToValueAtTime(30, t + 0.4);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(80, t);
+      osc.frequency.exponentialRampToValueAtTime(30, t + 0.4);
 
-    gain.gain.setValueAtTime(0.45 * this.sfxVolume, t);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
+      gain.gain.setValueAtTime(0.45 * this.sfxVolume, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
 
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
 
-    osc.start(t);
-    osc.stop(t + 0.4);
+      osc.start(t);
+      osc.stop(t + 0.4);
+    } catch {}
   }
 
   // --- Procedural Synthwave BGM Loop ---
@@ -360,4 +397,5 @@ class SoundEngine {
   }
 }
 
+export { SoundEngine };
 export const soundEngine = new SoundEngine();
