@@ -45,12 +45,6 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
             🏝️ Sky Islands & 3D
           </button>
           <button
-            className={`shop-tab-btn ${activeTab === 'radar' ? 'active' : ''}`}
-            onClick={() => handleTab('radar')}
-          >
-            📡 Holographic Radar
-          </button>
-          <button
             className={`shop-tab-btn ${activeTab === 'pets' ? 'active' : ''}`}
             onClick={() => handleTab('pets')}
           >
@@ -151,44 +145,6 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
             </div>
           )}
 
-          {activeTab === 'radar' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div className="manual-card">
-                <div className="manual-card-icon" style={{ background: 'rgba(0, 240, 255, 0.15)', color: '#00f0ff' }}>📡</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#00f0ff' }}>55m Holographic Scanner</div>
-                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    Mounted in the bottom-left HUD. The radar sweeps 360° every 2.5s with phosphorus fade trails, tracking all items and threats across the expanded 76x76 arena within 55 meters. Orienting dynamically so your character forward is always <strong>UP</strong>.
-                  </div>
-                </div>
-              </div>
-
-              <div className="manual-card">
-                <div className="manual-card-icon" style={{ background: 'rgba(255, 0, 255, 0.15)', color: '#ff00ff' }}>▲</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff00ff' }}>Elevation Altitude Markers</div>
-                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    Crystals situated atop high sky islands display an elevated <strong>(^)</strong> marker on the radar screen, indicating they are above ground level.
-                  </div>
-                </div>
-              </div>
-
-              <div className="manual-card">
-                <div className="manual-card-icon" style={{ background: 'rgba(255, 51, 68, 0.15)', color: '#ff3344' }}>⚠️</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff3344' }}>Target Blip Legend</div>
-                  <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    • <strong style={{ color: '#00f0ff' }}>Cyan Diamond</strong>: Crystal objective<br />
-                    • <strong style={{ color: '#ffd700' }}>Gold Dot</strong>: Bankable Gold Coin<br />
-                    • <strong style={{ color: '#ffe600' }}>Yellow Ring</strong>: Trampoline Launch Pad<br />
-                    • <strong style={{ color: '#ff3344' }}>Red Diamond/Zone</strong>: Moving Hazard Cube or Lava Pool<br />
-                    • <strong style={{ color: '#ff0055' }}>Crimson Skull & Nodes</strong>: Titan Boss & Corner Shield Pylons
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {activeTab === 'pets' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div className="manual-card">
@@ -267,8 +223,8 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
                   <div style={{ fontSize: '17px', fontWeight: 800, color: '#00ff88' }}>Difficulty Modes (Easy vs Hard)</div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
                     Toggle anytime from the <strong>Home Screen</strong> or <strong>Settings</strong>:
-                    <br />• <strong style={{ color: '#00ff88' }}>🟢 Easy Mode</strong>: Disables all aerial sky mines, disables hunter seeker homing, lowers obstacle count and reduces speed for relaxed exploration.
-                    <br />• <strong style={{ color: '#ff4d6d' }}>⚡ Hard Mode</strong>: Full arcade intensity with Hunter Seekers tracking your ground location, Sky Mines patrolling bridges, and high-speed swarms!
+                    <br />• <strong style={{ color: '#00ff88' }}>🟢 Easy Mode</strong>: Disables all aerial sky mines, lowers obstacle count and reduces speed for relaxed exploration.
+                    <br />• <strong style={{ color: '#ff4d6d' }}>⚡ Hard Mode</strong>: Full arcade intensity with Sky Mines patrolling bridges, higher obstacle counts, and fast speeds!
                   </div>
                 </div>
               </div>
@@ -286,9 +242,9 @@ export const FieldManualModal = ({ onClose, isFirstTime = false }) => {
               <div className="manual-card">
                 <div className="manual-card-icon" style={{ background: 'rgba(255, 0, 51, 0.15)', color: '#ff0033' }}>🎯</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff0033' }}>Hunter Interceptor Drones</div>
+                  <div style={{ fontSize: '17px', fontWeight: 800, color: '#ff0033' }}>Patrol Interceptor Drones</div>
                   <div style={{ fontSize: '13px', color: '#cbd5e1', marginTop: '4px', lineHeight: 1.5 }}>
-                    Sleek stealth drones with forward laser target sights and dual plasma afterburners! In Hard mode, entering their <strong>24m detection radius</strong> causes them to lock on and pursue aggressively. Jump onto elevated sky platforms to break their lock!
+                    Sleek stealth drones with dual plasma afterburners cruising the arena on patrol routes. Bounces off perimeter boundaries. Avoid colliding with them!
                   </div>
                 </div>
               </div>
