@@ -121,8 +121,8 @@ export const HomeScreen = ({
             style={{ color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff4d6d' }}
           >
             {(savedData.difficulty || 'hard') === 'easy'
-              ? '🌿 Relaxed Biomes · No Sky Mines · No Seeker Tracking'
-              : '🔥 Arcade Rush · Aerial Sky Mines · Hunter Seekers'}
+              ? '🌿 Relaxed Biomes · Calm Speeds · No Sky Mines'
+              : '🔥 Arcade Rush · High Speed · Sky Mines Active'}
           </span>
         </div>
 
