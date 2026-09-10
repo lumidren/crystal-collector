@@ -39,3 +39,27 @@ test('soundEngineMath - chord progression structure conforms to harmonic synthwa
     c.notes.forEach(n => assert.ok(n > c.root, 'Note must be higher frequency than bass root'));
   });
 });
+
+test('soundEngine - exports playHazard and playFever methods and handles calls safely without throwing', async () => {
+  const { SoundEngine, soundEngine } = await import('../src/audio/soundEngine.js');
+  assert.ok(typeof soundEngine.playHazard === 'function', 'playHazard must be a defined method');
+  assert.ok(typeof soundEngine.playFever === 'function', 'playFever must be a defined method');
+
+  // Must execute safely even when Web Audio is uninitialized or in headless environment
+  assert.doesNotThrow(() => {
+    soundEngine.playHazard();
+    soundEngine.playFever();
+    soundEngine.playHurt();
+    soundEngine.playPowerup('shield');
+    soundEngine.playBossShockwave();
+  });
+
+  // Verify new instance methods
+  const instance = new SoundEngine();
+  assert.ok(typeof instance.playHazard === 'function');
+  assert.ok(typeof instance.playFever === 'function');
+  assert.doesNotThrow(() => {
+    instance.playHazard();
+    instance.playFever();
+  });
+});
