@@ -132,3 +132,23 @@ test('biomeGenerator - buildBiome sets custom jump pads and hazard zones per bio
   assert.equal(env10.jumpPads.length, 4);
   assert.equal(env10.hazardZones.length, 4);
 });
+
+test('biomeGenerator - generates solid colliders for trees, rocks, and biome pillars', () => {
+  const scene1 = new THREE.Scene();
+  const env1 = BiomeGenerator.buildBiome(1, scene1);
+  assert.ok(Array.isArray(env1.solidColliders), 'solidColliders must be an array');
+  assert.equal(env1.solidColliders.length, 20, 'Forest should have 12 trees + 8 rocks = 20 solid colliders');
+
+  const trees = env1.solidColliders.filter(c => c.type === 'tree');
+  const rocks = env1.solidColliders.filter(c => c.type === 'rock');
+  assert.equal(trees.length, 12);
+  assert.equal(rocks.length, 8);
+  trees.forEach(t => {
+    assert.ok(t.radius > 1.0);
+    assert.ok(t.height > 5.0);
+  });
+  rocks.forEach(r => {
+    assert.ok(r.radius > 1.0);
+    assert.ok(r.height > 1.5);
+  });
+});
