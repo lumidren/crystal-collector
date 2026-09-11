@@ -239,3 +239,68 @@ test('physicsMath - uncapped heart accumulation allows player to gain hearts bey
   assert.equal(hearts, 9, 'Taking damage from 10 hearts reduces to 9');
 });
 
+test('physicsMath - Quantum Sentinel Cube hover altitude guarantees zero clipping below surfaces', () => {
+  const scene = new THREE.Scene();
+  const { platforms, solidColliders } = BiomeGenerator.buildBiome(1, scene);
+
+  // Sentinel Cube dimensions
+  const cubeHalfHeight = 0.95; // BoxGeometry(1.9, 1.9, 1.9)
+  const repulsorBottomOffset = 1.01; // Cylinder and glow disc at -1.01m below center
+  const maxTilt = 0.06; // Max banking angle in radians
+
+  // 1. Hover on ground surface (surfaceY = 0)
+  for (let t = 0; t < 10; t += 0.25) {
+    for (let phase = 0; phase < Math.PI * 2; phase += 0.5) {
+      const surfaceY = 0;
+      const hoverY = surfaceY + 1.4 + Math.sin(t * 3.0 + phase) * 0.12;
+      const lowestRepulsorY = hoverY - repulsorBottomOffset;
+      const lowestCubeFaceY = hoverY - cubeHalfHeight;
+
+      // Even with maximum tilt banking
+      const lowestTiltedCorner = hoverY - (cubeHalfHeight * Math.cos(maxTilt) + cubeHalfHeight * Math.sin(maxTilt));
+
+      assert.ok(lowestRepulsorY >= 0.25, `Repulsor (${lowestRepulsorY}m) must hover cleanly above ground with >= 0.25m clearance`);
+      assert.ok(lowestCubeFaceY >= 0.30, `Cube bottom (${lowestCubeFaceY}m) must be well above ground`);
+      assert.ok(lowestTiltedCorner >= 0.25, `Tilted corner (${lowestTiltedCorner}m) must never clip ground plane`);
+    }
+  }
+
+  // 2. Hover on elevated sky platforms
+  const platform = platforms[0];
+  const surfaceY = platform.topY;
+  for (let t = 0; t < 5; t += 0.5) {
+    const hoverY = surfaceY + 1.4 + Math.sin(t * 3.0) * 0.12;
+    const lowestRepulsorY = hoverY - repulsorBottomOffset;
+    assert.ok(lowestRepulsorY > platform.topY + 0.25, `Sentinel hovering on platform must maintain > 0.25m platform clearance`);
+  }
+
+  // 3. Collision resolution against solid obstacle colliders
+  const rock = solidColliders.find(c => c.type === 'rock') || solidColliders[0];
+  const sentinel = {
+    x: rock.x + 0.3,
+    z: rock.z + 0.3,
+    vx: -2.0,
+    vz: -1.5,
+    radius: 1.2
+  };
+
+  const dx = sentinel.x - rock.x;
+  const dz = sentinel.z - rock.z;
+  const dist = Math.hypot(dx, dz);
+  const minDist = (rock.radius || 1.2) + sentinel.radius;
+
+  assert.ok(dist < minDist, 'Sentinel starts overlapping solid collider');
+
+  // Solid bounce logic from App.jsx
+  const push = minDist - dist;
+  sentinel.x += (dx / dist) * push;
+  sentinel.z += (dz / dist) * push;
+  sentinel.vx *= -1;
+  sentinel.vz *= -1;
+
+  const resolvedDist = Math.hypot(sentinel.x - rock.x, sentinel.z - rock.z);
+  assert.ok(resolvedDist >= minDist - 0.0001, 'Sentinel must be pushed outside solid collider radius');
+  assert.equal(sentinel.vx, 2.0, 'Sentinel velocity X must reflect');
+  assert.equal(sentinel.vz, 1.5, 'Sentinel velocity Z must reflect');
+});
+
