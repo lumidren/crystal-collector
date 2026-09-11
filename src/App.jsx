@@ -465,14 +465,8 @@ function createAntiGravSkyMine() {
 const CrystalCollectorGame = () => {
   const mountRef = useRef(null);
 
-  // Persistent user state: always start from the beginning (Level 1) when application opens
-  const [savedData, setSavedData] = useState(() => {
-    const loaded = loadGameState();
-    return {
-      ...loaded,
-      unlockedLevels: 1
-    };
-  });
+  // Persistent user state: always start fresh as the first time whenever opening the application
+  const [savedData, setSavedData] = useState(() => resetGameState());
   const savedDataRef = useRef(savedData);
   useEffect(() => {
     savedDataRef.current = savedData;
@@ -2179,9 +2173,22 @@ const CrystalCollectorGame = () => {
       {showShop && (
         <div className="modal-backdrop">
           <div className="hud-panel" style={{ padding: '30px', maxWidth: '750px', width: '92%', maxHeight: '88vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '16px' }}>
               <h2 style={{ margin: 0, fontSize: '30px', color: '#ffd700' }}>🛒 ARCADE SHOP 2.0</h2>
-              <div style={{ fontSize: '22px', color: '#ffd700', fontWeight: 'bold' }}>🪙 {savedData.totalCoins} Coins</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ fontSize: '22px', color: '#ffd700', fontWeight: 'bold' }}>🪙 {savedData.totalCoins} Coins</div>
+                <button
+                  className="shop-close-x-btn"
+                  title="Close Shop"
+                  onClick={() => {
+                    soundEngine.playUIClick();
+                    setShowShop(false);
+                  }}
+                  aria-label="Close Shop"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Shop Tabs */}
