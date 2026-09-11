@@ -82,11 +82,6 @@ export const HomeScreen = ({
           </div>
         </div>
 
-        {/* Creator Brand Tag */}
-        <div className="home-brand-tag">
-          ⚡ CRYSTAL COLLECTOR 2.0 ⚡
-        </div>
-
         {/* Currency & Trophies */}
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <div className="stat-pill">
