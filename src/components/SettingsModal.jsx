@@ -109,47 +109,69 @@ export const SettingsModal = ({ savedData, setSavedData, onClose }) => {
           </div>
 
           {/* Difficulty Mode Selector */}
+          {/* Difficulty Mode Selector */}
           <div>
             <div style={{ fontSize: '14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
               <span>🎮 Game Difficulty</span>
-              <span style={{ color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff0055', fontWeight: 800 }}>
-                {(savedData.difficulty || 'hard') === 'easy' ? '🟢 EASY (MEDIUM)' : '⚡ HARD (ARCADE)'}
+              <span style={{
+                color: (savedData.difficulty || 'medium') === 'easy'
+                  ? '#00ff88'
+                  : ((savedData.difficulty || 'medium') === 'medium' ? '#ffd700' : '#ff0055'),
+                fontWeight: 800
+              }}>
+                {(savedData.difficulty || 'medium') === 'easy' && '🟢 EASY'}
+                {(savedData.difficulty || 'medium') === 'medium' && '🟡 MEDIUM'}
+                {(savedData.difficulty || 'medium') === 'hard' && '⚡ HARD'}
               </span>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
-                className={`graphics-preset-btn ${(savedData.difficulty || 'hard') === 'easy' ? 'active' : ''}`}
+                className={`graphics-preset-btn ${(savedData.difficulty || 'medium') === 'easy' ? 'active' : ''}`}
                 style={{
                   flex: 1,
-                  borderColor: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : 'rgba(255,255,255,0.15)',
-                  color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#8fa0b5'
+                  borderColor: (savedData.difficulty || 'medium') === 'easy' ? '#00ff88' : 'rgba(255,255,255,0.15)',
+                  color: (savedData.difficulty || 'medium') === 'easy' ? '#00ff88' : '#8fa0b5'
                 }}
                 onClick={() => {
                   soundEngine.playUIClick();
                   setSavedData(prev => ({ ...prev, difficulty: 'easy' }));
                 }}
               >
-                🟢 EASY (MEDIUM BALANCED)
+                🟢 EASY
               </button>
               <button
-                className={`graphics-preset-btn ${(savedData.difficulty || 'hard') === 'hard' ? 'active' : ''}`}
+                className={`graphics-preset-btn ${(savedData.difficulty || 'medium') === 'medium' ? 'active' : ''}`}
                 style={{
                   flex: 1,
-                  borderColor: (savedData.difficulty || 'hard') === 'hard' ? '#ff0055' : 'rgba(255,255,255,0.15)',
-                  color: (savedData.difficulty || 'hard') === 'hard' ? '#ff4d6d' : '#8fa0b5'
+                  borderColor: (savedData.difficulty || 'medium') === 'medium' ? '#ffd700' : 'rgba(255,255,255,0.15)',
+                  color: (savedData.difficulty || 'medium') === 'medium' ? '#ffd700' : '#8fa0b5'
+                }}
+                onClick={() => {
+                  soundEngine.playUIClick();
+                  setSavedData(prev => ({ ...prev, difficulty: 'medium' }));
+                }}
+              >
+                🟡 MEDIUM
+              </button>
+              <button
+                className={`graphics-preset-btn ${(savedData.difficulty || 'medium') === 'hard' ? 'active' : ''}`}
+                style={{
+                  flex: 1,
+                  borderColor: (savedData.difficulty || 'medium') === 'hard' ? '#ff0055' : 'rgba(255,255,255,0.15)',
+                  color: (savedData.difficulty || 'medium') === 'hard' ? '#ff4d6d' : '#8fa0b5'
                 }}
                 onClick={() => {
                   soundEngine.playUIClick();
                   setSavedData(prev => ({ ...prev, difficulty: 'hard' }));
                 }}
               >
-                ⚡ HARD (ARCADE EXTREME)
+                ⚡ HARD
               </button>
             </div>
             <div style={{ fontSize: '11px', color: '#8fa0b5', marginTop: '6px' }}>
-              {(savedData.difficulty || 'hard') === 'easy'
-                ? '✨ Easy (Medium): Moderate obstacle density, tuned Cyber Stalker encounters, and balanced platform sky mines.'
-                : '🔥 Hard Mode: Full arcade challenge with dense Sky Mines on bridges, fast lunging Cyber Stalkers, and max speeds.'}
+              {(savedData.difficulty || 'medium') === 'easy' && '✨ Easy: No spiders / predators, more Sentinel Cubes, and relaxed patrol speeds.'}
+              {(savedData.difficulty || 'medium') === 'medium' && '⚖️ Medium: A little bit of spiders, more cubes, and balanced platform sky mines.'}
+              {(savedData.difficulty || 'medium') === 'hard' && '🔥 Hard: Full arcade rush with dense sky mines, fast lunging predators, and max speeds.'}
             </div>
           </div>
 
