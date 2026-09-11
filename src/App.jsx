@@ -6,7 +6,7 @@ import { ParticleManager } from './game/particles.js';
 import { BiomeGenerator } from './world/biomeGenerator.js';
 import { CrystalTitanBoss } from './game/boss.js';
 import { PetCompanion } from './game/pets.js';
-import { CyberRunner } from './game/character.js';
+import { CyberRunner, CHARACTER_ROSTER } from './game/character.js';
 import { createCyberCreature } from './game/creatures.js';
 import { HomeScreen } from './components/HomeScreen.jsx';
 import { LevelSelectModal } from './components/LevelSelectModal.jsx';
@@ -523,7 +523,7 @@ const CrystalCollectorGame = () => {
   const maxComboRef = useRef(1);
   const [damageTakenThisLevel, setDamageTakenThisLevel] = useState(0);
   const damageTakenRef = useRef(0);
-  const [shopTab, setShopTab] = useState('colors'); // 'colors', 'hats', 'pets', 'trails', 'upgrades'
+  const [shopTab, setShopTab] = useState('characters'); // 'characters', 'colors', 'hats', 'pets', 'trails', 'upgrades'
   const [isEndless, setIsEndless] = useState(false);
   const [endlessSurviveTime, setEndlessSurviveTime] = useState(0);
 
@@ -582,7 +582,10 @@ const CrystalCollectorGame = () => {
 
     setSavedData(prev => {
       const next = { ...prev, totalCoins: prev.totalCoins - cost };
-      if (type === 'color') {
+      if (type === 'character') {
+        next.ownedCharacters = [...(prev.ownedCharacters || ['cyber_runner']), item];
+        next.currentCharacter = item;
+      } else if (type === 'color') {
         next.ownedColors = [...prev.ownedColors, item];
         next.playerColor = item;
       } else if (type === 'hat') {
@@ -626,7 +629,9 @@ const CrystalCollectorGame = () => {
     soundEngine.startBGM();
 
     // Reset level timers, hearts, and grant 3s spawn protection
-    setHearts(savedDataRef.current?.upgrades?.maxHearts || 3);
+    const activeHero = CHARACTER_ROSTER.find(c => c.id === (savedDataRef.current?.currentCharacter || 'cyber_runner'));
+    const startingHearts = (savedDataRef.current?.upgrades?.maxHearts || 3) + (activeHero?.stats?.extraHearts || 0);
+    setHearts(startingHearts);
     spawnGraceRef.current = 3.0;
     setSpawnGraceTime(3.0);
     levelElapsedRef.current = 0;
@@ -692,7 +697,9 @@ const CrystalCollectorGame = () => {
     setCoins(0);
     setCombo(1);
     setPylonsDeactivated(0);
-    setHearts(prev => Math.max(prev, savedDataRef.current?.upgrades?.maxHearts || 3));
+    const activeHeroNext = CHARACTER_ROSTER.find(c => c.id === (savedDataRef.current?.currentCharacter || 'cyber_runner'));
+    const startHeartsNext = (savedDataRef.current?.upgrades?.maxHearts || 3) + (activeHeroNext?.stats?.extraHearts || 0);
+    setHearts(prev => Math.max(prev, startHeartsNext));
     setShieldTime(0);
     setMagnetTime(0);
     setSlowMoTime(0);
@@ -715,7 +722,8 @@ const CrystalCollectorGame = () => {
     setCoins(0);
     setCombo(1);
     setPylonsDeactivated(0);
-    setHearts(savedDataRef.current.upgrades?.maxHearts || 3);
+    const activeHeroRetry = CHARACTER_ROSTER.find(c => c.id === (savedDataRef.current?.currentCharacter || 'cyber_runner'));
+    setHearts((savedDataRef.current?.upgrades?.maxHearts || 3) + (activeHeroRetry?.stats?.extraHearts || 0));
     const maxStam = savedDataRef.current.upgrades?.maxStamina || 100;
     setStamina(maxStam);
     staminaRef.current = maxStam;
@@ -742,7 +750,8 @@ const CrystalCollectorGame = () => {
     setCoins(0);
     setCombo(1);
     setPylonsDeactivated(0);
-    setHearts(savedDataRef.current.upgrades?.maxHearts || 3);
+    const activeHeroRestart = CHARACTER_ROSTER.find(c => c.id === (savedDataRef.current?.currentCharacter || 'cyber_runner'));
+    setHearts((savedDataRef.current?.upgrades?.maxHearts || 3) + (activeHeroRestart?.stats?.extraHearts || 0));
     const maxStam = savedDataRef.current.upgrades?.maxStamina || 100;
     setStamina(maxStam);
     staminaRef.current = maxStam;
@@ -1012,7 +1021,8 @@ const CrystalCollectorGame = () => {
       bossInstance = new CrystalTitanBoss(scene);
     }
 
-    // Player Character (Next-Gen CyberRunner Astronaut)
+    // Player Character (Next-Gen 3D Hero Exosuit)
+    const activeHero = CHARACTER_ROSTER.find(c => c.id === (currentSaved.currentCharacter || 'cyber_runner')) || CHARACTER_ROSTER[0];
     const playerCharacter = new CyberRunner(currentSaved, scene);
     player = playerCharacter.group;
 
@@ -1112,13 +1122,14 @@ const CrystalCollectorGame = () => {
 
       // Jump & Double Jump
       if (e.key === ' ') {
+        const jumpBoost = activeHero?.stats?.jumpBonus || 0;
         if (isGrounded) {
-          jumpVelocity = 12;
+          jumpVelocity = 12 + jumpBoost;
           isGrounded = false;
           canDoubleJump = true;
           soundEngine.playJump();
         } else if (canDoubleJump) {
-          jumpVelocity = 13;
+          jumpVelocity = 13 + jumpBoost;
           canDoubleJump = false;
           soundEngine.playDoubleJump();
           particleManager.createDust(player.position, 0x00ffff);
@@ -1320,7 +1331,7 @@ const CrystalCollectorGame = () => {
       }
 
       const canSprint = staminaRef.current > 5 || localFeverTime > 0;
-      const moveSpeed = 8 * dt * (isSprinting && canSprint ? sprintSpeedMult : 1);
+      const moveSpeed = 8 * dt * (isSprinting && canSprint ? sprintSpeedMult : 1) * (activeHero?.stats?.speedMultiplier || 1.0);
 
       let mx = 0, mz = 0;
       if (moving) {
@@ -1384,7 +1395,9 @@ const CrystalCollectorGame = () => {
 
       // Jump & Gravity physics
       if (!isGrounded) {
-        jumpVelocity -= 35 * dt;
+        const isGliding = activeHero?.stats?.airGlide && (keys[' '] || keys['space']) && jumpVelocity < 0;
+        const currentGravity = isGliding ? 14 : 35;
+        jumpVelocity -= currentGravity * dt;
         player.position.y += jumpVelocity * dt;
         if (player.position.y <= currentFloorY) {
           player.position.y = currentFloorY;
@@ -1454,7 +1467,7 @@ const CrystalCollectorGame = () => {
       camera.rotation.z += shake.rotZ;
 
       // Magnet reach calculation
-      let effectiveMagnetRadius = baseMagnetRadius;
+      let effectiveMagnetRadius = baseMagnetRadius + (activeHero?.stats?.magnetBonus || 0);
       if (localMagnetTime > 0) effectiveMagnetRadius = 14.0;
       if (petInstance && petInstance.magnetReach > effectiveMagnetRadius) {
         effectiveMagnetRadius = petInstance.magnetReach;
@@ -2102,12 +2115,103 @@ const CrystalCollectorGame = () => {
 
             {/* Shop Tabs */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
-              <button className={`shop-tab-btn ${shopTab === 'colors' ? 'active' : ''}`} onClick={() => setShopTab('colors')}>🎨 Skins</button>
+              <button className={`shop-tab-btn ${shopTab === 'characters' ? 'active' : ''}`} onClick={() => setShopTab('characters')}>🦸 Characters</button>
+              <button className={`shop-tab-btn ${shopTab === 'colors' ? 'active' : ''}`} onClick={() => setShopTab('colors')}>🎨 Armor Colors</button>
               <button className={`shop-tab-btn ${shopTab === 'hats' ? 'active' : ''}`} onClick={() => setShopTab('hats')}>🎩 3D Hats</button>
               <button className={`shop-tab-btn ${shopTab === 'pets' ? 'active' : ''}`} onClick={() => setShopTab('pets')}>🐾 Pets</button>
               <button className={`shop-tab-btn ${shopTab === 'trails' ? 'active' : ''}`} onClick={() => setShopTab('trails')}>✨ Trails</button>
               <button className={`shop-tab-btn ${shopTab === 'upgrades' ? 'active' : ''}`} onClick={() => setShopTab('upgrades')}>🏋️ Upgrades</button>
             </div>
+
+            {/* Characters Tab */}
+            {shopTab === 'characters' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '16px' }}>
+                {CHARACTER_ROSTER.map(item => {
+                  const owned = (savedData.ownedCharacters || ['cyber_runner']).includes(item.id);
+                  const isEquipped = (savedData.currentCharacter || 'cyber_runner') === item.id;
+                  return (
+                    <div
+                      key={item.id}
+                      style={{
+                        background: isEquipped ? 'linear-gradient(135deg, rgba(0, 240, 255, 0.12), #1c1c28)' : '#1c1c28',
+                        padding: '18px',
+                        borderRadius: '14px',
+                        textAlign: 'center',
+                        border: isEquipped ? '2px solid #00f0ff' : '1px solid #333',
+                        boxShadow: isEquipped ? '0 0 15px rgba(0, 240, 255, 0.25)' : 'none',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: '46px', marginBottom: '6px' }}>{item.icon}</div>
+                        <div style={{ fontWeight: 800, fontSize: '17px', color: '#fff' }}>{item.name}</div>
+                        <div style={{ fontSize: '11px', color: '#00f0ff', fontWeight: 800, letterSpacing: '0.5px', marginBottom: '8px' }}>
+                          {item.title.toUpperCase()}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '10px', lineHeight: '1.4' }}>
+                          {item.desc}
+                        </div>
+                        <div
+                          style={{
+                            background: 'rgba(0, 255, 136, 0.1)',
+                            border: '1px solid rgba(0, 255, 136, 0.3)',
+                            borderRadius: '8px',
+                            padding: '6px 8px',
+                            fontSize: '11px',
+                            color: '#00ff88',
+                            fontWeight: 700,
+                            marginBottom: '12px'
+                          }}
+                        >
+                          {item.perk}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '10px', fontSize: '14px' }}>
+                          {owned ? 'UNLOCKED' : item.cost === 0 ? 'FREE' : `🪙 ${item.cost}`}
+                        </div>
+                        {owned ? (
+                          <button
+                            className="hud-btn"
+                            onClick={() => {
+                              setSavedData(prev => ({ ...prev, currentCharacter: item.id }));
+                              soundEngine.playUIClick?.();
+                            }}
+                            style={{
+                              background: isEquipped ? '#00f0ff' : '#00ff88',
+                              color: '#000',
+                              width: '100%',
+                              padding: '10px',
+                              fontWeight: 800
+                            }}
+                          >
+                            {isEquipped ? 'EQUIPPED' : 'SELECT HERO'}
+                          </button>
+                        ) : (
+                          <button
+                            className="hud-btn"
+                            disabled={savedData.totalCoins < item.cost}
+                            onClick={() => buyItem('character', item.id, item.cost)}
+                            style={{
+                              background: savedData.totalCoins >= item.cost ? '#ffd700' : '#444',
+                              color: '#000',
+                              width: '100%',
+                              padding: '10px',
+                              fontWeight: 800
+                            }}
+                          >
+                            UNLOCK HERO
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Skins Tab */}
             {shopTab === 'colors' && (
