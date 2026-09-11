@@ -25,8 +25,9 @@ export const InGameHUD = ({
   onOpenAchievements,
   onOpenGuide
 }) => {
-  const maxHearts = savedData.upgrades?.maxHearts || 3;
-  const maxStamina = savedData.upgrades?.maxStamina || 100;
+  const baseMaxHearts = savedData?.upgrades?.maxHearts || 3;
+  const totalDisplaySlots = Math.max(baseMaxHearts, hearts);
+  const maxStamina = savedData?.upgrades?.maxStamina || 100;
   const biomeData = BiomeGenerator.getBiomeData(level);
   const progressPercent = Math.min(100, Math.round((score / targetCrystals) * 100));
 
@@ -75,12 +76,48 @@ export const InGameHUD = ({
           </div>
 
           {/* Hearts Display */}
-          <div style={{ fontSize: '22px', margin: '4px 0' }}>
-            {[...Array(maxHearts)].map((_, i) => (
-              <span key={i} style={{ opacity: i < hearts ? 1 : 0.25, filter: i < hearts ? 'drop-shadow(0 0 6px #ff3366)' : 'none', marginRight: '4px' }}>
-                ❤️
+          <div style={{ fontSize: '20px', margin: '4px 0', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '3px' }}>
+            {totalDisplaySlots <= 8 ? (
+              [...Array(totalDisplaySlots)].map((_, i) => (
+                <span
+                  key={i}
+                  style={{
+                    opacity: i < hearts ? 1 : 0.22,
+                    filter: i < hearts ? 'drop-shadow(0 0 6px #ff3366)' : 'none',
+                    marginRight: '2px',
+                    lineHeight: '1'
+                  }}
+                  title={i >= baseMaxHearts ? 'Bonus Heart' : 'Vital Heart'}
+                >
+                  ❤️
+                </span>
+              ))
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ filter: 'drop-shadow(0 0 8px #ff3366)', fontSize: '22px' }}>❤️</span>
+                <span style={{ fontSize: '18px', fontWeight: 900, color: '#ff4d6d', textShadow: '0 0 8px rgba(255, 51, 102, 0.6)' }}>
+                  × {hearts}
+                </span>
+              </div>
+            )}
+            {hearts > baseMaxHearts && (
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  color: '#ff4d6d',
+                  background: 'rgba(255, 51, 102, 0.18)',
+                  border: '1px solid rgba(255, 51, 102, 0.4)',
+                  borderRadius: '8px',
+                  padding: '1px 6px',
+                  marginLeft: '4px',
+                  letterSpacing: '0.5px',
+                  textShadow: '0 0 6px rgba(255, 51, 102, 0.5)'
+                }}
+              >
+                +{hearts - baseMaxHearts} EXTRA
               </span>
-            ))}
+            )}
           </div>
 
           {/* Stamina Bar */}
