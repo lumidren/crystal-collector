@@ -282,6 +282,13 @@ body, button, input, select, textarea {
   box-shadow: 0 0 14px rgba(0, 255, 136, 0.45);
 }
 
+.home-diff-btn.active-medium {
+  background: #ffd700;
+  color: #141004;
+  border-color: #ffd700;
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.45);
+}
+
 .home-diff-btn.active-hard {
   background: #ff0055;
   color: #ffffff;
@@ -345,6 +352,13 @@ body, button, input, select, textarea {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
+  width: 100%;
+}
+
+.home-btn-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
   width: 100%;
 }
 
@@ -975,6 +989,193 @@ input[type=range]::-webkit-slider-thumb {
   border-radius: 4px;
   margin-left: 6px;
   vertical-align: middle;
+}
+
+/* ==========================================================
+   ℹ️ ABOUT & ROOT CONSOLE MODAL STYLES
+   ========================================================== */
+.about-modal-panel {
+  padding: 28px 32px;
+  max-width: 580px;
+  width: 92%;
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.about-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.about-modal-title {
+  margin: 0;
+  font-size: 24px;
+  color: #00f0ff;
+  letter-spacing: 1px;
+}
+
+.about-modal-subtitle {
+  font-size: 12px;
+  color: #8fa0b5;
+  margin-top: 4px;
+}
+
+.about-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.about-creator-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.about-creator-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00f0ff, #0072ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+}
+
+.about-creator-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.about-creator-role {
+  font-size: 12px;
+  color: #00f0ff;
+  font-weight: 700;
+}
+
+.about-description {
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 14px 0;
+}
+
+.about-social-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.about-social-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.about-social-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.about-social-btn.github-btn:hover {
+  background: #24292e;
+  border-color: #58a6ff;
+  color: #58a6ff;
+}
+
+.about-social-btn.linkedin-btn:hover {
+  background: #0a66c2;
+  border-color: #00a0dc;
+  color: #ffffff;
+}
+
+.root-console-card {
+  background: rgba(26, 20, 10, 0.5);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.root-form-row {
+  display: flex;
+  gap: 8px;
+}
+
+.root-password-input {
+  flex: 1;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 8px;
+  color: #ffd700;
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  outline: none;
+}
+
+.root-password-input:focus {
+  border-color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.root-submit-btn {
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #ffd700, #ff8800);
+  border: none;
+  border-radius: 8px;
+  color: #000000;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.root-submit-btn:hover {
+  transform: scale(1.04);
+  filter: brightness(1.1);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.root-success-banner {
+  padding: 12px 16px;
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid #00ff88;
+  border-radius: 8px;
+  color: #00ff88;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 0 16px rgba(0, 255, 136, 0.25);
+}
+
+.root-error-banner {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 0, 85, 0.15);
+  border: 1px solid #ff0055;
+  border-radius: 8px;
+  color: #ff4d6d;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
 }
 
 
