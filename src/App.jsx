@@ -15,6 +15,7 @@ import { InGameHUD } from './components/InGameHUD.jsx';
 import { SettingsModal } from './components/SettingsModal.jsx';
 import { FieldManualModal } from './components/FieldManualModal.jsx';
 import { ScoreboardModal } from './components/ScoreboardModal.jsx';
+import { AboutModal } from './components/AboutModal.jsx';
 import './App.css';
 
 const levelConfigs = [
@@ -510,11 +511,12 @@ const CrystalCollectorGame = () => {
   const [showFieldManual, setShowFieldManual] = useState(false);
   const [isFirstTimeManual, setIsFirstTimeManual] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [pylonsDeactivated, setPylonsDeactivated] = useState(0);
   const [fps, setFps] = useState(60);
 
   // Combined frozen state: halts physics, obstacles, hazards, boss, and timers
-  const isGameFrozen = isPaused || showFieldManual || showHowToPlay || showSettings || showShop || showAchievements || showLevelSelect || showComplete || gameOver;
+  const isGameFrozen = isPaused || showFieldManual || showHowToPlay || showSettings || showShop || showAchievements || showLevelSelect || showAbout || showComplete || gameOver;
   const isGameFrozenRef = useRef(false);
 
   useEffect(() => {
@@ -950,16 +952,24 @@ const CrystalCollectorGame = () => {
     });
 
     // Spawn Obstacles (Quantum Sentinel Cubes, Cyber Stalker Creatures & Anti-Grav Sky Mines)
-    const isEasy = (currentSaved.difficulty || 'hard') === 'easy';
-    // Easy mode is balanced as "Medium" (75% density, 75% speed, 25% cyber stalkers & select sky mines)
-    // Hard mode is "Hard" (100% arcade density, 100% speed, 35% cyber stalkers & dense sky mines)
-    const obsCount = isEasy ? Math.max(5, Math.round(cfg.obs * 0.75)) : cfg.obs;
-    const obsBaseSpeed = isEasy ? cfg.speed * 0.75 : cfg.speed;
+    const currentDiff = currentSaved.difficulty || 'medium';
+    const isEasy = currentDiff === 'easy';
+    const isMedium = currentDiff === 'medium';
+    // Easy: No spiders, more cubes (+25% cubes, 70% speed)
+    // Medium: A little bit of spiders (~16% spiders) and more cubes (+15% cubes, 85% speed)
+    // Hard: Challenging density (~33% spiders, 100% cubes, 105% speed)
+    const obsCount = isEasy
+      ? Math.max(6, Math.round(cfg.obs * 1.25))
+      : (isMedium ? Math.max(5, Math.round(cfg.obs * 1.15)) : cfg.obs);
+    const obsBaseSpeed = isEasy
+      ? cfg.speed * 0.70
+      : (isMedium ? cfg.speed * 0.85 : cfg.speed * 1.05);
 
     for (let i = 0; i < obsCount; i++) {
-      // In Easy (Medium): 25% are Cyber Stalker Creatures (i % 4 === 0)
-      // In Hard: ~35% are Cyber Stalker Creatures (i % 3 === 0)
-      const isCreature = isEasy ? (i % 4 === 0) : (i % 3 === 0);
+      // Easy: NO spiders (0% spiders, 100% cubes)
+      // Medium: a little bit of spiders (i % 6 === 0)
+      // Hard: ~35% spiders (i % 3 === 0)
+      const isCreature = isEasy ? false : (isMedium ? (i % 6 === 0) : (i % 3 === 0));
       let obsMesh;
       if (isCreature) {
         obsMesh = createCyberCreature();
@@ -988,18 +998,19 @@ const CrystalCollectorGame = () => {
         state: 'patrol', // 'patrol' | 'windup' | 'lunge'
         stateTimer: 0,
         lungeDir: { x: 0, z: 0 },
-        isEasy
+        difficultyMode: currentDiff
       });
     }
 
     // Spawn Aerial Sky Patrol Mines on elevated platforms
-    // In Easy (Medium): Sky Mines spawn on wide platforms (width >= 13 or i % 3 === 0) at 75% patrol speed
-    // In Hard: Sky Mines spawn densely on alternating platforms and decks (i % 2 === 0 or width >= 12) at full speed
+    // Easy: No sky mines on platforms (peaceful platforming)
+    // Medium: Sky mines on select wide platforms (width >= 14 or pIdx % 4 === 0) at 80% patrol speed
+    // Hard: Sky mines densely placed on alternating platforms (pIdx % 2 === 0 or width >= 12) at full speed
     if (platforms && platforms.length > 0 && level < 10) {
       platforms.forEach((p, pIdx) => {
         const shouldSpawnMine = isEasy
-          ? (p.width >= 13 || pIdx % 3 === 0)
-          : (pIdx % 2 === 0 || p.width >= 12);
+          ? false
+          : (isMedium ? (p.width >= 14 || pIdx % 4 === 0) : (pIdx % 2 === 0 || p.width >= 12));
 
         if (shouldSpawnMine) {
           const mineGroup = createAntiGravSkyMine();
@@ -1019,7 +1030,7 @@ const CrystalCollectorGame = () => {
             axis: useX ? 'x' : 'z',
             min: useX ? p.minX + 1.2 : p.minZ + 1.2,
             max: useX ? p.maxX - 1.2 : p.maxZ - 1.2,
-            speed: isEasy ? baseMineSpeed * 0.75 : baseMineSpeed,
+            speed: isMedium ? baseMineSpeed * 0.8 : baseMineSpeed,
             dir: 1,
             phase: pIdx * 1.5,
             cooldown: 0,
@@ -1102,7 +1113,9 @@ const CrystalCollectorGame = () => {
       // If game is frozen (instructions, menus, or paused), Escape closes the modal or unpauses
       if (isGameFrozenRef.current) {
         if (e.key === 'Escape') {
-          if (showFieldManual) {
+          if (showAbout) {
+            setShowAbout(false);
+          } else if (showFieldManual) {
             setShowFieldManual(false);
             setIsFirstTimeManual(false);
             setSavedData(prev => ({ ...prev, hasSeenFirstTimeGuide: true }));
@@ -1690,12 +1703,13 @@ const CrystalCollectorGame = () => {
           const isPlayerOnGround = player.position.y < 2.2;
           const ud = o.mesh.userData || {};
 
-          const lungeMultiplier = o.isEasy ? 1.45 : 1.85;
-          const recoveryCooldown = o.isEasy ? 2.0 : 1.4;
-          const windupDuration = o.isEasy ? 0.48 : 0.38;
-          const pursuitMultiplier = o.isEasy ? 1.0 : 1.15;
-          const stalkRange = o.isEasy ? 22 : 28;
-          const lungeTriggerRange = o.isEasy ? 10 : 12;
+          const isMed = o.difficultyMode === 'medium';
+          const lungeMultiplier = isMed ? 1.45 : 1.85;
+          const recoveryCooldown = isMed ? 2.0 : 1.4;
+          const windupDuration = isMed ? 0.48 : 0.38;
+          const pursuitMultiplier = isMed ? 1.0 : 1.15;
+          const stalkRange = isMed ? 22 : 28;
+          const lungeTriggerRange = isMed ? 10 : 12;
 
           // Stalking / Windup / Lunge State Machine
           if (o.state === 'lunge') {
@@ -2045,6 +2059,7 @@ const CrystalCollectorGame = () => {
           onOpenAchievements={() => setShowAchievements(true)}
           onOpenHowToPlay={() => setShowFieldManual(true)}
           onOpenSettings={() => setShowSettings(true)}
+          onOpenAbout={() => setShowAbout(true)}
           shopHats={shopHats}
           shopPets={shopPets}
         />
@@ -2114,6 +2129,18 @@ const CrystalCollectorGame = () => {
           savedData={savedData}
           setSavedData={setSavedData}
           onClose={() => setShowSettings(false)}
+        />
+      )}
+
+      {/* --- ABOUT & ROOT ACCESS MODAL --- */}
+      {showAbout && (
+        <AboutModal
+          unlockedLevels={savedData.unlockedLevels || 1}
+          onUnlockRoot={() => {
+            setSavedData(prev => ({ ...prev, unlockedLevels: 10 }));
+            soundEngine.playPowerup('shield');
+          }}
+          onClose={() => setShowAbout(false)}
         />
       )}
 
