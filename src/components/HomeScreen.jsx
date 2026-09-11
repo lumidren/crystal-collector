@@ -109,27 +109,6 @@ export const HomeScreen = ({
             </div>
           </div>
 
-          {/* Active Hero Capsule / Shortcut to Character Shop */}
-          <div
-            className="home-hero-capsule"
-            title="Click to customize & switch Hero in the Arcade Shop"
-            onClick={() => handleClick(onOpenShop)}
-            onMouseEnter={handleHover}
-          >
-            <div className="home-hero-info">
-              <span className="home-hero-icon">{activeHero.icon}</span>
-              <div style={{ textAlign: 'left' }}>
-                <div className="home-hero-name">
-                  {activeHero.name} <span style={{ color: '#7e93ab', fontSize: '11px', fontWeight: 600 }}>({activeHero.title})</span>
-                </div>
-                <div className="home-hero-perk">{activeHero.perk}</div>
-              </div>
-            </div>
-            <div className="home-hero-action">
-              HEROES ➔
-            </div>
-          </div>
-
           {/* Difficulty Quick Toggle */}
           <div className="home-difficulty-container">
             <div className="home-diff-switch">
