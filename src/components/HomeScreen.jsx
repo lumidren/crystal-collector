@@ -13,6 +13,7 @@ export const HomeScreen = ({
   onOpenAchievements,
   onOpenHowToPlay,
   onOpenSettings,
+  onOpenAbout,
   shopHats,
   shopPets
 }) => {
@@ -110,10 +111,11 @@ export const HomeScreen = ({
           </div>
 
           {/* Difficulty Quick Toggle */}
+          {/* 3-Tier Difficulty Switch */}
           <div className="home-difficulty-container">
             <div className="home-diff-switch">
               <button
-                className={`home-diff-btn ${(savedData.difficulty || 'hard') === 'easy' ? 'active-easy' : ''}`}
+                className={`home-diff-btn ${(savedData.difficulty || 'medium') === 'easy' ? 'active-easy' : ''}`}
                 onMouseEnter={handleHover}
                 onClick={() => {
                   soundEngine.playUIClick();
@@ -121,10 +123,21 @@ export const HomeScreen = ({
                   else if (setSavedData) setSavedData(prev => ({ ...prev, difficulty: 'easy' }));
                 }}
               >
-                🟢 EASY (MEDIUM)
+                🟢 EASY
               </button>
               <button
-                className={`home-diff-btn ${(savedData.difficulty || 'hard') === 'hard' ? 'active-hard' : ''}`}
+                className={`home-diff-btn ${(savedData.difficulty || 'medium') === 'medium' ? 'active-medium' : ''}`}
+                onMouseEnter={handleHover}
+                onClick={() => {
+                  soundEngine.playUIClick();
+                  if (onToggleDifficulty) onToggleDifficulty('medium');
+                  else if (setSavedData) setSavedData(prev => ({ ...prev, difficulty: 'medium' }));
+                }}
+              >
+                🟡 MEDIUM
+              </button>
+              <button
+                className={`home-diff-btn ${(savedData.difficulty || 'medium') === 'hard' ? 'active-hard' : ''}`}
                 onMouseEnter={handleHover}
                 onClick={() => {
                   soundEngine.playUIClick();
@@ -132,16 +145,20 @@ export const HomeScreen = ({
                   else if (setSavedData) setSavedData(prev => ({ ...prev, difficulty: 'hard' }));
                 }}
               >
-                ⚡ HARD (ARCADE)
+                ⚡ HARD
               </button>
             </div>
             <span
               className="home-diff-hint"
-              style={{ color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff4d6d' }}
+              style={{
+                color: (savedData.difficulty || 'medium') === 'easy'
+                  ? '#00ff88'
+                  : ((savedData.difficulty || 'medium') === 'medium' ? '#ffd700' : '#ff4d6d')
+              }}
             >
-              {(savedData.difficulty || 'hard') === 'easy'
-                ? '🛡️ Balanced Challenge · Medium Speed · Tuned Predators & Sky Mines'
-                : '🔥 Arcade Rush · Maximum Speed · Aggressive Predators & Dense Sky Mines'}
+              {(savedData.difficulty || 'medium') === 'easy' && '🛡️ No Spiders · More Sentinel Cubes · Relaxed Patrol Speed'}
+              {(savedData.difficulty || 'medium') === 'medium' && '⚖️ Few Spiders · More Sentinel Cubes · Balanced Speed'}
+              {(savedData.difficulty || 'medium') === 'hard' && '🔥 Maximum Arcade Rush · Aggressive Predators & Dense Sky Mines'}
             </span>
           </div>
 
@@ -172,7 +189,7 @@ export const HomeScreen = ({
               </button>
             </div>
 
-            <div className="home-btn-grid-3">
+            <div className="home-btn-grid-4">
               <button
                 className="home-btn-solid"
                 onMouseEnter={handleHover}
@@ -193,6 +210,13 @@ export const HomeScreen = ({
                 onClick={() => handleClick(onOpenHowToPlay)}
               >
                 📖 GUIDE
+              </button>
+              <button
+                className="home-btn-solid"
+                onMouseEnter={handleHover}
+                onClick={() => handleClick(onOpenAbout)}
+              >
+                ℹ️ ABOUT
               </button>
             </div>
 
