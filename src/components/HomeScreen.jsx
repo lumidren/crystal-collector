@@ -123,7 +123,7 @@ export const HomeScreen = ({
                 else if (setSavedData) setSavedData(prev => ({ ...prev, difficulty: 'easy' }));
               }}
             >
-              🟢 EASY (NO MINES)
+              🟢 EASY (MEDIUM)
             </button>
             <button
               className={`home-diff-btn ${(savedData.difficulty || 'hard') === 'hard' ? 'active-hard' : ''}`}
@@ -142,8 +142,8 @@ export const HomeScreen = ({
             style={{ color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff4d6d' }}
           >
             {(savedData.difficulty || 'hard') === 'easy'
-              ? '🌿 Relaxed Biomes · Calm Speeds · No Sky Mines'
-              : '🔥 Arcade Rush · High Speed · Sky Mines Active'}
+              ? '🛡️ Balanced Challenge · Medium Speed · Tuned Creatures & Sky Mines'
+              : '🔥 Arcade Rush · Max Speed · Aggressive Predators & Dense Sky Mines'}
           </span>
         </div>
 
