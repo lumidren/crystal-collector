@@ -113,7 +113,7 @@ export const SettingsModal = ({ savedData, setSavedData, onClose }) => {
             <div style={{ fontSize: '14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
               <span>🎮 Game Difficulty</span>
               <span style={{ color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff0055', fontWeight: 800 }}>
-                {(savedData.difficulty || 'hard') === 'easy' ? '🟢 EASY (CHILL)' : '⚡ HARD (ARCADE)'}
+                {(savedData.difficulty || 'hard') === 'easy' ? '🟢 EASY (MEDIUM)' : '⚡ HARD (ARCADE)'}
               </span>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -129,7 +129,7 @@ export const SettingsModal = ({ savedData, setSavedData, onClose }) => {
                   setSavedData(prev => ({ ...prev, difficulty: 'easy' }));
                 }}
               >
-                🟢 EASY (NO MINES / RELAXED)
+                🟢 EASY (MEDIUM BALANCED)
               </button>
               <button
                 className={`graphics-preset-btn ${(savedData.difficulty || 'hard') === 'hard' ? 'active' : ''}`}
@@ -143,13 +143,13 @@ export const SettingsModal = ({ savedData, setSavedData, onClose }) => {
                   setSavedData(prev => ({ ...prev, difficulty: 'hard' }));
                 }}
               >
-                ⚡ HARD (FAST & SKY MINES)
+                ⚡ HARD (ARCADE EXTREME)
               </button>
             </div>
             <div style={{ fontSize: '11px', color: '#8fa0b5', marginTop: '6px' }}>
               {(savedData.difficulty || 'hard') === 'easy'
-                ? '✨ Easy Mode: Disables all aerial sky mines, lowers obstacle speed & density for relaxed exploration.'
-                : '🔥 Hard Mode: Full arcade challenge with Sky Mines on bridges, higher obstacle counts, and max speeds.'}
+                ? '✨ Easy (Medium): Moderate obstacle density, tuned Cyber Stalker encounters, and balanced platform sky mines.'
+                : '🔥 Hard Mode: Full arcade challenge with dense Sky Mines on bridges, fast lunging Cyber Stalkers, and max speeds.'}
             </div>
           </div>
 
