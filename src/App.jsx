@@ -930,13 +930,15 @@ const CrystalCollectorGame = () => {
 
     // Spawn Obstacles (Quantum Sentinel Cubes, Cyber Stalker Creatures & Anti-Grav Sky Mines)
     const isEasy = (currentSaved.difficulty || 'hard') === 'easy';
-    const obsCount = isEasy ? Math.max(4, Math.round(cfg.obs * 0.45)) : cfg.obs;
-    const obsBaseSpeed = isEasy ? cfg.speed * 0.55 : cfg.speed;
+    // Easy mode is balanced as "Medium" (75% density, 75% speed, 25% cyber stalkers & select sky mines)
+    // Hard mode is "Hard" (100% arcade density, 100% speed, 35% cyber stalkers & dense sky mines)
+    const obsCount = isEasy ? Math.max(5, Math.round(cfg.obs * 0.75)) : cfg.obs;
+    const obsBaseSpeed = isEasy ? cfg.speed * 0.75 : cfg.speed;
 
     for (let i = 0; i < obsCount; i++) {
-      // In Easy mode: Sentinel Cubes only (peaceful bouncing)
-      // In Hard mode: ~35% are Cyber Stalker Creatures (fierce stalking & lunging beasts)
-      const isCreature = !isEasy && (i % 3 === 0);
+      // In Easy (Medium): 25% are Cyber Stalker Creatures (i % 4 === 0)
+      // In Hard: ~35% are Cyber Stalker Creatures (i % 3 === 0)
+      const isCreature = isEasy ? (i % 4 === 0) : (i % 3 === 0);
       let obsMesh;
       if (isCreature) {
         obsMesh = createCyberCreature();
@@ -961,15 +963,21 @@ const CrystalCollectorGame = () => {
         cooldown: 0,
         state: 'patrol', // 'patrol' | 'windup' | 'lunge'
         stateTimer: 0,
-        lungeDir: { x: 0, z: 0 }
+        lungeDir: { x: 0, z: 0 },
+        isEasy
       });
     }
 
-    // Spawn Aerial Sky Patrol Mines on elevated platforms (Hard mode only! Easy mode disables all sky mines!)
-    if (!isEasy && platforms && platforms.length > 0 && level < 10) {
+    // Spawn Aerial Sky Patrol Mines on elevated platforms
+    // In Easy (Medium): Sky Mines spawn on wide platforms (width >= 13 or i % 3 === 0) at 75% patrol speed
+    // In Hard: Sky Mines spawn densely on alternating platforms and decks (i % 2 === 0 or width >= 12) at full speed
+    if (platforms && platforms.length > 0 && level < 10) {
       platforms.forEach((p, pIdx) => {
-        // Place 1 Sky Mine on alternating platforms and wider decks
-        if (pIdx % 2 === 0 || p.width >= 12) {
+        const shouldSpawnMine = isEasy
+          ? (p.width >= 13 || pIdx % 3 === 0)
+          : (pIdx % 2 === 0 || p.width >= 12);
+
+        if (shouldSpawnMine) {
           const mineGroup = createAntiGravSkyMine();
           const startX = p.x;
           const startY = p.topY + 1.2;
@@ -979,6 +987,7 @@ const CrystalCollectorGame = () => {
           scene.add(mineGroup);
 
           const useX = p.width >= p.depth;
+          const baseMineSpeed = 3.5 + (pIdx % 3);
           obstacles.push({
             type: 'skymine',
             mesh: mineGroup,
@@ -986,7 +995,7 @@ const CrystalCollectorGame = () => {
             axis: useX ? 'x' : 'z',
             min: useX ? p.minX + 1.2 : p.minZ + 1.2,
             max: useX ? p.maxX - 1.2 : p.maxZ - 1.2,
-            speed: 3.5 + (pIdx % 3),
+            speed: isEasy ? baseMineSpeed * 0.75 : baseMineSpeed,
             dir: 1,
             phase: pIdx * 1.5,
             cooldown: 0,
@@ -1621,17 +1630,24 @@ const CrystalCollectorGame = () => {
             }
           }
         } else if (o.type === 'creature') {
-          // Cyber Stalker Creature: Intelligent Stalking & Telegraphed Lunge AI (Hard Mode)
+          // Cyber Stalker Creature: Intelligent Stalking & Telegraphed Lunge AI (Medium & Hard Modes)
           const distToPlayer = Math.hypot(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
           const isPlayerOnGround = player.position.y < 2.2;
           const ud = o.mesh.userData || {};
+
+          const lungeMultiplier = o.isEasy ? 1.45 : 1.85;
+          const recoveryCooldown = o.isEasy ? 2.0 : 1.4;
+          const windupDuration = o.isEasy ? 0.48 : 0.38;
+          const pursuitMultiplier = o.isEasy ? 1.0 : 1.15;
+          const stalkRange = o.isEasy ? 22 : 28;
+          const lungeTriggerRange = o.isEasy ? 10 : 12;
 
           // Stalking / Windup / Lunge State Machine
           if (o.state === 'lunge') {
             // Rapid high-speed forward strike!
             o.stateTimer -= dt;
-            o.mesh.position.x += o.lungeDir.x * (o.speed * 1.85) * dt * slowMultiplier;
-            o.mesh.position.z += o.lungeDir.z * (o.speed * 1.85) * dt * slowMultiplier;
+            o.mesh.position.x += o.lungeDir.x * (o.speed * lungeMultiplier) * dt * slowMultiplier;
+            o.mesh.position.z += o.lungeDir.z * (o.speed * lungeMultiplier) * dt * slowMultiplier;
 
             // Thrashing claws and biting mandibles
             if (ud.leftMandible && ud.rightMandible) {
@@ -1640,14 +1656,14 @@ const CrystalCollectorGame = () => {
             }
             if (o.stateTimer <= 0) {
               o.state = 'patrol';
-              o.cooldown = 1.4; // Recovery breather
+              o.cooldown = recoveryCooldown; // Recovery breather
               if (ud.eyeLeft && ud.eyeRight) {
                 ud.eyeLeft.material.color.setHex(0xff0022);
                 ud.eyeRight.material.color.setHex(0xff0022);
               }
             }
           } else if (o.state === 'windup') {
-            // Windup Telegraph: pauses for 0.38s, eyes flare bright crimson, tail shakes!
+            // Windup Telegraph: pauses for windupDuration, eyes flare bright crimson, tail shakes!
             o.stateTimer -= dt;
             if (ud.eyeLeft && ud.eyeRight) {
               ud.eyeLeft.material.color.setHex(0xff0000);
@@ -1668,17 +1684,17 @@ const CrystalCollectorGame = () => {
             }
           } else {
             // Normal Stalking or Patrol
-            if (distToPlayer < 12 && isPlayerOnGround && o.cooldown <= 0) {
+            if (distToPlayer < lungeTriggerRange && isPlayerOnGround && o.cooldown <= 0) {
               // Initiate telegraphed lunge attack!
               o.state = 'windup';
-              o.stateTimer = 0.38;
+              o.stateTimer = windupDuration;
               o.velocity.x = 0;
               o.velocity.z = 0;
-            } else if (distToPlayer < 28 && isPlayerOnGround) {
+            } else if (distToPlayer < stalkRange && isPlayerOnGround) {
               // Stalking Phase: smooth pursuit steering toward player
               const angle = Math.atan2(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
               o.mesh.rotation.y = angle;
-              const pursuitSpeed = o.speed * 1.15;
+              const pursuitSpeed = o.speed * pursuitMultiplier;
               o.velocity.x += (Math.sin(angle) * pursuitSpeed - o.velocity.x) * dt * 3.5;
               o.velocity.z += (Math.cos(angle) * pursuitSpeed - o.velocity.z) * dt * 3.5;
 
