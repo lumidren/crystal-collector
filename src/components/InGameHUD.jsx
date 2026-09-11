@@ -66,12 +66,20 @@ export const InGameHUD = ({
                 padding: '2px 8px',
                 borderRadius: '12px',
                 letterSpacing: '0.5px',
-                background: (savedData?.difficulty || 'hard') === 'easy' ? 'rgba(0, 255, 136, 0.18)' : 'rgba(255, 0, 85, 0.18)',
-                color: (savedData?.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff4d6d',
-                border: (savedData?.difficulty || 'hard') === 'easy' ? '1px solid #00ff88' : '1px solid #ff0055'
+                background: (savedData?.difficulty || 'medium') === 'easy'
+                  ? 'rgba(0, 255, 136, 0.18)'
+                  : ((savedData?.difficulty || 'medium') === 'medium' ? 'rgba(255, 215, 0, 0.18)' : 'rgba(255, 0, 85, 0.18)'),
+                color: (savedData?.difficulty || 'medium') === 'easy'
+                  ? '#00ff88'
+                  : ((savedData?.difficulty || 'medium') === 'medium' ? '#ffd700' : '#ff4d6d'),
+                border: (savedData?.difficulty || 'medium') === 'easy'
+                  ? '1px solid #00ff88'
+                  : ((savedData?.difficulty || 'medium') === 'medium' ? '1px solid #ffd700' : '1px solid #ff0055')
               }}
             >
-              {(savedData?.difficulty || 'hard') === 'easy' ? '🟢 EASY (MEDIUM)' : '⚡ HARD'}
+              {(savedData?.difficulty || 'medium') === 'easy' && '🟢 EASY'}
+              {(savedData?.difficulty || 'medium') === 'medium' && '🟡 MEDIUM'}
+              {(savedData?.difficulty || 'medium') === 'hard' && '⚡ HARD'}
             </span>
           </div>
 
