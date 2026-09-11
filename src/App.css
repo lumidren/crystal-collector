@@ -644,6 +644,36 @@ body, button, input, select, textarea {
   box-shadow: 0 4px 15px rgba(0, 240, 255, 0.4);
 }
 
+/* Shop Close X Button in Upper Right */
+.shop-close-x-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2ecf8;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  line-height: 1;
+}
+
+.shop-close-x-btn:hover {
+  background: rgba(255, 0, 85, 0.3);
+  border-color: #ff0055;
+  color: #ffffff;
+  transform: scale(1.12);
+  box-shadow: 0 0 14px rgba(255, 0, 85, 0.5);
+}
+
+.shop-close-x-btn:active {
+  transform: scale(0.95);
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
