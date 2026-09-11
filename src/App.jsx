@@ -305,6 +305,22 @@ function createQuantumSentinelCube() {
     group.add(ch);
   });
 
+  // Anti-gravity repulsor emitter on bottom face
+  const repulsor = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.55, 0.45, 0.08, 16),
+    new THREE.MeshStandardMaterial({ color: 0x222533, metalness: 0.8, roughness: 0.2 })
+  );
+  repulsor.position.set(0, -0.96, 0);
+  group.add(repulsor);
+
+  const repulsorGlow = new THREE.Mesh(
+    new THREE.CircleGeometry(0.42, 16),
+    new THREE.MeshBasicMaterial({ color: 0xff0044 })
+  );
+  repulsorGlow.position.set(0, -1.01, 0);
+  repulsorGlow.rotation.x = Math.PI / 2;
+  group.add(repulsorGlow);
+
   group.userData = { innerCore };
   return group;
 }
@@ -959,13 +975,16 @@ const CrystalCollectorGame = () => {
 
       const angle = (i / obsCount) * Math.PI * 2;
       const r = 8 + Math.random() * 26;
-      obsMesh.position.set(Math.cos(angle) * r, 0, Math.sin(angle) * r);
+      const startY = isCreature ? 0 : 1.4;
+      obsMesh.position.set(Math.cos(angle) * r, startY, Math.sin(angle) * r);
       obsMesh.castShadow = true;
       scene.add(obsMesh);
 
       obstacles.push({
         type: isCreature ? 'creature' : 'roaming',
         mesh: obsMesh,
+        baseY: startY,
+        phase: i * 0.75,
         velocity: {
           x: (Math.random() - 0.5) * obsBaseSpeed,
           z: (Math.random() - 0.5) * obsBaseSpeed
@@ -1800,15 +1819,66 @@ const CrystalCollectorGame = () => {
             }
           }
         } else {
-          // Quantum Sentinel Cube: Standard bouncing & tumbling
+          // Quantum Sentinel Cube: Anti-gravity hovering sentinel
           o.mesh.position.x += o.velocity.x * dt * slowMultiplier;
           o.mesh.position.z += o.velocity.z * dt * slowMultiplier;
 
-          if (o.mesh.position.x > 36 || o.mesh.position.x < -36) o.velocity.x *= -1;
-          if (o.mesh.position.z > 36 || o.mesh.position.z < -36) o.velocity.z *= -1;
+          if (o.mesh.position.x > 36) {
+            o.mesh.position.x = 36;
+            o.velocity.x *= -1;
+          } else if (o.mesh.position.x < -36) {
+            o.mesh.position.x = -36;
+            o.velocity.x *= -1;
+          }
+          if (o.mesh.position.z > 36) {
+            o.mesh.position.z = 36;
+            o.velocity.z *= -1;
+          } else if (o.mesh.position.z < -36) {
+            o.mesh.position.z = -36;
+            o.velocity.z *= -1;
+          }
 
-          o.mesh.rotation.x += dt * 2 * slowMultiplier;
-          o.mesh.rotation.y += dt * 2 * slowMultiplier;
+          // Bounce off solid tree and rock colliders
+          if (solidColliders && solidColliders.length > 0) {
+            const sentinelRadius = 1.2;
+            for (const col of solidColliders) {
+              const dx = o.mesh.position.x - col.x;
+              const dz = o.mesh.position.z - col.z;
+              const dist = Math.hypot(dx, dz);
+              const minDist = (col.radius || 1.2) + sentinelRadius;
+              if (dist < minDist && dist > 0.0001) {
+                const push = minDist - dist;
+                o.mesh.position.x += (dx / dist) * push;
+                o.mesh.position.z += (dz / dist) * push;
+                o.velocity.x *= -1;
+                o.velocity.z *= -1;
+              }
+            }
+          }
+
+          // Calculate surface beneath cube (ground or platform)
+          let surfaceY = 0;
+          if (platforms && platforms.length > 0) {
+            for (const p of platforms) {
+              if (
+                o.mesh.position.x >= p.minX && o.mesh.position.x <= p.maxX &&
+                o.mesh.position.z >= p.minZ && o.mesh.position.z <= p.maxZ
+              ) {
+                if (o.mesh.position.y >= p.topY - 0.5 && p.topY > surfaceY) {
+                  surfaceY = p.topY;
+                }
+              }
+            }
+          }
+
+          // Set hovering altitude above surface (lowest point is >= 0.27m above floor)
+          const hoverY = surfaceY + 1.4 + Math.sin(t * 3.0 + (o.phase || 0)) * 0.12;
+          o.mesh.position.y = hoverY;
+
+          // Upright anti-gravity hover rotation (yaw spin + subtle aerodynamic tilt, no tumbling below floor)
+          o.mesh.rotation.y += dt * 1.6 * slowMultiplier;
+          o.mesh.rotation.x = Math.sin(t * 2.2 + (o.phase || 0)) * 0.06;
+          o.mesh.rotation.z = Math.cos(t * 2.5 + (o.phase || 0)) * 0.06;
 
           // Inner plasma reactor core counter-rotation and light pulse
           if (o.mesh.userData?.innerCore) {
@@ -1821,7 +1891,8 @@ const CrystalCollectorGame = () => {
           if (o.cooldown > 0) o.cooldown -= dt;
 
           const distToPlayer = Math.hypot(player.position.x - o.mesh.position.x, player.position.z - o.mesh.position.z);
-          if (distToPlayer < 2.5 && o.cooldown <= 0 && player.position.y < 1.2) {
+          const distY = Math.abs(player.position.y - o.mesh.position.y);
+          if (distToPlayer < 2.5 && distY < 1.8 && o.cooldown <= 0) {
             if (spawnGraceRef.current > 0) {
               o.cooldown = 0.5;
               return;
