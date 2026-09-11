@@ -1898,7 +1898,6 @@ const CrystalCollectorGame = () => {
             setStamina(maxStam);
             staminaRef.current = maxStam;
             soundEngine.playPowerup('shield');
-            particleManager.createFloatingText({ x: 0, y: 1.5, z: 0 }, 'PROGRESS RESET! 🔄', '#a78bfa', 32);
           }}
           onPlay={() => {
             setLevel(1);
