@@ -346,7 +346,8 @@ export class BiomeGenerator {
       });
     });
 
-    // 5. Biome Props & Environments (Expanded layout)
+    // 5. Biome Props & Environments (Expanded layout) with Physical Solid Colliders
+    const solidColliders = [];
     if (biome.id === 'forest') {
       // Low-poly pine trees with shadows
       for (let i = 0; i < 12; i++) {
@@ -374,24 +375,31 @@ export class BiomeGenerator {
 
         const angle = (i / 12) * Math.PI * 2 + 0.2;
         const r = 26 + (i % 3) * 3.5;
-        tree.position.set(Math.cos(angle) * r, 0, Math.sin(angle) * r);
+        const tx = Math.cos(angle) * r;
+        const tz = Math.sin(angle) * r;
+        tree.position.set(tx, 0, tz);
         scene.add(tree);
         decorations.push(tree);
+        solidColliders.push({ type: 'tree', x: tx, z: tz, radius: 1.15, height: 6.5 });
       }
 
       // Mossy boulders
       for (let i = 0; i < 8; i++) {
+        const rockRadius = 1.4 + (i % 3) * 0.25;
         const rock = new THREE.Mesh(
-          new THREE.DodecahedronGeometry(1.4 + Math.random() * 0.6),
+          new THREE.DodecahedronGeometry(rockRadius),
           new THREE.MeshStandardMaterial({ color: 0x3d4349, roughness: 0.85 })
         );
         const angle = (i / 8) * Math.PI * 2 + 0.6;
-        rock.position.set(Math.cos(angle) * 18, 0.7, Math.sin(angle) * 18);
+        const rx = Math.cos(angle) * 18;
+        const rz = Math.sin(angle) * 18;
+        rock.position.set(rx, 0.7, rz);
         rock.rotation.set(Math.random(), Math.random(), Math.random());
         rock.castShadow = true;
         rock.receiveShadow = true;
         scene.add(rock);
         decorations.push(rock);
+        solidColliders.push({ type: 'rock', x: rx, z: rz, radius: rockRadius + 0.25, height: 2.2 });
       }
     } else if (biome.id === 'cavern') {
       // Luminescent crystalline stalagmites
@@ -410,10 +418,13 @@ export class BiomeGenerator {
         );
         const angle = (i / 14) * Math.PI * 2 + 0.2;
         const r = 25 + (i % 3) * 3;
-        spike.position.set(Math.cos(angle) * r, 2.1, Math.sin(angle) * r);
+        const sx = Math.cos(angle) * r;
+        const sz = Math.sin(angle) * r;
+        spike.position.set(sx, 2.1, sz);
         spike.castShadow = true;
         scene.add(spike);
         decorations.push(spike);
+        solidColliders.push({ type: 'stalagmite', x: sx, z: sz, radius: 1.1, height: 4.5 });
       }
     } else if (biome.id === 'tundra') {
       // Physical glass-like ice pillars
@@ -434,11 +445,14 @@ export class BiomeGenerator {
         );
         const angle = (i / 12) * Math.PI * 2 + 0.3;
         const r = 27 + (i % 3) * 3;
-        ice.position.set(Math.cos(angle) * r, 1.8, Math.sin(angle) * r);
+        const ix = Math.cos(angle) * r;
+        const iz = Math.sin(angle) * r;
+        ice.position.set(ix, 1.8, iz);
         ice.rotation.set(Math.random(), Math.random(), 0);
         ice.castShadow = true;
         scene.add(ice);
         decorations.push(ice);
+        solidColliders.push({ type: 'ice_pillar', x: ix, z: iz, radius: 1.4, height: 3.8 });
       }
     } else if (biome.hasLava) {
       // Obsidian / basalt pillars
@@ -448,11 +462,14 @@ export class BiomeGenerator {
           new THREE.MeshStandardMaterial({ color: 0x141010, roughness: 0.7, metalness: 0.3 })
         );
         const angle = (i / 10) * Math.PI * 2 + 0.1;
-        col.position.set(Math.cos(angle) * 29, 2.5, Math.sin(angle) * 29);
+        const cx = Math.cos(angle) * 29;
+        const cz = Math.sin(angle) * 29;
+        col.position.set(cx, 2.5, cz);
         col.castShadow = true;
         col.receiveShadow = true;
         scene.add(col);
         decorations.push(col);
+        solidColliders.push({ type: 'column', x: cx, z: cz, radius: 1.45, height: 5.5 });
       }
     }
 
@@ -576,7 +593,7 @@ export class BiomeGenerator {
       });
     });
 
-    return { biome, decorations, jumpPads, hazardZones, platforms, starField, weatherField, weatherPos, weatherVel, wCfg };
+    return { biome, decorations, solidColliders, jumpPads, hazardZones, platforms, starField, weatherField, weatherPos, weatherVel, wCfg };
   }
 
   // Update weather particles and starfield in animation loop
