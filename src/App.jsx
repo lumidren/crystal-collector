@@ -18,16 +18,16 @@ import { ScoreboardModal } from './components/ScoreboardModal.jsx';
 import './App.css';
 
 const levelConfigs = [
-  { crystals: 8, coins: 15, obs: 12, speed: 7, hearts: 2 },
-  { crystals: 10, coins: 20, obs: 16, speed: 8, hearts: 2 },
-  { crystals: 12, coins: 25, obs: 20, speed: 9, hearts: 3 },
-  { crystals: 15, coins: 30, obs: 24, speed: 10, hearts: 3 },
-  { crystals: 18, coins: 35, obs: 28, speed: 11, hearts: 3 },
-  { crystals: 20, coins: 40, obs: 32, speed: 12, hearts: 4 },
-  { crystals: 22, coins: 45, obs: 36, speed: 13, hearts: 4 },
-  { crystals: 25, coins: 50, obs: 40, speed: 14, hearts: 4 },
-  { crystals: 28, coins: 55, obs: 44, speed: 15, hearts: 5 },
-  { crystals: 30, coins: 60, obs: 24, speed: 12, hearts: 5 } // Titan Guardian Boss Level!
+  { crystals: 8, coins: 15, obs: 20, speed: 7, hearts: 3 },
+  { crystals: 10, coins: 20, obs: 24, speed: 8, hearts: 3 },
+  { crystals: 12, coins: 25, obs: 28, speed: 9, hearts: 3 },
+  { crystals: 15, coins: 30, obs: 32, speed: 10, hearts: 3 },
+  { crystals: 18, coins: 35, obs: 36, speed: 11, hearts: 3 },
+  { crystals: 20, coins: 40, obs: 40, speed: 12, hearts: 4 },
+  { crystals: 22, coins: 45, obs: 46, speed: 13, hearts: 4 },
+  { crystals: 25, coins: 50, obs: 52, speed: 14, hearts: 4 },
+  { crystals: 28, coins: 55, obs: 58, speed: 15, hearts: 5 },
+  { crystals: 30, coins: 60, obs: 36, speed: 12, hearts: 5 } // Titan Guardian Boss Level!
 ];
 
 // --- 3D HIGH-TECH COLLECTIBLE BUILDERS ---
@@ -625,7 +625,8 @@ const CrystalCollectorGame = () => {
     setIsPaused(false);
     soundEngine.startBGM();
 
-    // Reset level timers and grant 3s spawn protection
+    // Reset level timers, hearts, and grant 3s spawn protection
+    setHearts(savedDataRef.current?.upgrades?.maxHearts || 3);
     spawnGraceRef.current = 3.0;
     setSpawnGraceTime(3.0);
     levelElapsedRef.current = 0;
@@ -691,6 +692,7 @@ const CrystalCollectorGame = () => {
     setCoins(0);
     setCombo(1);
     setPylonsDeactivated(0);
+    setHearts(savedDataRef.current?.upgrades?.maxHearts || 3);
     setShieldTime(0);
     setMagnetTime(0);
     setSlowMoTime(0);
@@ -781,7 +783,7 @@ const CrystalCollectorGame = () => {
     // Scene & Camera
     scene = new THREE.Scene();
     const biomeEnv = BiomeGenerator.buildBiome(level, scene);
-    const { biome, decorations, jumpPads, hazardZones, platforms } = biomeEnv;
+    const { biome, decorations, solidColliders, jumpPads, hazardZones, platforms } = biomeEnv;
     scene.background = new THREE.Color(biome.skyColor);
 
     if (biome.fog) {
@@ -947,7 +949,7 @@ const CrystalCollectorGame = () => {
       }
 
       const angle = (i / obsCount) * Math.PI * 2;
-      const r = 12 + Math.random() * 20;
+      const r = 8 + Math.random() * 26;
       obsMesh.position.set(Math.cos(angle) * r, 0, Math.sin(angle) * r);
       obsMesh.castShadow = true;
       scene.add(obsMesh);
@@ -1338,6 +1340,24 @@ const CrystalCollectorGame = () => {
       player.position.x = Math.max(-36, Math.min(36, player.position.x + mx));
       player.position.z = Math.max(-36, Math.min(36, player.position.z + mz));
 
+      // Physical Solid Collision Resolution (Trees, Rocks, Biome Pillars) - User cannot pass through them
+      if (solidColliders && solidColliders.length > 0) {
+        const playerRadius = 0.65;
+        for (const col of solidColliders) {
+          if (player.position.y < (col.height || 4.5)) {
+            const dx = player.position.x - col.x;
+            const dz = player.position.z - col.z;
+            const dist = Math.hypot(dx, dz);
+            const minDist = (col.radius || 1.2) + playerRadius;
+            if (dist < minDist && dist > 0.0001) {
+              const push = minDist - dist;
+              player.position.x += (dx / dist) * push;
+              player.position.z += (dz / dist) * push;
+            }
+          }
+        }
+      }
+
       // Multi-Tier Sky Platform & Ground Floor Detection
       let currentFloorY = 0;
       if (platforms && platforms.length > 0) {
@@ -1680,7 +1700,6 @@ const CrystalCollectorGame = () => {
               const len = Math.hypot(dX, dZ) || 1;
               o.lungeDir = { x: dX / len, z: dZ / len };
               o.mesh.rotation.y = Math.atan2(dX, dZ);
-              soundEngine.playHazard?.();
             }
           } else {
             // Normal Stalking or Patrol
@@ -1753,6 +1772,7 @@ const CrystalCollectorGame = () => {
               o.cooldown = 2.0;
               o.state = 'patrol';
               handlePlayerDamage();
+              soundEngine.playHazard?.();
               particleManager.createBurst(o.mesh.position, 0xff0033, 16, 8);
               particleManager.createFloatingText(player.position, 'BEAST STRIKE! 💥', '#ff0033');
             }
@@ -1921,6 +1941,7 @@ const CrystalCollectorGame = () => {
             setCoins(0);
             setCombo(1);
             setPylonsDeactivated(0);
+            setHearts(savedDataRef.current?.upgrades?.maxHearts || 3);
             setShieldTime(0);
             setMagnetTime(0);
             setSlowMoTime(0);
