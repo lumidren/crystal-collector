@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { soundEngine } from '../audio/soundEngine.js';
+import { CHARACTER_ROSTER } from '../game/character.js';
 
 export const HomeScreen = ({
   savedData,
@@ -18,8 +19,9 @@ export const HomeScreen = ({
   const [confirmReset, setConfirmReset] = useState(false);
   const [resetTimer, setResetTimer] = useState(null);
 
-  const currentHatObj = shopHats.find(h => h.id === savedData.currentHat);
-  const currentPetObj = shopPets.find(p => p.id === savedData.currentPet);
+  const activeHero = CHARACTER_ROSTER.find(c => c.id === savedData.currentCharacter) || CHARACTER_ROSTER[0];
+  const currentHatObj = shopHats?.find(h => h.id === savedData.currentHat);
+  const currentPetObj = shopPets?.find(p => p.id === savedData.currentPet);
   const unlockedAchievementsCount = Object.keys(savedData.achievements || {}).filter(k => savedData.achievements[k]).length;
   const highestLevel = savedData.unlockedLevels || 1;
 
@@ -58,31 +60,31 @@ export const HomeScreen = ({
 
   return (
     <div className="home-overlay">
-      {/* Top Bar: Player Loadout & Coins Profile */}
+      {/* Top Bar: Player Loadout & Currency Profile */}
       <div className="home-top-bar">
         <div className="player-profile-card">
           <div
             className="player-avatar-circle"
             style={{
               background: savedData.playerColor || '#00ff00',
-              boxShadow: `0 0 12px ${savedData.playerColor || '#00ff00'}`
+              boxShadow: `0 0 14px ${savedData.playerColor || '#00ff00'}`
             }}
           >
-            {currentHatObj ? currentHatObj.icon : '🧢'}
+            {currentHatObj ? currentHatObj.icon : activeHero.icon}
           </div>
           <div>
             <div style={{ fontWeight: 800, fontSize: '14px', color: '#ffffff' }}>
               Level {highestLevel} Explorer
             </div>
-            <div style={{ fontSize: '12px', color: '#7e93ab' }}>
-              Pet: {currentPetObj ? `${currentPetObj.icon} ${currentPetObj.name}` : 'None'}
+            <div style={{ fontSize: '12px', color: '#8da2be' }}>
+              Hero: <strong style={{ color: '#00f0ff' }}>{activeHero.name}</strong> · Pet: {currentPetObj ? `${currentPetObj.icon} ${currentPetObj.name}` : 'None'}
             </div>
           </div>
         </div>
 
         {/* Creator Brand Tag */}
         <div className="home-brand-tag">
-          ⚡ MADE BY LUMIDREN ⚡
+          ⚡ CRYSTAL COLLECTOR 2.0 ⚡
         </div>
 
         {/* Currency & Trophies */}
@@ -93,7 +95,7 @@ export const HomeScreen = ({
           </div>
           <div
             className="stat-pill"
-            style={{ color: '#00f0ff', background: '#0e1828', borderColor: '#1c2d47' }}
+            style={{ color: '#00f0ff' }}
           >
             <span>🏆</span>
             <span>{unlockedAchievementsCount} Badges</span>
@@ -101,127 +103,150 @@ export const HomeScreen = ({
         </div>
       </div>
 
-      {/* Center Hero: Title & Action Menu */}
+      {/* Center Content: Translucent Frosted Glass Card */}
       <div className="home-center-content">
-        <div className="home-logo-container">
-          <div className="home-crystal-badge">💎</div>
-          <h1 className="home-title">CRYSTAL COLLECTOR</h1>
-          <div style={{ fontSize: '12px', fontWeight: 700, color: '#687f9d', letterSpacing: '2px', marginTop: '6px', textTransform: 'uppercase' }}>
-            ARCADE 3D PLATFORMER · PROCEDURAL BIOMES
+        <div className="home-center-card">
+          <div className="home-logo-container">
+            <div className="home-crystal-badge">💎</div>
+            <h1 className="home-title">CRYSTAL COLLECTOR</h1>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#7e95b3', letterSpacing: '2px', marginTop: '6px', textTransform: 'uppercase' }}>
+              NEO-ARCADE 3D PLATFORMER · PROCEDURAL BIOMES
+            </div>
           </div>
-        </div>
 
-        {/* Difficulty Quick Toggle */}
-        <div className="home-difficulty-container">
-          <div className="home-diff-switch">
-            <button
-              className={`home-diff-btn ${(savedData.difficulty || 'hard') === 'easy' ? 'active-easy' : ''}`}
-              onMouseEnter={handleHover}
-              onClick={() => {
-                soundEngine.playUIClick();
-                if (onToggleDifficulty) onToggleDifficulty('easy');
-                else if (setSavedData) setSavedData(prev => ({ ...prev, difficulty: 'easy' }));
-              }}
-            >
-              🟢 EASY (MEDIUM)
-            </button>
-            <button
-              className={`home-diff-btn ${(savedData.difficulty || 'hard') === 'hard' ? 'active-hard' : ''}`}
-              onMouseEnter={handleHover}
-              onClick={() => {
-                soundEngine.playUIClick();
-                if (onToggleDifficulty) onToggleDifficulty('hard');
-                else if (setSavedData) setSavedData(prev => ({ ...prev, difficulty: 'hard' }));
-              }}
-            >
-              ⚡ HARD (ARCADE)
-            </button>
-          </div>
-          <span
-            className="home-diff-hint"
-            style={{ color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff4d6d' }}
-          >
-            {(savedData.difficulty || 'hard') === 'easy'
-              ? '🛡️ Balanced Challenge · Medium Speed · Tuned Creatures & Sky Mines'
-              : '🔥 Arcade Rush · Max Speed · Aggressive Predators & Dense Sky Mines'}
-          </span>
-        </div>
-
-        {/* Action Hub - Uncrowded, Solid 2-tier Grid */}
-        <div className="home-action-deck">
-          <button
-            className="home-btn-play-solid"
+          {/* Active Hero Capsule / Shortcut to Character Shop */}
+          <div
+            className="home-hero-capsule"
+            title="Click to customize & switch Hero in the Arcade Shop"
+            onClick={() => handleClick(onOpenShop)}
             onMouseEnter={handleHover}
-            onClick={() => handleClick(onPlay)}
           >
-            ▶ PLAY CAMPAIGN
-          </button>
-
-          <div className="home-btn-grid">
-            <button
-              className="home-btn-solid"
-              onMouseEnter={handleHover}
-              onClick={() => handleClick(onOpenLevelSelect)}
-            >
-              🗺️ LEVELS ({highestLevel}/10)
-            </button>
-            <button
-              className="home-btn-solid"
-              onMouseEnter={handleHover}
-              onClick={() => handleClick(onOpenShop)}
-            >
-              🛒 ARCADE SHOP
-            </button>
+            <div className="home-hero-info">
+              <span className="home-hero-icon">{activeHero.icon}</span>
+              <div style={{ textAlign: 'left' }}>
+                <div className="home-hero-name">
+                  {activeHero.name} <span style={{ color: '#7e93ab', fontSize: '11px', fontWeight: 600 }}>({activeHero.title})</span>
+                </div>
+                <div className="home-hero-perk">{activeHero.perk}</div>
+              </div>
+            </div>
+            <div className="home-hero-action">
+              HEROES ➔
+            </div>
           </div>
 
-          <div className="home-btn-grid-3">
-            <button
-              className="home-btn-solid"
-              onMouseEnter={handleHover}
-              onClick={() => handleClick(onOpenAchievements)}
+          {/* Difficulty Quick Toggle */}
+          <div className="home-difficulty-container">
+            <div className="home-diff-switch">
+              <button
+                className={`home-diff-btn ${(savedData.difficulty || 'hard') === 'easy' ? 'active-easy' : ''}`}
+                onMouseEnter={handleHover}
+                onClick={() => {
+                  soundEngine.playUIClick();
+                  if (onToggleDifficulty) onToggleDifficulty('easy');
+                  else if (setSavedData) setSavedData(prev => ({ ...prev, difficulty: 'easy' }));
+                }}
+              >
+                🟢 EASY (MEDIUM)
+              </button>
+              <button
+                className={`home-diff-btn ${(savedData.difficulty || 'hard') === 'hard' ? 'active-hard' : ''}`}
+                onMouseEnter={handleHover}
+                onClick={() => {
+                  soundEngine.playUIClick();
+                  if (onToggleDifficulty) onToggleDifficulty('hard');
+                  else if (setSavedData) setSavedData(prev => ({ ...prev, difficulty: 'hard' }));
+                }}
+              >
+                ⚡ HARD (ARCADE)
+              </button>
+            </div>
+            <span
+              className="home-diff-hint"
+              style={{ color: (savedData.difficulty || 'hard') === 'easy' ? '#00ff88' : '#ff4d6d' }}
             >
-              🏆 BADGES
-            </button>
-            <button
-              className="home-btn-solid"
-              onMouseEnter={handleHover}
-              onClick={() => handleClick(onOpenSettings)}
-            >
-              ⚙️ SETTINGS
-            </button>
-            <button
-              className="home-btn-solid"
-              onMouseEnter={handleHover}
-              onClick={() => handleClick(onOpenHowToPlay)}
-            >
-              📖 GUIDE
-            </button>
+              {(savedData.difficulty || 'hard') === 'easy'
+                ? '🛡️ Balanced Challenge · Medium Speed · Tuned Predators & Sky Mines'
+                : '🔥 Arcade Rush · Maximum Speed · Aggressive Predators & Dense Sky Mines'}
+            </span>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+          {/* Action Hub - Semi-Transparent Glass Buttons */}
+          <div className="home-action-deck">
             <button
-              className="home-btn-solid"
-              style={{
-                flex: 1,
-                background: confirmReset ? '#380a14' : '#14121a',
-                borderColor: confirmReset ? '#ff0055' : '#2a1e2f',
-                color: confirmReset ? '#ff4d6d' : '#a78bfa',
-                fontSize: '13px',
-                padding: '10px 12px'
-              }}
+              className="home-btn-play-solid"
               onMouseEnter={handleHover}
-              onClick={handleResetClick}
+              onClick={() => handleClick(onPlay)}
             >
-              {confirmReset ? '⚠️ SURE? CLICK TO RESET' : '🔄 RESET PROGRESS'}
+              ▶ PLAY CAMPAIGN
             </button>
-            <button
-              className="home-btn-solid exit-btn"
-              style={{ flex: 1 }}
-              onMouseEnter={handleHover}
-              onClick={handleQuit}
-            >
-              ❌ EXIT GAME
-            </button>
+
+            <div className="home-btn-grid">
+              <button
+                className="home-btn-solid"
+                onMouseEnter={handleHover}
+                onClick={() => handleClick(onOpenLevelSelect)}
+              >
+                🗺️ LEVELS ({highestLevel}/10)
+              </button>
+              <button
+                className="home-btn-solid"
+                onMouseEnter={handleHover}
+                onClick={() => handleClick(onOpenShop)}
+              >
+                🛒 ARCADE SHOP
+              </button>
+            </div>
+
+            <div className="home-btn-grid-3">
+              <button
+                className="home-btn-solid"
+                onMouseEnter={handleHover}
+                onClick={() => handleClick(onOpenAchievements)}
+              >
+                🏆 BADGES
+              </button>
+              <button
+                className="home-btn-solid"
+                onMouseEnter={handleHover}
+                onClick={() => handleClick(onOpenSettings)}
+              >
+                ⚙️ SETTINGS
+              </button>
+              <button
+                className="home-btn-solid"
+                onMouseEnter={handleHover}
+                onClick={() => handleClick(onOpenHowToPlay)}
+              >
+                📖 GUIDE
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+              <button
+                className="home-btn-solid"
+                style={{
+                  flex: 1,
+                  background: confirmReset ? 'rgba(56, 10, 20, 0.75)' : 'rgba(20, 18, 26, 0.65)',
+                  borderColor: confirmReset ? '#ff0055' : 'rgba(255, 255, 255, 0.12)',
+                  color: confirmReset ? '#ff4d6d' : '#a78bfa',
+                  fontSize: '13px',
+                  padding: '10px 12px'
+                }}
+                onMouseEnter={handleHover}
+                onClick={handleResetClick}
+              >
+                {confirmReset ? '⚠️ SURE? CLICK TO RESET' : '🔄 RESET PROGRESS'}
+              </button>
+              <button
+                className="home-btn-solid exit-btn"
+                style={{ flex: 1 }}
+                onMouseEnter={handleHover}
+                onClick={handleQuit}
+              >
+                ❌ EXIT GAME
+              </button>
+            </div>
           </div>
         </div>
       </div>
