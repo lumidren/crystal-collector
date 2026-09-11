@@ -4,6 +4,8 @@ const SAVE_KEY = 'crystal_collector_2_save';
 const defaultState = {
   totalCoins: 0,
   highScore: 0,
+  currentCharacter: 'cyber_runner',
+  ownedCharacters: ['cyber_runner'],
   playerColor: '#00ff00',
   ownedColors: ['#00ff00'],
   currentHat: null,
@@ -41,6 +43,8 @@ export const loadGameState = () => {
     return {
       ...defaultState,
       ...parsed,
+      currentCharacter: parsed.currentCharacter || 'cyber_runner',
+      ownedCharacters: (parsed.ownedCharacters && parsed.ownedCharacters.length > 0) ? parsed.ownedCharacters : ['cyber_runner'],
       upgrades: {
         ...defaultState.upgrades,
         ...(parsed.upgrades || {})
