@@ -179,3 +179,39 @@ test('physicsMath - Aerial Sky Mine reverses direction within platform bounding 
 
   assert.equal(hitsPlayer, true, 'Sky mine must detect player standing on the same elevated platform');
 });
+
+test('physicsMath - solid tree and rock colliders block player movement and push player back', () => {
+  const scene = new THREE.Scene();
+  const { solidColliders } = BiomeGenerator.buildBiome(1, scene);
+
+  assert.ok(solidColliders && solidColliders.length > 0, 'Must provide solid colliders for biome decorations');
+  const tree = solidColliders.find(c => c.type === 'tree');
+  const rock = solidColliders.find(c => c.type === 'rock');
+  assert.ok(tree, 'Forest biome must contain solid tree colliders');
+  assert.ok(rock, 'Forest biome must contain solid rock colliders');
+
+  const playerR = 0.65;
+
+  // Test player walking into tree center:
+  let px = tree.x + 0.2;
+  let pz = tree.z + 0.2;
+  const py = 0; // ground level
+
+  for (const col of solidColliders) {
+    if (py < (col.height || 4.5)) {
+      const dx = px - col.x;
+      const dz = pz - col.z;
+      const dist = Math.hypot(dx, dz);
+      const minDist = (col.radius || 1.2) + playerR;
+      if (dist < minDist && dist > 0.0001) {
+        const push = minDist - dist;
+        px += (dx / dist) * push;
+        pz += (dz / dist) * push;
+      }
+    }
+  }
+
+  const finalDist = Math.hypot(px - tree.x, pz - tree.z);
+  const expectedMinDist = tree.radius + playerR;
+  assert.ok(finalDist >= expectedMinDist - 0.001, 'Player must be pushed outside tree solid radius');
+});
