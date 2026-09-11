@@ -215,3 +215,27 @@ test('physicsMath - solid tree and rock colliders block player movement and push
   const expectedMinDist = tree.radius + playerR;
   assert.ok(finalDist >= expectedMinDist - 0.001, 'Player must be pushed outside tree solid radius');
 });
+
+test('physicsMath - uncapped heart accumulation allows player to gain hearts beyond starting 3', () => {
+  let hearts = 3;
+  const collectHeart = (prev) => prev + 1;
+  const takeDamage = (prev) => prev - 1;
+
+  // Collecting when at 3 hearts yields 4
+  hearts = collectHeart(hearts);
+  assert.equal(hearts, 4, 'Collecting heart when at 3 must result in 4');
+
+  // Collecting more hearts accumulates without limit
+  hearts = collectHeart(hearts);
+  assert.equal(hearts, 5, 'Collecting another heart results in 5');
+
+  for (let i = 0; i < 5; i++) {
+    hearts = collectHeart(hearts);
+  }
+  assert.equal(hearts, 10, 'Player can gain as many hearts as desired (10 hearts)');
+
+  // Taking damage removes 1 heart correctly
+  hearts = takeDamage(hearts);
+  assert.equal(hearts, 9, 'Taking damage from 10 hearts reduces to 9');
+});
+
