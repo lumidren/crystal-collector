@@ -1,31 +1,91 @@
 import * as THREE from 'three';
 
+export const CHARACTER_ROSTER = [
+  {
+    id: 'cyber_runner',
+    name: 'Cyber Runner',
+    title: 'Acrobatic Scout',
+    icon: '🏃',
+    cost: 0,
+    desc: 'Streamlined aerodynamic sprinter engineered for agility, twin jetpack propulsion, and rapid traversal.',
+    perk: '⚡ +15% Sprint Efficiency & Balanced Agility',
+    stats: { speedMultiplier: 1.15, jumpBonus: 0, extraHearts: 0, magnetBonus: 0, airGlide: false }
+  },
+  {
+    id: 'shadow_shinobi',
+    name: 'Shadow Shinobi',
+    title: 'Cybernetic Ninja',
+    icon: '🥷',
+    cost: 150,
+    desc: 'Stealth infiltrator equipped with dual photonic katanas, fluttering scarf, and high-altitude leap coils.',
+    perk: '🗡️ +20% Higher Jump Boost & Silent Step',
+    stats: { speedMultiplier: 1.08, jumpBonus: 4.5, extraHearts: 0, magnetBonus: 0, airGlide: false }
+  },
+  {
+    id: 'titan_mech',
+    name: 'Titan Juggernaut',
+    title: 'Heavy Enforcer',
+    icon: '🤖',
+    cost: 250,
+    desc: 'Armored industrial mech with molten blast-furnace core, smoking exhaust stacks, and hydraulic stompers.',
+    perk: '🛡️ +1 Free Armor Heart & Heavy Exoskeleton',
+    stats: { speedMultiplier: 0.98, jumpBonus: -0.5, extraHearts: 1, magnetBonus: 0, airGlide: false }
+  },
+  {
+    id: 'void_sorcerer',
+    name: 'Void Sorcerer',
+    title: 'Astral Mystic',
+    icon: '🔮',
+    cost: 350,
+    desc: 'Levitating techno-mage surrounded by orbiting celestial rune rings and an astral power catalyst orb.',
+    perk: '🔮 +5m Natural Crystal Magnetism & Astral Aura',
+    stats: { speedMultiplier: 1.05, jumpBonus: 1.5, extraHearts: 0, magnetBonus: 5.0, airGlide: false }
+  },
+  {
+    id: 'neon_valkyrie',
+    name: 'Neon Valkyrie',
+    title: 'Photonic Sky Warrior',
+    icon: '🪽',
+    cost: 500,
+    desc: 'Airborne warrior equipped with swept-back photonic energy wings and high-altitude thruster flight heels.',
+    perk: '🪽 Extended Air Glide & Wing Thruster Lift',
+    stats: { speedMultiplier: 1.12, jumpBonus: 3.0, extraHearts: 0, magnetBonus: 2.0, airGlide: true }
+  }
+];
+
 export class CyberRunner {
   constructor(savedData, scene) {
     this.scene = scene;
     this.group = new THREE.Group();
+    this.characterType = savedData.currentCharacter || 'cyber_runner';
     this.colorHex = savedData.playerColor || '#00ff00';
     this.currentHat = savedData.currentHat || null;
 
     this.walkCycle = 0;
+    this.animatedParts = {};
     this.createModel();
     this.scene.add(this.group);
   }
 
   createModel() {
+    while (this.group.children.length > 0) {
+      const child = this.group.children[0];
+      this.group.remove(child);
+    }
+    this.animatedParts = {};
+
     const pCol = parseInt(this.colorHex.replace('#', '0x'));
 
-    // Materials
     this.undersuitMat = new THREE.MeshStandardMaterial({
-      color: 0x12131c,
-      roughness: 0.65,
+      color: this.characterType === 'shadow_shinobi' ? 0x0a0b12 : 0x12131c,
+      roughness: 0.7,
       metalness: 0.2
     });
 
     this.armorMat = new THREE.MeshStandardMaterial({
       color: pCol,
-      roughness: 0.28,
-      metalness: 0.65
+      roughness: this.characterType === 'titan_mech' ? 0.45 : 0.28,
+      metalness: this.characterType === 'titan_mech' ? 0.85 : 0.65
     });
 
     this.trimMat = new THREE.MeshStandardMaterial({
@@ -35,9 +95,9 @@ export class CyberRunner {
     });
 
     this.visorMat = new THREE.MeshPhysicalMaterial({
-      color: 0x00e1ff,
-      emissive: 0x004466,
-      emissiveIntensity: 0.45,
+      color: this.characterType === 'shadow_shinobi' ? 0xff0044 : this.characterType === 'void_sorcerer' ? 0xaa00ff : 0x00e1ff,
+      emissive: this.characterType === 'shadow_shinobi' ? 0xaa0022 : this.characterType === 'void_sorcerer' ? 0x6600aa : 0x004466,
+      emissiveIntensity: 0.6,
       roughness: 0.05,
       metalness: 0.9,
       transmission: 0.35,
@@ -48,9 +108,9 @@ export class CyberRunner {
     });
 
     this.coreMat = new THREE.MeshPhysicalMaterial({
-      color: 0x00ffff,
-      emissive: 0x00d4ff,
-      emissiveIntensity: 1.2,
+      color: this.characterType === 'titan_mech' ? 0xff4400 : this.characterType === 'void_sorcerer' ? 0xcc00ff : 0x00ffff,
+      emissive: this.characterType === 'titan_mech' ? 0xff2200 : this.characterType === 'void_sorcerer' ? 0x9900ff : 0x00d4ff,
+      emissiveIntensity: 1.4,
       roughness: 0.1,
       metalness: 0.2,
       transmission: 0.6
@@ -63,52 +123,74 @@ export class CyberRunner {
     });
 
     this.exhaustGlowMat = new THREE.MeshBasicMaterial({
-      color: 0x00f0ff
+      color: this.characterType === 'titan_mech' ? 0xff5500 : this.characterType === 'void_sorcerer' ? 0xaa00ff : 0x00f0ff
     });
 
-    // Root Pivot (for sprint forward leaning)
     this.pivotGroup = new THREE.Group();
     this.group.add(this.pivotGroup);
 
-    // Torso Group
     this.torsoGroup = new THREE.Group();
     this.torsoGroup.position.y = 1.35;
     this.pivotGroup.add(this.torsoGroup);
 
-    // Undersuit Body (Tapered)
+    if (this.characterType === 'shadow_shinobi') {
+      this.buildShadowShinobi();
+    } else if (this.characterType === 'titan_mech') {
+      this.buildTitanMech();
+    } else if (this.characterType === 'void_sorcerer') {
+      this.buildVoidSorcerer();
+    } else if (this.characterType === 'neon_valkyrie') {
+      this.buildNeonValkyrie();
+    } else {
+      this.buildCyberRunner();
+    }
+
+    this.leftArmGroup = this.createArm(-1);
+    this.leftArmGroup.position.set(this.characterType === 'titan_mech' ? -0.66 : -0.52, 0.42, 0);
+    this.torsoGroup.add(this.leftArmGroup);
+
+    this.rightArmGroup = this.createArm(1);
+    this.rightArmGroup.position.set(this.characterType === 'titan_mech' ? 0.66 : 0.52, 0.42, 0);
+    this.torsoGroup.add(this.rightArmGroup);
+
+    this.leftLegGroup = this.createLeg(-1);
+    this.leftLegGroup.position.set(this.characterType === 'titan_mech' ? -0.28 : -0.22, -0.45, 0);
+    this.torsoGroup.add(this.leftLegGroup);
+
+    this.rightLegGroup = this.createLeg(1);
+    this.rightLegGroup.position.set(this.characterType === 'titan_mech' ? 0.28 : 0.22, -0.45, 0);
+    this.torsoGroup.add(this.rightLegGroup);
+  }
+
+  buildCyberRunner() {
     const torsoGeom = new THREE.CylinderGeometry(0.38, 0.32, 1.05, 16);
     this.torso = new THREE.Mesh(torsoGeom, this.undersuitMat);
     this.torso.castShadow = true;
     this.torsoGroup.add(this.torso);
 
-    // Chestplate Armor
     const chestGeom = new THREE.BoxGeometry(0.72, 0.62, 0.42);
     this.chest = new THREE.Mesh(chestGeom, this.armorMat);
     this.chest.position.set(0, 0.15, 0.1);
     this.chest.castShadow = true;
     this.torsoGroup.add(this.chest);
 
-    // Arc Reactor / Power Gem on Chest
     const coreGeom = new THREE.OctahedronGeometry(0.14);
     this.arcReactor = new THREE.Mesh(coreGeom, this.coreMat);
     this.arcReactor.position.set(0, 0.22, 0.33);
     this.arcReactor.rotation.x = Math.PI / 4;
     this.torsoGroup.add(this.arcReactor);
 
-    // Belt & Buckle
     const beltGeom = new THREE.CylinderGeometry(0.36, 0.36, 0.14, 16);
     const belt = new THREE.Mesh(beltGeom, this.trimMat);
     belt.position.set(0, -0.4, 0);
     this.torsoGroup.add(belt);
 
-    // Twin Jetpack Thrusters
     this.jetpackGroup = new THREE.Group();
     this.jetpackGroup.position.set(0, 0.15, -0.32);
 
     const packBase = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.18), this.trimMat);
     this.jetpackGroup.add(packBase);
 
-    // Left & Right Rocket Pods
     [-0.2, 0.2].forEach(xOff => {
       const pod = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.7, 12), this.thrusterMat);
       pod.position.set(xOff, 0.05, 0);
@@ -125,24 +207,19 @@ export class CyberRunner {
     });
     this.torsoGroup.add(this.jetpackGroup);
 
-    // Head & Helmet Group
     this.headGroup = new THREE.Group();
     this.headGroup.position.set(0, 0.82, 0);
     this.torsoGroup.add(this.headGroup);
 
-    // Helmet Base
     const helmGeom = new THREE.SphereGeometry(0.38, 20, 20);
     this.helmet = new THREE.Mesh(helmGeom, this.armorMat);
     this.helmet.castShadow = true;
     this.headGroup.add(this.helmet);
 
-    // Top Aerofoil Crest
-    const crestGeom = new THREE.BoxGeometry(0.08, 0.12, 0.5);
-    const crest = new THREE.Mesh(crestGeom, this.trimMat);
+    const crest = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.5), this.trimMat);
     crest.position.set(0, 0.35, 0);
     this.headGroup.add(crest);
 
-    // Curved Gloss Visor
     const visorGeom = new THREE.SphereGeometry(0.34, 16, 16, 0, Math.PI, 0, Math.PI);
     this.visor = new THREE.Mesh(visorGeom, this.visorMat);
     this.visor.position.set(0, 0.02, 0.12);
@@ -150,64 +227,318 @@ export class CyberRunner {
     this.visor.rotation.z = Math.PI;
     this.headGroup.add(this.visor);
 
-    // Side Comms Pods
-    [-0.39, 0.39].forEach(xOff => {
-      const ear = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.06, 12), this.trimMat);
-      ear.position.set(xOff, 0, 0);
-      ear.rotation.z = Math.PI / 2;
-      this.headGroup.add(ear);
+    this.setupHatMount();
+  }
+
+  buildShadowShinobi() {
+    const torsoGeom = new THREE.CylinderGeometry(0.34, 0.28, 1.05, 16);
+    this.torso = new THREE.Mesh(torsoGeom, this.undersuitMat);
+    this.torsoGroup.add(this.torso);
+
+    const chestGeom = new THREE.BoxGeometry(0.66, 0.58, 0.38);
+    this.chest = new THREE.Mesh(chestGeom, this.armorMat);
+    this.chest.position.set(0, 0.14, 0.08);
+    this.torsoGroup.add(this.chest);
+
+    const seal = new THREE.Mesh(new THREE.OctahedronGeometry(0.12), this.coreMat);
+    seal.position.set(0, 0.2, 0.29);
+    this.arcReactor = seal;
+    this.torsoGroup.add(seal);
+
+    const sash = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.18, 16), new THREE.MeshStandardMaterial({ color: 0xff0044, roughness: 0.5 }));
+    sash.position.set(0, -0.38, 0);
+    this.torsoGroup.add(sash);
+
+    const backMount = new THREE.Group();
+    backMount.position.set(0, 0.2, -0.25);
+
+    [-1, 1].forEach(dir => {
+      const katanaGroup = new THREE.Group();
+      katanaGroup.rotation.z = dir * 0.55;
+
+      const scabbard = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.95, 0.06), this.trimMat);
+      scabbard.position.set(dir * 0.1, 0, 0);
+
+      const bladeGlow = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.9, 0.02), new THREE.MeshBasicMaterial({ color: 0xff0055 }));
+      bladeGlow.position.set(dir * 0.1, 0, 0.035);
+
+      const tsuba = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.03, 8), this.armorMat);
+      tsuba.position.set(dir * 0.1, 0.5, 0);
+
+      const hilt = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.32, 8), this.undersuitMat);
+      hilt.position.set(dir * 0.1, 0.68, 0);
+
+      katanaGroup.add(scabbard, bladeGlow, tsuba, hilt);
+      backMount.add(katanaGroup);
+    });
+    this.torsoGroup.add(backMount);
+
+    const scarfBase = new THREE.Group();
+    scarfBase.position.set(0, 0.62, -0.22);
+
+    const ribbon1 = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.35, 0.04), new THREE.MeshStandardMaterial({ color: 0xff0044, roughness: 0.5 }));
+    ribbon1.position.set(-0.06, -0.15, -0.06);
+    ribbon1.rotation.x = -0.3;
+
+    const ribbon2 = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.42, 0.04), new THREE.MeshStandardMaterial({ color: 0xff0044, roughness: 0.5 }));
+    ribbon2.position.set(0.08, -0.2, -0.08);
+    ribbon2.rotation.x = -0.45;
+
+    scarfBase.add(ribbon1, ribbon2);
+    this.torsoGroup.add(scarfBase);
+    this.animatedParts.scarf = scarfBase;
+
+    this.headGroup = new THREE.Group();
+    this.headGroup.position.set(0, 0.82, 0);
+    this.torsoGroup.add(this.headGroup);
+
+    const cowl = new THREE.Mesh(new THREE.SphereGeometry(0.36, 18, 18), this.armorMat);
+    this.headGroup.add(cowl);
+
+    const slitVisor = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.07, 0.18), this.visorMat);
+    slitVisor.position.set(0, 0.04, 0.28);
+    this.headGroup.add(slitVisor);
+
+    this.setupHatMount();
+  }
+
+  buildTitanMech() {
+    const torsoGeom = new THREE.BoxGeometry(0.95, 1.1, 0.65);
+    this.torso = new THREE.Mesh(torsoGeom, this.undersuitMat);
+    this.torsoGroup.add(this.torso);
+
+    const chestGeom = new THREE.BoxGeometry(1.05, 0.72, 0.5);
+    this.chest = new THREE.Mesh(chestGeom, this.armorMat);
+    this.chest.position.set(0, 0.16, 0.14);
+    this.torsoGroup.add(this.chest);
+
+    const furnaceFrame = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.32, 0.12), this.trimMat);
+    furnaceFrame.position.set(0, 0.18, 0.4);
+    const furnaceCore = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.26, 0.14), this.coreMat);
+    furnaceCore.position.set(0, 0.18, 0.41);
+    this.arcReactor = furnaceCore;
+    this.torsoGroup.add(furnaceFrame, furnaceCore);
+
+    const exhaustGroup = new THREE.Group();
+    exhaustGroup.position.set(0, 0.45, -0.28);
+
+    [-0.32, 0.32].forEach(xOff => {
+      const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.75, 12), this.thrusterMat);
+      pipe.position.set(xOff, 0.2, 0);
+      pipe.rotation.z = xOff > 0 ? -0.1 : 0.1;
+
+      const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.13, 0.15, 12), this.trimMat);
+      rim.position.set(xOff, 0.58, 0);
+
+      const interiorGlow = new THREE.Mesh(new THREE.CircleGeometry(0.1, 10), this.exhaustGlowMat);
+      interiorGlow.position.set(xOff, 0.65, 0);
+      interiorGlow.rotation.x = -Math.PI / 2;
+
+      exhaustGroup.add(pipe, rim, interiorGlow);
+    });
+    this.torsoGroup.add(exhaustGroup);
+    this.animatedParts.exhaust = exhaustGroup;
+
+    this.headGroup = new THREE.Group();
+    this.headGroup.position.set(0, 0.85, 0);
+    this.torsoGroup.add(this.headGroup);
+
+    const helmGeom = new THREE.BoxGeometry(0.62, 0.54, 0.58);
+    this.helmet = new THREE.Mesh(helmGeom, this.armorMat);
+    this.headGroup.add(this.helmet);
+
+    [-0.08, 0.08].forEach(yOff => {
+      const eyeSlit = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.05, 0.12), this.visorMat);
+      eyeSlit.position.set(0, yOff, 0.3);
+      this.headGroup.add(eyeSlit);
     });
 
-    // Hat Anchor Point atop helmet
+    this.setupHatMount();
+  }
+
+  buildVoidSorcerer() {
+    const torsoGeom = new THREE.CylinderGeometry(0.36, 0.44, 1.15, 16);
+    this.torso = new THREE.Mesh(torsoGeom, this.undersuitMat);
+    this.torsoGroup.add(this.torso);
+
+    const mantle = new THREE.Mesh(new THREE.ConeGeometry(0.72, 0.65, 16), this.armorMat);
+    mantle.position.set(0, 0.22, 0);
+    this.torsoGroup.add(mantle);
+
+    const starCore = new THREE.Mesh(new THREE.DodecahedronGeometry(0.15), this.coreMat);
+    starCore.position.set(0, 0.22, 0.3);
+    this.arcReactor = starCore;
+    this.torsoGroup.add(starCore);
+
+    const ringGroup = new THREE.Group();
+    ringGroup.position.set(0, 0.1, 0);
+
+    const ringMat = new THREE.MeshStandardMaterial({
+      color: 0xaa00ff,
+      emissive: 0x6600cc,
+      emissiveIntensity: 0.8,
+      roughness: 0.2,
+      metalness: 0.9,
+      wireframe: true
+    });
+
+    const ring1 = new THREE.Mesh(new THREE.TorusGeometry(0.68, 0.025, 8, 24), ringMat);
+    ring1.rotation.x = Math.PI / 3;
+    const ring2 = new THREE.Mesh(new THREE.TorusGeometry(0.82, 0.02, 8, 24), ringMat);
+    ring2.rotation.y = Math.PI / 4;
+
+    ringGroup.add(ring1, ring2);
+    this.torsoGroup.add(ringGroup);
+    this.animatedParts.runeRings = ringGroup;
+
+    const catalystGroup = new THREE.Group();
+    catalystGroup.position.set(0.75, 0.15, 0.35);
+
+    const orbMesh = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(0.14, 2),
+      new THREE.MeshPhysicalMaterial({
+        color: 0xff00cc,
+        emissive: 0xaa00ff,
+        emissiveIntensity: 1.5,
+        transmission: 0.7,
+        roughness: 0.1
+      })
+    );
+    const orbRing = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.015, 8, 20), ringMat);
+    orbRing.rotation.x = Math.PI / 2;
+
+    catalystGroup.add(orbMesh, orbRing);
+    this.torsoGroup.add(catalystGroup);
+    this.animatedParts.catalyst = catalystGroup;
+
+    this.headGroup = new THREE.Group();
+    this.headGroup.position.set(0, 0.85, 0);
+    this.torsoGroup.add(this.headGroup);
+
+    const cowl = new THREE.Mesh(new THREE.SphereGeometry(0.36, 16, 16), this.armorMat);
+    this.headGroup.add(cowl);
+
+    [-1, 1].forEach(side => {
+      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.45, 8), this.trimMat);
+      horn.position.set(side * 0.28, 0.28, 0);
+      horn.rotation.z = side * -0.55;
+      horn.rotation.x = -0.2;
+      this.headGroup.add(horn);
+    });
+
+    const voidFace = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), this.visorMat);
+    voidFace.position.set(0, 0.02, 0.14);
+    this.headGroup.add(voidFace);
+
+    this.setupHatMount();
+  }
+
+  buildNeonValkyrie() {
+    const torsoGeom = new THREE.CylinderGeometry(0.35, 0.3, 1.05, 16);
+    this.torso = new THREE.Mesh(torsoGeom, this.undersuitMat);
+    this.torsoGroup.add(this.torso);
+
+    const chestGeom = new THREE.BoxGeometry(0.7, 0.6, 0.4);
+    this.chest = new THREE.Mesh(chestGeom, this.armorMat);
+    this.chest.position.set(0, 0.15, 0.08);
+    this.torsoGroup.add(this.chest);
+
+    const prism = new THREE.Mesh(new THREE.OctahedronGeometry(0.14), this.coreMat);
+    prism.position.set(0, 0.22, 0.3);
+    this.arcReactor = prism;
+    this.torsoGroup.add(prism);
+
+    const wingMount = new THREE.Group();
+    wingMount.position.set(0, 0.35, -0.25);
+
+    const wingMat = new THREE.MeshPhysicalMaterial({
+      color: 0x00ffff,
+      emissive: 0x0088ff,
+      emissiveIntensity: 1.2,
+      roughness: 0.1,
+      transmission: 0.5,
+      transparent: true,
+      opacity: 0.85
+    });
+
+    const makeWing = (side) => {
+      const wingGroup = new THREE.Group();
+      const strut = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.65, 0.06), this.armorMat);
+      strut.position.set(side * 0.3, 0.25, 0);
+      strut.rotation.z = side * -0.7;
+      wingGroup.add(strut);
+
+      [0, 1, 2].forEach(f => {
+        const feather = new THREE.Mesh(new THREE.ConeGeometry(0.08 - f * 0.015, 0.7 - f * 0.12, 6), wingMat);
+        feather.position.set(side * (0.45 + f * 0.25), 0.35 - f * 0.18, 0);
+        feather.rotation.z = side * (-1.1 - f * 0.15);
+        wingGroup.add(feather);
+      });
+      return wingGroup;
+    };
+
+    const leftWing = makeWing(-1);
+    const rightWing = makeWing(1);
+    wingMount.add(leftWing, rightWing);
+    this.torsoGroup.add(wingMount);
+    this.animatedParts.leftWing = leftWing;
+    this.animatedParts.rightWing = rightWing;
+
+    this.headGroup = new THREE.Group();
+    this.headGroup.position.set(0, 0.82, 0);
+    this.torsoGroup.add(this.headGroup);
+
+    const helm = new THREE.Mesh(new THREE.SphereGeometry(0.36, 18, 18), this.armorMat);
+    this.headGroup.add(helm);
+
+    [-1, 1].forEach(side => {
+      const earWing = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.35, 6), this.trimMat);
+      earWing.position.set(side * 0.38, 0.2, 0);
+      earWing.rotation.z = side * -0.8;
+      earWing.rotation.x = -0.3;
+      this.headGroup.add(earWing);
+    });
+
+    const visor = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16, 0, Math.PI, 0, Math.PI), this.visorMat);
+    visor.position.set(0, 0.02, 0.1);
+    visor.rotation.x = -Math.PI / 2;
+    visor.rotation.z = Math.PI;
+    this.headGroup.add(visor);
+
+    this.setupHatMount();
+  }
+
+  setupHatMount() {
     this.hatMount = new THREE.Group();
     this.hatMount.position.set(0, 0.38, 0);
     this.headGroup.add(this.hatMount);
     this.applyHat(this.currentHat);
-
-    // Arm Groups
-    this.leftArmGroup = this.createArm(-1);
-    this.leftArmGroup.position.set(-0.52, 0.42, 0);
-    this.torsoGroup.add(this.leftArmGroup);
-
-    this.rightArmGroup = this.createArm(1);
-    this.rightArmGroup.position.set(0.52, 0.42, 0);
-    this.torsoGroup.add(this.rightArmGroup);
-
-    // Leg Groups
-    this.leftLegGroup = this.createLeg(-1);
-    this.leftLegGroup.position.set(-0.22, -0.45, 0);
-    this.torsoGroup.add(this.leftLegGroup);
-
-    this.rightLegGroup = this.createLeg(1);
-    this.rightLegGroup.position.set(0.22, -0.45, 0);
-    this.torsoGroup.add(this.rightLegGroup);
   }
 
   createArm(side) {
     const armGroup = new THREE.Group();
+    const scaleFactor = this.characterType === 'titan_mech' ? 1.35 : 1.0;
 
-    // Shoulder Pauldron
-    const pauldronGeom = new THREE.SphereGeometry(0.18, 12, 12, 0, Math.PI);
+    const pRadius = this.characterType === 'titan_mech' ? 0.26 : 0.18;
+    const pauldronGeom = new THREE.SphereGeometry(pRadius, 12, 12, 0, Math.PI);
     const pauldron = new THREE.Mesh(pauldronGeom, this.armorMat);
     pauldron.position.set(0, 0.04, 0);
     pauldron.rotation.y = side === 1 ? -Math.PI / 2 : Math.PI / 2;
     armGroup.add(pauldron);
 
-    // Upper Arm
-    const upperGeom = new THREE.CylinderGeometry(0.1, 0.09, 0.45, 12);
+    const upperGeom = new THREE.CylinderGeometry(0.1 * scaleFactor, 0.09 * scaleFactor, 0.45, 12);
     const upper = new THREE.Mesh(upperGeom, this.undersuitMat);
     upper.position.set(0, -0.2, 0);
     upper.castShadow = true;
     armGroup.add(upper);
 
-    // Forearm Gauntlet & Glove
-    const forearmGeom = new THREE.CylinderGeometry(0.11, 0.13, 0.45, 12);
+    const forearmGeom = new THREE.CylinderGeometry(0.11 * scaleFactor, 0.13 * scaleFactor, 0.45, 12);
     const forearm = new THREE.Mesh(forearmGeom, this.armorMat);
     forearm.position.set(0, -0.55, 0);
     forearm.castShadow = true;
     armGroup.add(forearm);
 
-    const gloveGeom = new THREE.SphereGeometry(0.12, 12, 12);
+    const gloveGeom = new THREE.SphereGeometry(0.12 * scaleFactor, 12, 12);
     const glove = new THREE.Mesh(gloveGeom, this.trimMat);
     glove.position.set(0, -0.78, 0);
     armGroup.add(glove);
@@ -217,29 +548,26 @@ export class CyberRunner {
 
   createLeg(side) {
     const legGroup = new THREE.Group();
+    const scaleFactor = this.characterType === 'titan_mech' ? 1.35 : 1.0;
 
-    // Thigh (Undersuit)
-    const thighGeom = new THREE.CylinderGeometry(0.14, 0.12, 0.46, 12);
+    const thighGeom = new THREE.CylinderGeometry(0.14 * scaleFactor, 0.12 * scaleFactor, 0.46, 12);
     const thigh = new THREE.Mesh(thighGeom, this.undersuitMat);
     thigh.position.set(0, -0.22, 0);
     thigh.castShadow = true;
     legGroup.add(thigh);
 
-    // Knee Guard
-    const kneeGeom = new THREE.BoxGeometry(0.2, 0.14, 0.14);
+    const kneeGeom = new THREE.BoxGeometry(0.2 * scaleFactor, 0.14 * scaleFactor, 0.14 * scaleFactor);
     const knee = new THREE.Mesh(kneeGeom, this.armorMat);
     knee.position.set(0, -0.42, 0.08);
     legGroup.add(knee);
 
-    // Lower Leg & Boot
-    const calfGeom = new THREE.CylinderGeometry(0.13, 0.15, 0.44, 12);
+    const calfGeom = new THREE.CylinderGeometry(0.13 * scaleFactor, 0.15 * scaleFactor, 0.44, 12);
     const calf = new THREE.Mesh(calfGeom, this.armorMat);
     calf.position.set(0, -0.66, 0);
     calf.castShadow = true;
     legGroup.add(calf);
 
-    // Tech Boot Foot
-    const footGeom = new THREE.BoxGeometry(0.22, 0.14, 0.38);
+    const footGeom = new THREE.BoxGeometry(0.22 * scaleFactor, 0.14, 0.38 * scaleFactor);
     const foot = new THREE.Mesh(footGeom, this.trimMat);
     foot.position.set(0, -0.84, 0.08);
     foot.castShadow = true;
@@ -249,7 +577,7 @@ export class CyberRunner {
   }
 
   applyHat(hatId) {
-    // Clear previous hat
+    if (!this.hatMount) return;
     while (this.hatMount.children.length > 0) {
       this.hatMount.remove(this.hatMount.children[0]);
     }
@@ -313,7 +641,13 @@ export class CyberRunner {
   setSkinColor(colorHex) {
     this.colorHex = colorHex;
     const pCol = parseInt(colorHex.replace('#', '0x'));
-    this.armorMat.color.setHex(pCol);
+    if (this.armorMat) this.armorMat.color.setHex(pCol);
+  }
+
+  setCharacterType(typeId) {
+    if (this.characterType === typeId) return;
+    this.characterType = typeId;
+    this.createModel();
   }
 
   update(dt, t, options = {}) {
@@ -327,24 +661,45 @@ export class CyberRunner {
       particleManager = null
     } = options;
 
-    // Pulse Arc Reactor & Visor in Fever Mode
-    if (feverTime > 0) {
-      const hue = (t * 2.5) % 1;
-      this.coreMat.color.setHSL(hue, 1, 0.6);
-      this.coreMat.emissive.setHSL(hue, 1, 0.5);
-      this.exhaustGlowMat.color.setHSL(hue, 1, 0.5);
-      this.arcReactor.rotation.y += dt * 8;
-    } else {
-      const pulse = 0.85 + Math.sin(t * 3) * 0.25;
-      this.coreMat.emissiveIntensity = pulse;
-      this.arcReactor.rotation.y += dt * 2;
+    if (this.arcReactor) {
+      if (feverTime > 0) {
+        const hue = (t * 2.5) % 1;
+        this.coreMat.color.setHSL(hue, 1, 0.6);
+        this.coreMat.emissive.setHSL(hue, 1, 0.5);
+        this.exhaustGlowMat.color.setHSL(hue, 1, 0.5);
+        this.arcReactor.rotation.y += dt * 8;
+      } else {
+        const pulse = 0.85 + Math.sin(t * 3) * 0.25;
+        this.coreMat.emissiveIntensity = pulse;
+        this.arcReactor.rotation.y += dt * 2;
+      }
     }
 
-    // Sprint Forward Lean (Smooth Spring Lerp)
+    if (this.animatedParts.scarf) {
+      this.animatedParts.scarf.rotation.z = Math.sin(t * 8) * 0.12;
+      this.animatedParts.scarf.rotation.x = (isMoving ? -0.4 : -0.1) + Math.sin(t * 10) * 0.1;
+    }
+
+    if (this.animatedParts.runeRings) {
+      this.animatedParts.runeRings.children[0].rotation.y += dt * 2.2;
+      this.animatedParts.runeRings.children[1].rotation.x += dt * 1.8;
+    }
+
+    if (this.animatedParts.catalyst) {
+      this.animatedParts.catalyst.position.y = 0.15 + Math.sin(t * 3.5) * 0.1;
+      this.animatedParts.catalyst.children[0].rotation.y += dt * 2.5;
+      this.animatedParts.catalyst.children[1].rotation.x += dt * 3.0;
+    }
+
+    if (this.animatedParts.leftWing && this.animatedParts.rightWing) {
+      const wingFlap = isGrounded ? Math.sin(t * 4) * 0.12 : Math.sin(t * 9) * 0.28;
+      this.animatedParts.leftWing.rotation.y = wingFlap;
+      this.animatedParts.rightWing.rotation.y = -wingFlap;
+    }
+
     const targetLean = isMoving ? (isSprinting ? 0.28 : 0.12) : 0;
     this.pivotGroup.rotation.x += (targetLean - this.pivotGroup.rotation.x) * Math.min(1, dt * 10);
 
-    // Natural Striding walk-cycle
     if (isMoving && isGrounded) {
       const animRate = isSprinting ? 18 : 11;
       this.walkCycle += dt * animRate;
@@ -353,29 +708,23 @@ export class CyberRunner {
       const legAngle = isSprinting ? 0.95 : 0.65;
       const armAngle = isSprinting ? 0.85 : 0.5;
 
-      // Legs swing in opposition
       this.leftLegGroup.rotation.x = -swing * legAngle;
       this.rightLegGroup.rotation.x = swing * legAngle;
 
-      // Arms swing opposite to legs
       this.leftArmGroup.rotation.x = swing * armAngle;
       this.rightArmGroup.rotation.x = -swing * armAngle;
 
-      // Slight natural arm flare
       this.leftArmGroup.rotation.z = 0.08;
       this.rightArmGroup.rotation.z = -0.08;
 
-      // Torso rhythmic bounce
       this.torsoGroup.position.y = 1.35 + Math.abs(Math.sin(this.walkCycle)) * 0.1;
 
-      // Facing Direction
       if (mx !== 0 || mz !== 0) {
         this.group.rotation.y = Math.atan2(mx, mz);
       }
 
-      // Jetpack Thruster Exhaust Particles when Sprinting
       if (isSprinting && particleManager && Math.random() < 0.35) {
-        const thrustColor = feverTime > 0 ? 0xff00ff : 0x00f0ff;
+        const thrustColor = feverTime > 0 ? 0xff00ff : this.characterType === 'titan_mech' ? 0xff4400 : 0x00f0ff;
         particleManager.createBurst(
           {
             x: this.group.position.x,
@@ -388,7 +737,6 @@ export class CyberRunner {
         );
       }
     } else if (!isGrounded) {
-      // In-Air Aerodynamic Pose
       this.leftLegGroup.rotation.x = THREE.MathUtils.lerp(this.leftLegGroup.rotation.x, -0.35, dt * 10);
       this.rightLegGroup.rotation.x = THREE.MathUtils.lerp(this.rightLegGroup.rotation.x, 0.25, dt * 10);
       this.leftArmGroup.rotation.x = THREE.MathUtils.lerp(this.leftArmGroup.rotation.x, -0.5, dt * 10);
@@ -397,9 +745,8 @@ export class CyberRunner {
       this.rightArmGroup.rotation.z = THREE.MathUtils.lerp(this.rightArmGroup.rotation.z, -0.45, dt * 10);
       this.torsoGroup.position.y = 1.35;
 
-      // In-air jetpack plume
       if (particleManager && Math.random() < 0.4) {
-        const thrustColor = feverTime > 0 ? 0xff00ff : 0x00f0ff;
+        const thrustColor = feverTime > 0 ? 0xff00ff : this.characterType === 'titan_mech' ? 0xff4400 : 0x00f0ff;
         particleManager.createDust(
           {
             x: this.group.position.x,
@@ -410,7 +757,6 @@ export class CyberRunner {
         );
       }
     } else {
-      // Idle Breathing Stance
       this.leftLegGroup.rotation.x = THREE.MathUtils.lerp(this.leftLegGroup.rotation.x, 0, dt * 8);
       this.rightLegGroup.rotation.x = THREE.MathUtils.lerp(this.rightLegGroup.rotation.x, 0, dt * 8);
       this.leftArmGroup.rotation.x = THREE.MathUtils.lerp(this.leftArmGroup.rotation.x, 0, dt * 8);
