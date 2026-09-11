@@ -18,16 +18,16 @@ import { ScoreboardModal } from './components/ScoreboardModal.jsx';
 import './App.css';
 
 const levelConfigs = [
-  { crystals: 8, coins: 15, obs: 20, speed: 7, hearts: 3 },
-  { crystals: 10, coins: 20, obs: 24, speed: 8, hearts: 3 },
-  { crystals: 12, coins: 25, obs: 28, speed: 9, hearts: 3 },
-  { crystals: 15, coins: 30, obs: 32, speed: 10, hearts: 3 },
-  { crystals: 18, coins: 35, obs: 36, speed: 11, hearts: 3 },
-  { crystals: 20, coins: 40, obs: 40, speed: 12, hearts: 4 },
-  { crystals: 22, coins: 45, obs: 46, speed: 13, hearts: 4 },
-  { crystals: 25, coins: 50, obs: 52, speed: 14, hearts: 4 },
-  { crystals: 28, coins: 55, obs: 58, speed: 15, hearts: 5 },
-  { crystals: 30, coins: 60, obs: 36, speed: 12, hearts: 5 } // Titan Guardian Boss Level!
+  { crystals: 8, coins: 15, obs: 20, speed: 7, hearts: 4 },
+  { crystals: 10, coins: 20, obs: 24, speed: 8, hearts: 5 },
+  { crystals: 12, coins: 25, obs: 28, speed: 9, hearts: 5 },
+  { crystals: 15, coins: 30, obs: 32, speed: 10, hearts: 6 },
+  { crystals: 18, coins: 35, obs: 36, speed: 11, hearts: 6 },
+  { crystals: 20, coins: 40, obs: 40, speed: 12, hearts: 7 },
+  { crystals: 22, coins: 45, obs: 46, speed: 13, hearts: 7 },
+  { crystals: 25, coins: 50, obs: 52, speed: 14, hearts: 8 },
+  { crystals: 28, coins: 55, obs: 58, speed: 15, hearts: 8 },
+  { crystals: 30, coins: 60, obs: 36, speed: 12, hearts: 8 } // Titan Guardian Boss Level!
 ];
 
 // --- 3D HIGH-TECH COLLECTIBLE BUILDERS ---
@@ -692,7 +692,7 @@ const CrystalCollectorGame = () => {
     setCoins(0);
     setCombo(1);
     setPylonsDeactivated(0);
-    setHearts(savedDataRef.current?.upgrades?.maxHearts || 3);
+    setHearts(prev => Math.max(prev, savedDataRef.current?.upgrades?.maxHearts || 3));
     setShieldTime(0);
     setMagnetTime(0);
     setSlowMoTime(0);
@@ -1555,7 +1555,7 @@ const CrystalCollectorGame = () => {
         }
       });
 
-      // Collect Hearts
+      // Collect Hearts & Respawn (Uncapped collection: gain as many hearts as you want!)
       heartObjs.forEach(h => {
         if (!h.collected) {
           h.mesh.rotation.y += dt * 2.2;
@@ -1566,11 +1566,20 @@ const CrystalCollectorGame = () => {
           const distY = Math.abs(h.mesh.position.y - (player.position.y + 1.0));
           if (distToPlayer < 1.6 && distY < 2.2) {
             h.collected = true;
+            h.respawnTimer = 35.0; // Automatically respawns after 35 seconds
             scene.remove(h.mesh);
             soundEngine.playPowerup('shield');
             particleManager.createBurst(h.mesh.position, 0xff0033, 16, 6);
             particleManager.createFloatingText(h.mesh.position, '+1 ❤️', '#ff0033');
-            setHearts(prev => Math.min(currentSaved.upgrades?.maxHearts || 5, prev + 1));
+            setHearts(prev => prev + 1);
+          }
+        } else if (h.respawnTimer > 0) {
+          h.respawnTimer -= dt;
+          if (h.respawnTimer <= 0) {
+            h.collected = false;
+            h.mesh.position.y = h.startY || 1.2;
+            scene.add(h.mesh);
+            particleManager.createBurst(h.mesh.position, 0xff0044, 12, 4);
           }
         }
       });
@@ -2210,10 +2219,10 @@ const CrystalCollectorGame = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <div style={{ background: '#1c1c28', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontWeight: 'bold', fontSize: '16px' }}>❤️ Vitality Boost (+1 Max Heart)</div>
-                    <div style={{ color: '#aaa', fontSize: '13px' }}>Current: {savedData.upgrades?.maxHearts || 3} / 5 Hearts</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '16px' }}>❤️ Vitality Boost (+1 Starting Heart)</div>
+                    <div style={{ color: '#aaa', fontSize: '13px' }}>Current: {savedData.upgrades?.maxHearts || 3} / 10 Hearts</div>
                   </div>
-                  {(savedData.upgrades?.maxHearts || 3) < 5 ? (
+                  {(savedData.upgrades?.maxHearts || 3) < 10 ? (
                     <button className="hud-btn" disabled={savedData.totalCoins < 100} onClick={() => buyUpgrade('maxHearts', 100, 1)} style={{ background: '#ffd700', color: '#000', padding: '10px 20px' }}>
                       UPGRADE (100 🪙)
                     </button>
