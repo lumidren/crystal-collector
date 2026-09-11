@@ -70,7 +70,7 @@ export const InGameHUD = ({
                 border: (savedData?.difficulty || 'hard') === 'easy' ? '1px solid #00ff88' : '1px solid #ff0055'
               }}
             >
-              {(savedData?.difficulty || 'hard') === 'easy' ? '🟢 EASY' : '⚡ HARD'}
+              {(savedData?.difficulty || 'hard') === 'easy' ? '🟢 EASY (MEDIUM)' : '⚡ HARD'}
             </span>
           </div>
 
