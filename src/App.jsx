@@ -33,15 +33,18 @@ const levelConfigs = [
 
 // --- 3D HIGH-TECH COLLECTIBLE BUILDERS ---
 
-function createCrystalCluster(isRainbow) {
+function createCrystalCluster(isRainbow, isGirlsTheme = false) {
   const group = new THREE.Group();
 
+  const crystalColor = isRainbow ? 0xff00ff : isGirlsTheme ? 0xff70a6 : 0x00f0ff;
+  const crystalEmissive = isRainbow ? 0xff00bb : isGirlsTheme ? 0xff2a85 : 0x00aacc;
+
   const crystalMat = new THREE.MeshPhysicalMaterial({
-    color: isRainbow ? 0xff00ff : 0x00f0ff,
-    emissive: isRainbow ? 0xff00bb : 0x00aacc,
-    emissiveIntensity: 0.85,
+    color: crystalColor,
+    emissive: crystalEmissive,
+    emissiveIntensity: isGirlsTheme ? 0.95 : 0.85,
     roughness: 0.08,
-    metalness: 0.15,
+    metalness: isGirlsTheme ? 0.1 : 0.15,
     transmission: 0.72,
     transparent: true,
     opacity: 0.94,
@@ -74,14 +77,14 @@ function createCrystalCluster(isRainbow) {
   // Inner floating luminous core
   const innerCore = new THREE.Mesh(
     new THREE.OctahedronGeometry(0.32),
-    new THREE.MeshBasicMaterial({ color: isRainbow ? 0xffffff : 0xccffff })
+    new THREE.MeshBasicMaterial({ color: isRainbow ? 0xffffff : isGirlsTheme ? 0xfff0f6 : 0xccffff })
   );
   group.add(innerCore);
 
   // Floating tilted orbital energy ring
   const haloRing = new THREE.Mesh(
     new THREE.TorusGeometry(0.85, 0.025, 8, 24),
-    new THREE.MeshBasicMaterial({ color: isRainbow ? 0xff88ff : 0x88ffff })
+    new THREE.MeshBasicMaterial({ color: isRainbow ? 0xff88ff : isGirlsTheme ? 0xffd1dc : 0x88ffff })
   );
   haloRing.rotation.x = Math.PI / 4;
   group.add(haloRing);
@@ -90,17 +93,17 @@ function createCrystalCluster(isRainbow) {
   return group;
 }
 
-function createCyberCoin() {
+function createCyberCoin(isGirlsTheme = false) {
   const group = new THREE.Group();
 
-  // Beveled outer coin rim with notched arcade edge
+  // Beveled outer coin rim with notched arcade edge (Strawberry Gold in Girls Theme)
   const rim = new THREE.Mesh(
     new THREE.CylinderGeometry(0.58, 0.58, 0.14, 28),
     new THREE.MeshStandardMaterial({
-      color: 0xffd700,
-      emissive: 0xff8800,
-      emissiveIntensity: 0.35,
-      metalness: 0.95,
+      color: isGirlsTheme ? 0xffa0bc : 0xffd700,
+      emissive: isGirlsTheme ? 0xff6b8b : 0xff8800,
+      emissiveIntensity: isGirlsTheme ? 0.5 : 0.35,
+      metalness: isGirlsTheme ? 0.85 : 0.95,
       roughness: 0.14
     })
   );
@@ -112,7 +115,7 @@ function createCyberCoin() {
     new THREE.OctahedronGeometry(0.26),
     new THREE.MeshStandardMaterial({
       color: 0xffea00,
-      emissive: 0xffaa00,
+      emissive: isGirlsTheme ? 0xff88aa : 0xffaa00,
       emissiveIntensity: 0.7,
       metalness: 0.8,
       roughness: 0.2
@@ -123,7 +126,7 @@ function createCyberCoin() {
   // Glowing neon groove ring
   const groove = new THREE.Mesh(
     new THREE.TorusGeometry(0.46, 0.03, 8, 24),
-    new THREE.MeshBasicMaterial({ color: 0xfffa66 })
+    new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xffc2d1 : 0xfffa66 })
   );
   group.add(groove);
 
@@ -131,13 +134,13 @@ function createCyberCoin() {
   return group;
 }
 
-function createCyberHeart() {
+function createCyberHeart(isGirlsTheme = false) {
   const group = new THREE.Group();
 
   const heartMat = new THREE.MeshPhysicalMaterial({
-    color: 0xff0044,
-    emissive: 0xcc0033,
-    emissiveIntensity: 0.6,
+    color: isGirlsTheme ? 0xff69b4 : 0xff0044,
+    emissive: isGirlsTheme ? 0xff1493 : 0xcc0033,
+    emissiveIntensity: isGirlsTheme ? 0.8 : 0.6,
     roughness: 0.2,
     metalness: 0.3,
     clearcoat: 0.8
@@ -158,19 +161,29 @@ function createCyberHeart() {
   group.add(rightLobe);
   group.add(tip);
 
-  // Glowing medical cross emblem on front
-  const crossV = new THREE.Mesh(
-    new THREE.BoxGeometry(0.1, 0.32, 0.08),
-    new THREE.MeshBasicMaterial({ color: 0xffffff })
-  );
-  crossV.position.set(0, 0.05, 0.28);
-  const crossH = new THREE.Mesh(
-    new THREE.BoxGeometry(0.32, 0.1, 0.08),
-    new THREE.MeshBasicMaterial({ color: 0xffffff })
-  );
-  crossH.position.set(0, 0.05, 0.28);
-  group.add(crossV);
-  group.add(crossH);
+  if (isGirlsTheme) {
+    // Sparkling diamond star center
+    const starCenter = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.14),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    starCenter.position.set(0, 0.08, 0.26);
+    group.add(starCenter);
+  } else {
+    // Glowing medical cross emblem on front
+    const crossV = new THREE.Mesh(
+      new THREE.BoxGeometry(0.1, 0.32, 0.08),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    crossV.position.set(0, 0.05, 0.28);
+    const crossH = new THREE.Mesh(
+      new THREE.BoxGeometry(0.32, 0.1, 0.08),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    crossH.position.set(0, 0.05, 0.28);
+    group.add(crossV);
+    group.add(crossH);
+  }
 
   return group;
 }
@@ -557,6 +570,7 @@ const CrystalCollectorGame = () => {
   ];
 
   const shopPets = [
+    { name: 'Sugar Bunny', id: 'sugar_bunny', cost: 0, icon: '🐰', isSecret: true, desc: 'Enchanted fairy bunny with floppy ears, fluttering wings & 12m super-magnet reach!' },
     { name: 'Cyber Dog (Robo-Pup)', id: 'dog', cost: 280, icon: '🐕', desc: 'Trots on 4 paws, wags tail & huge 11m fetch reach!' },
     { name: 'Cyber Drone', id: 'drone', cost: 150, icon: '🛸', desc: 'Vacuums coins from 6m away' },
     { name: 'Magic Pixie', id: 'pixie', cost: 200, icon: '🧚', desc: 'Attracts crystals from 8m away' },
@@ -806,10 +820,16 @@ const CrystalCollectorGame = () => {
     scene = new THREE.Scene();
     const biomeEnv = BiomeGenerator.buildBiome(level, scene);
     const { biome, decorations, solidColliders, jumpPads, hazardZones, platforms } = biomeEnv;
-    scene.background = new THREE.Color(biome.skyColor);
+    const isGirlsTheme = (currentSaved.activeTheme || 'default') === 'girls';
 
-    if (biome.fog) {
-      scene.fog = new THREE.Fog(biome.fog.color, biome.fog.near, biome.fog.far);
+    if (isGirlsTheme) {
+      scene.background = new THREE.Color(0x281028);
+      scene.fog = new THREE.Fog(0x351433, 18, 80);
+    } else {
+      scene.background = new THREE.Color(biome.skyColor);
+      if (biome.fog) {
+        scene.fog = new THREE.Fog(biome.fog.color, biome.fog.near, biome.fog.far);
+      }
     }
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -905,7 +925,7 @@ const CrystalCollectorGame = () => {
       }
       const isRainbow = Math.random() < 0.15; // 15% chance for Rainbow Fever Crystal!
 
-      const crystalGroup = createCrystalCluster(isRainbow);
+      const crystalGroup = createCrystalCluster(isRainbow, isGirlsTheme);
       crystalGroup.position.set(posX, posY, posZ);
       crystalGroup.castShadow = true;
       scene.add(crystalGroup);
@@ -924,7 +944,7 @@ const CrystalCollectorGame = () => {
         cX = (Math.random() - 0.5) * 64;
         cZ = (Math.random() - 0.5) * 64;
       }
-      const coinGroup = createCyberCoin();
+      const coinGroup = createCyberCoin(isGirlsTheme);
       coinGroup.position.set(cX, cY, cZ);
       coinGroup.castShadow = true;
       scene.add(coinGroup);
@@ -933,7 +953,7 @@ const CrystalCollectorGame = () => {
 
     // Spawn Health Hearts (Distributed across wider arena)
     for (let i = 0; i < cfg.hearts; i++) {
-      const heartGroup = createCyberHeart();
+      const heartGroup = createCyberHeart(isGirlsTheme);
       const angle = (i / cfg.hearts) * Math.PI * 2 + Math.PI / 4;
       const r = 16 + Math.random() * 14;
       heartGroup.position.set(Math.cos(angle) * r, 1.2, Math.sin(angle) * r);
@@ -1536,7 +1556,7 @@ const CrystalCollectorGame = () => {
             setCombo(localCombo);
             soundEngine.playCollect(localCombo);
 
-            const crystalColor = c.isRainbow ? 0xff00ff : 0x00ffff;
+            const crystalColor = isGirlsTheme ? (c.isRainbow ? 0xff00ff : 0xff69b4) : (c.isRainbow ? 0xff00ff : 0x00ffff);
             particleManager.createBurst(c.mesh.position, crystalColor, 20, 8);
 
             if (c.isRainbow) {
@@ -1546,8 +1566,10 @@ const CrystalCollectorGame = () => {
               particleManager.createFloatingText(c.mesh.position, 'FEVER MODE! 🌈', '#ff00ff', 44);
               unlockAchievement('fever_master');
             } else {
-              const pointsText = localCombo > 1 ? `+1 💎 (${localCombo}x)` : '+1 💎';
-              particleManager.createFloatingText(c.mesh.position, pointsText, '#00ffff');
+              const pointsText = localCombo > 1
+                ? (isGirlsTheme ? `+1 💖 (${localCombo}x)` : `+1 💎 (${localCombo}x)`)
+                : (isGirlsTheme ? '+1 💖' : '+1 💎');
+              particleManager.createFloatingText(c.mesh.position, pointsText, isGirlsTheme ? '#ff70a6' : '#00ffff');
             }
 
             setScore(prev => {
@@ -1584,8 +1606,8 @@ const CrystalCollectorGame = () => {
             cn.collected = true;
             scene.remove(cn.mesh);
             soundEngine.playCoin();
-            particleManager.createBurst(cn.mesh.position, 0xffd700, 12, 6);
-            particleManager.createFloatingText(cn.mesh.position, '+1 🪙', '#ffd700');
+            particleManager.createBurst(cn.mesh.position, isGirlsTheme ? 0xffa0bc : 0xffd700, 12, 6);
+            particleManager.createFloatingText(cn.mesh.position, isGirlsTheme ? '+1 🍓' : '+1 🪙', isGirlsTheme ? '#ff70a6' : '#ffd700');
 
             setCoins(prev => prev + 1);
             setSavedData(prev => {
@@ -1611,8 +1633,8 @@ const CrystalCollectorGame = () => {
             h.respawnTimer = 35.0; // Automatically respawns after 35 seconds
             scene.remove(h.mesh);
             soundEngine.playPowerup('shield');
-            particleManager.createBurst(h.mesh.position, 0xff0033, 16, 6);
-            particleManager.createFloatingText(h.mesh.position, '+1 ❤️', '#ff0033');
+            particleManager.createBurst(h.mesh.position, isGirlsTheme ? 0xff69b4 : 0xff0033, 16, 6);
+            particleManager.createFloatingText(h.mesh.position, isGirlsTheme ? '+1 💖' : '+1 ❤️', isGirlsTheme ? '#ff70a6' : '#ff0033');
             setHearts(prev => prev + 1);
           }
         } else if (h.respawnTimer > 0) {
@@ -1956,6 +1978,18 @@ const CrystalCollectorGame = () => {
         }
       }
 
+      // Girls Theme: Ambient floating fairy sakura dust
+      if (isGirlsTheme && Math.random() < 0.22) {
+        particleManager.createDust(
+          {
+            x: player.position.x + (Math.random() - 0.5) * 22,
+            y: player.position.y + 1.2 + Math.random() * 3.5,
+            z: player.position.z + (Math.random() - 0.5) * 22
+          },
+          Math.random() < 0.5 ? 0xffb7eb : 0xff70a6
+        );
+      }
+
       // Update Particle Systems
       particleManager.update(dt);
 
@@ -2017,7 +2051,16 @@ const CrystalCollectorGame = () => {
   }, [level, showComplete, gameOver, showLevelStart, currentScreen, savedData.difficulty]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: '#05050f' }}>
+    <div
+      className={(savedData.activeTheme || 'default') === 'girls' ? 'theme-girls' : ''}
+      style={{
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
+        position: 'relative',
+        background: (savedData.activeTheme || 'default') === 'girls' ? '#180a18' : '#05050f'
+      }}
+    >
       <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
 
       {/* --- HOME SCREEN --- */}
@@ -2151,6 +2194,22 @@ const CrystalCollectorGame = () => {
           onUnlockRoot={() => {
             setSavedData(prev => ({ ...prev, unlockedLevels: 10 }));
             soundEngine.playPowerup('shield');
+          }}
+          onUnlockGirlsTheme={() => {
+            setSavedData(prev => {
+              const ownedChars = prev.ownedCharacters || ['cyber_runner'];
+              const ownedPets = prev.ownedPets || [];
+              return {
+                ...prev,
+                unlockedGirlsTheme: true,
+                activeTheme: 'girls',
+                currentCharacter: 'magical_rue',
+                currentPet: 'sugar_bunny',
+                ownedCharacters: ownedChars.includes('magical_rue') ? ownedChars : [...ownedChars, 'magical_rue'],
+                ownedPets: ownedPets.includes('sugar_bunny') ? ownedPets : [...ownedPets, 'sugar_bunny']
+              };
+            });
+            soundEngine.playMagicalChime?.();
           }}
           onClose={() => setShowAbout(false)}
         />
@@ -2328,7 +2387,7 @@ const CrystalCollectorGame = () => {
 
                       <div>
                         <div style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '10px', fontSize: '14px' }}>
-                          {owned ? 'UNLOCKED' : item.cost === 0 ? 'FREE' : `🪙 ${item.cost}`}
+                          {owned ? 'UNLOCKED' : item.isSecret ? 'SECRET HERO' : item.cost === 0 ? 'FREE' : `🪙 ${item.cost}`}
                         </div>
                         {owned ? (
                           <button
@@ -2346,6 +2405,22 @@ const CrystalCollectorGame = () => {
                             }}
                           >
                             {isEquipped ? 'EQUIPPED' : 'SELECT HERO'}
+                          </button>
+                        ) : item.isSecret ? (
+                          <button
+                            className="hud-btn"
+                            disabled
+                            style={{
+                              background: 'rgba(255, 112, 166, 0.2)',
+                              border: '1px dashed #ff70a6',
+                              color: '#ffb7eb',
+                              width: '100%',
+                              padding: '10px',
+                              fontWeight: 800,
+                              cursor: 'not-allowed'
+                            }}
+                          >
+                            🔒 UNLOCK IN ABOUT
                           </button>
                         ) : (
                           <button
@@ -2433,10 +2508,26 @@ const CrystalCollectorGame = () => {
                       <div style={{ fontSize: '44px', marginBottom: '8px' }}>{item.icon}</div>
                       <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{item.name}</div>
                       <div style={{ fontSize: '12px', color: '#aaa', margin: '6px 0' }}>{item.desc}</div>
-                      <div style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '10px' }}>{owned ? 'OWNED' : `🪙 ${item.cost}`}</div>
+                      <div style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '10px' }}>{owned ? 'OWNED' : item.isSecret ? 'SECRET PET' : `🪙 ${item.cost}`}</div>
                       {owned ? (
                         <button className="hud-btn" onClick={() => setSavedData(prev => ({ ...prev, currentPet: isEquipped ? null : item.id }))} style={{ background: isEquipped ? '#00f0ff' : '#00ff88', color: '#000', width: '100%', padding: '8px' }}>
                           {isEquipped ? 'DISMISS' : 'SUMMON'}
+                        </button>
+                      ) : item.isSecret ? (
+                        <button
+                          className="hud-btn"
+                          disabled
+                          style={{
+                            background: 'rgba(255, 112, 166, 0.2)',
+                            border: '1px dashed #ff70a6',
+                            color: '#ffb7eb',
+                            width: '100%',
+                            padding: '8px',
+                            fontWeight: 800,
+                            cursor: 'not-allowed'
+                          }}
+                        >
+                          🔒 UNLOCK IN ABOUT
                         </button>
                       ) : (
                         <button className="hud-btn" disabled={savedData.totalCoins < item.cost} onClick={() => buyItem('pet', item.id, item.cost)} style={{ background: savedData.totalCoins >= item.cost ? '#ffd700' : '#444', color: '#000', width: '100%', padding: '8px' }}>
