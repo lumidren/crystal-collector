@@ -301,6 +301,37 @@ class SoundEngine {
     } catch {}
   }
 
+  playMagicalChime() {
+    if (!this.soundEnabled) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const t = this.ctx.currentTime;
+      // Dreamy fairy pentatonic cascade: C5, E5, G5, B5, D6, G6
+      const notes = [523.25, 659.25, 783.99, 987.77, 1174.66, 1567.98];
+
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const start = t + idx * 0.07;
+        const dur = 0.55;
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+
+        gain.gain.setValueAtTime(0.28 * this.sfxVolume, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(start);
+        osc.stop(start + dur);
+      });
+    } catch {}
+  }
+
   playBossShockwave() {
     if (!this.soundEnabled) return;
     this.init();
