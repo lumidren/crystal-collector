@@ -85,43 +85,97 @@ export class CrystalTitanBoss {
 
   buildPylons() {
     const coords = [
-      { x: -16, z: -16 },
-      { x: 16, z: 16 },
-      { x: -16, z: 16 },
-      { x: 16, z: -16 }
+      { x: -16, z: -16, name: 'North-West (NW)' },
+      { x: 16, z: 16, name: 'South-East (SE)' },
+      { x: -16, z: 16, name: 'South-West (SW)' },
+      { x: 16, z: -16, name: 'North-East (NE)' }
     ];
 
     coords.forEach((c, idx) => {
       const pylonGroup = new THREE.Group();
 
-      // Pillar base
+      // Pillar base (high-tech cyber column)
       const pillar = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.8, 1.2, 3.5, 8),
-        new THREE.MeshPhongMaterial({ color: 0x333333 })
+        new THREE.CylinderGeometry(0.85, 1.3, 3.5, 12),
+        new THREE.MeshPhongMaterial({ color: 0x1a2035, emissive: 0x00f0ff, emissiveIntensity: 0.15 })
       );
       pillar.position.y = 1.75;
       pylonGroup.add(pillar);
 
-      // Pylon crystal on top
+      // Glowing trim ring around pillar
+      const ringGeom = new THREE.TorusGeometry(1.0, 0.08, 8, 24);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+      const trimRing = new THREE.Mesh(ringGeom, ringMat);
+      trimRing.rotation.x = Math.PI / 2;
+      trimRing.position.y = 2.4;
+      pylonGroup.add(trimRing);
+
+      // Pylon crystal on top (vibrant radiant energy crystal)
       const crystalMat = new THREE.MeshPhongMaterial({
-        color: 0x555555,
-        emissive: 0x222222,
-        emissiveIntensity: 0.2
+        color: 0x00f0ff,
+        emissive: 0x00d2ff,
+        emissiveIntensity: 0.85
       });
-      const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.8), crystalMat);
+      const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(1.1), crystalMat);
       crystal.position.y = 4.0;
       pylonGroup.add(crystal);
 
+      // Glowing Floor Activation Pad (Step Here Ring)
+      const floorRingGeom = new THREE.RingGeometry(0.4, 2.5, 32);
+      const floorRingMat = new THREE.MeshBasicMaterial({
+        color: 0x00f0ff,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.65
+      });
+      const floorRing = new THREE.Mesh(floorRingGeom, floorRingMat);
+      floorRing.rotation.x = -Math.PI / 2;
+      floorRing.position.y = 0.08;
+      pylonGroup.add(floorRing);
+
+      // Vertical Sky Beacon (tall pillar of light reaching 32m high into the clouds)
+      const skyBeamGeom = new THREE.CylinderGeometry(0.55, 0.85, 32, 16);
+      const skyBeamMat = new THREE.MeshBasicMaterial({
+        color: 0x00f0ff,
+        transparent: true,
+        opacity: 0.35,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      const skyBeam = new THREE.Mesh(skyBeamGeom, skyBeamMat);
+      skyBeam.position.y = 16.0;
+      pylonGroup.add(skyBeam);
+
       pylonGroup.position.set(c.x, 0, c.z);
       this.scene.add(pylonGroup);
+
+      // Glowing Energy Tether Beam connecting Pylon to the Boss Shield
+      const tetherDist = Math.hypot(c.x, 4.5 - 4.0, c.z);
+      const tetherGeom = new THREE.CylinderGeometry(0.08, 0.08, tetherDist, 8);
+      const tetherMat = new THREE.MeshBasicMaterial({
+        color: 0xbd00ff,
+        transparent: true,
+        opacity: 0.75
+      });
+      const tetherBeam = new THREE.Mesh(tetherGeom, tetherMat);
+      tetherBeam.position.set(c.x / 2, (4.0 + 4.5) / 2, c.z / 2);
+      tetherBeam.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        new THREE.Vector3(-c.x, 0.5, -c.z).normalize()
+      );
+      this.scene.add(tetherBeam);
 
       this.pylons.push({
         id: idx,
         group: pylonGroup,
         crystal,
         mat: crystalMat,
+        floorRing,
+        skyBeam,
+        tetherBeam,
         x: c.x,
         z: c.z,
+        name: c.name,
         activated: false
       });
     });
@@ -155,13 +209,37 @@ export class CrystalTitanBoss {
 
     p.activated = true;
     this.pylonsActivated++;
-    p.mat.color.setHex(0x00ffff);
-    p.mat.emissive.setHex(0x00ffff);
-    p.mat.emissiveIntensity = 0.9;
+
+    // Turn pylon crystal emerald green
+    p.mat.color.setHex(0x00ff88);
+    p.mat.emissive.setHex(0x00ff88);
+    p.mat.emissiveIntensity = 0.95;
+
+    // Floor activation ring turns green
+    if (p.floorRing) {
+      p.floorRing.material.color.setHex(0x00ff88);
+      p.floorRing.material.opacity = 0.35;
+    }
+
+    // Sky beacon shifts to gentle green
+    if (p.skyBeam) {
+      p.skyBeam.material.color.setHex(0x00ff88);
+      p.skyBeam.material.opacity = 0.15;
+    }
+
+    // Sever the energy tether line powering the boss shield
+    if (p.tetherBeam) {
+      p.tetherBeam.visible = false;
+    }
 
     soundEngine.playPowerup('shield');
-    particleManager.createBurst({ x: p.x, y: 4, z: p.z }, 0x00ffff, 25, 8);
-    particleManager.createFloatingText({ x: p.x, y: 4, z: p.z }, `PYLON ${this.pylonsActivated}/4!`, '#00ffff');
+    particleManager.createBurst({ x: p.x, y: 4, z: p.z }, 0x00ff88, 32, 10);
+    particleManager.createFloatingText({ x: p.x, y: 4.8, z: p.z }, `BEACON ${this.pylonsActivated}/4 SECURED!`, '#00ff88', 40);
+
+    if (this.pylonsActivated < 4) {
+      const remaining = 4 - this.pylonsActivated;
+      particleManager.createFloatingText({ x: p.x, y: 3.2, z: p.z }, `${remaining} MORE BEACON${remaining > 1 ? 'S' : ''} TO GO!`, '#ffd700', 32);
+    }
 
     if (this.pylonsActivated === 4) {
       this.breakShield(soundEngine, particleManager);
@@ -173,20 +251,52 @@ export class CrystalTitanBoss {
     this.shieldBroken = true;
     this.shieldMesh.visible = false;
     this.laserMesh.visible = false;
+
+    // Hide any remaining tether beams
+    this.pylons.forEach(p => {
+      if (p.tetherBeam) p.tetherBeam.visible = false;
+    });
+
     soundEngine?.playFever?.();
     particleManager.addTrauma(0.6);
-    particleManager.createBurst({ x: 0, y: 4.5, z: 0 }, 0xff00ff, 40, 12);
-    particleManager.createFloatingText({ x: 0, y: 5, z: 0 }, 'SHIELD SHATTERED! GRAB THE CORE!', '#ff00ff', 44);
+    particleManager.createBurst({ x: 0, y: 4.5, z: 0 }, 0xff00ff, 45, 14);
+    particleManager.createFloatingText({ x: 0, y: 5.5, z: 0 }, 'SHIELD SHATTERED! GRAB THE MASTER CORE!', '#ffd700', 48);
 
-    // Spawn Grand Core Crystal in center
+    // Spawn Grand Master Core Crystal in center
     const coreMat = new THREE.MeshPhongMaterial({
       color: 0xffd700,
       emissive: 0xffa500,
-      emissiveIntensity: 0.9
+      emissiveIntensity: 0.95
     });
-    this.coreCrystal = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5), coreMat);
+    this.coreCrystal = new THREE.Mesh(new THREE.DodecahedronGeometry(1.6), coreMat);
     this.coreCrystal.position.set(0, 1.8, 0);
     this.scene.add(this.coreCrystal);
+
+    // Giant Golden Sky Beacon shooting from the Core Crystal to the sky
+    const goldSkyBeamGeom = new THREE.CylinderGeometry(0.7, 1.2, 36, 16);
+    const goldSkyBeamMat = new THREE.MeshBasicMaterial({
+      color: 0xffd700,
+      transparent: true,
+      opacity: 0.5,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    this.goldSkyBeam = new THREE.Mesh(goldSkyBeamGeom, goldSkyBeamMat);
+    this.goldSkyBeam.position.set(0, 18, 0);
+    this.scene.add(this.goldSkyBeam);
+
+    // Golden Ground Target Ring under the Master Crystal
+    const goldFloorRingGeom = new THREE.RingGeometry(0.5, 3.2, 32);
+    const goldFloorRingMat = new THREE.MeshBasicMaterial({
+      color: 0xffd700,
+      transparent: true,
+      opacity: 0.8,
+      side: THREE.DoubleSide
+    });
+    this.goldFloorRing = new THREE.Mesh(goldFloorRingGeom, goldFloorRingMat);
+    this.goldFloorRing.rotation.x = -Math.PI / 2;
+    this.goldFloorRing.position.set(0, 0.1, 0);
+    this.scene.add(this.goldFloorRing);
   }
 
   update(dt, t, playerPos, isGrounded, soundEngine, onPlayerHurt) {
@@ -201,6 +311,20 @@ export class CrystalTitanBoss {
     this.pylons.forEach(p => {
       p.crystal.rotation.y += dt * (p.activated ? 4 : 1.5);
       p.crystal.position.y = 4.0 + Math.sin(t * 3 + p.id) * 0.2;
+
+      // Pulse floor pads & sky beams
+      if (!p.activated) {
+        if (p.floorRing) {
+          const pulse = 1 + Math.sin(t * 4 + p.id) * 0.08;
+          p.floorRing.scale.set(pulse, pulse, 1);
+        }
+        if (p.skyBeam) {
+          p.skyBeam.material.opacity = 0.32 + Math.sin(t * 3 + p.id) * 0.12;
+        }
+        if (p.tetherBeam) {
+          p.tetherBeam.material.opacity = 0.55 + Math.sin(t * 6 + p.id) * 0.25;
+        }
+      }
     });
 
     if (!this.shieldBroken) {
@@ -255,10 +379,19 @@ export class CrystalTitanBoss {
         }
       }
     } else if (this.coreCrystal) {
-      // Animate Grand Core Crystal
+      // Animate Grand Master Core Crystal and its Golden Beacons
       this.coreCrystal.rotation.y += dt * 3;
       this.coreCrystal.rotation.z += dt * 1.5;
       this.coreCrystal.position.y = 1.8 + Math.sin(t * 3) * 0.3;
+
+      if (this.goldSkyBeam) {
+        this.goldSkyBeam.rotation.y += dt * 0.8;
+        this.goldSkyBeam.material.opacity = 0.45 + Math.sin(t * 4) * 0.15;
+      }
+      if (this.goldFloorRing) {
+        const goldPulse = 1 + Math.sin(t * 5) * 0.1;
+        this.goldFloorRing.scale.set(goldPulse, goldPulse, 1);
+      }
     }
   }
 
@@ -271,6 +404,11 @@ export class CrystalTitanBoss {
     this.shockwaves = [];
 
     this.pylons.forEach(p => {
+      if (p.tetherBeam) {
+        this.scene.remove(p.tetherBeam);
+        if (p.tetherBeam.geometry) p.tetherBeam.geometry.dispose();
+        if (p.tetherBeam.material) p.tetherBeam.material.dispose();
+      }
       this.scene.remove(p.group);
       p.group.traverse(obj => {
         if (obj.geometry) obj.geometry.dispose();
@@ -278,6 +416,17 @@ export class CrystalTitanBoss {
       });
     });
     this.pylons = [];
+
+    if (this.goldSkyBeam) {
+      this.scene.remove(this.goldSkyBeam);
+      this.goldSkyBeam.geometry.dispose();
+      this.goldSkyBeam.material.dispose();
+    }
+    if (this.goldFloorRing) {
+      this.scene.remove(this.goldFloorRing);
+      this.goldFloorRing.geometry.dispose();
+      this.goldFloorRing.material.dispose();
+    }
 
     if (this.coreCrystal) {
       this.scene.remove(this.coreCrystal);
