@@ -148,24 +148,67 @@ export const InGameHUD = ({
           </div>
         </div>
 
-        {/* Top-Center: Goal Progress Bar */}
-        <div className="hud-progress-meter">
+        {/* Top-Center: Goal Progress Bar or Level 10 Titan Gauntlet Tracker */}
+        <div className={`hud-progress-meter ${level === 10 ? 'boss-progress-meter' : ''}`}>
           {level === 10 ? (
             <div>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: '#ff4d6d' }}>
-                🛡️ TITAN SHIELD PYLONS: {bossState?.pylonsDeactivated || 0} / 4
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 900, color: '#ff4d6d', letterSpacing: '0.5px' }}>
+                  👑 BOSS PROTOCOL: THE CRYSTAL TITAN
+                </span>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: (bossState?.pylonsDeactivated || 0) >= 4 ? '#00ff88' : '#ffd700' }}>
+                  {(bossState?.pylonsDeactivated || 0) >= 4 ? 'SHIELD DESTROYED 💥' : `${bossState?.pylonsDeactivated || 0} / 4 BEACONS SHUT DOWN`}
+                </span>
               </div>
-              <div className="progress-track">
+
+              <div className="progress-track" style={{ height: '10px', marginBottom: '8px' }}>
                 <div
                   className="progress-fill"
                   style={{
                     width: `${((bossState?.pylonsDeactivated || 0) / 4) * 100}%`,
-                    background: 'linear-gradient(90deg, #ff0055, #ffd700)'
+                    background: (bossState?.pylonsDeactivated || 0) >= 4 ? 'linear-gradient(90deg, #00ff88, #00f0ff)' : 'linear-gradient(90deg, #ff0055, #ffd700)'
                   }}
                 />
               </div>
-              <div style={{ fontSize: '11px', color: '#ffd700', marginTop: '4px' }}>
-                {(bossState?.pylonsDeactivated || 0) >= 4 ? '🔥 SHIELD DOWN! GRAB THE MASTER CRYSTAL!' : 'Deactivate 4 corner pylons!'}
+
+              {/* 4 Corner Pylon Beacon Cards */}
+              {(bossState?.pylonsDeactivated || 0) < 4 ? (
+                <div className="boss-pylons-grid">
+                  {[
+                    { id: 0, label: '↖️ NW Beacon' },
+                    { id: 1, label: '↘️ SE Beacon' },
+                    { id: 2, label: '↙️ SW Beacon' },
+                    { id: 3, label: '↗️ NE Beacon' }
+                  ].map(p => {
+                    const isSecured = bossState?.pylons ? bossState.pylons[p.id]?.activated : p.id < (bossState?.pylonsDeactivated || 0);
+                    return (
+                      <div
+                        key={p.id}
+                        className={`boss-pylon-pill ${isSecured ? 'pylon-secured' : 'pylon-pending'}`}
+                      >
+                        <span className="pylon-name">{p.label}</span>
+                        <span className="pylon-status">{isSecured ? '✓ SECURED' : '⚡ STEP ON PAD'}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="boss-victory-prompt">
+                  🌟 SHIELD DOWN! SPRINT TO THE CENTER & TOUCH THE GOLDEN MASTER CRYSTAL! 🏆
+                </div>
+              )}
+
+              {/* Step-by-Step Instructions Bar */}
+              <div className="boss-hint-bar">
+                {(bossState?.pylonsDeactivated || 0) < 4 ? (
+                  <span>
+                    💡 <strong>HOW TO WIN:</strong> Look for the <strong>tall blue light beams</strong> in the 4 corners. Run to each corner and <strong>step inside the glowing floor circle</strong>! Jump (<kbd className="keycap">Space</kbd>) over expanding shockwaves!
+                  </span>
+                ) : (
+                  <span style={{ color: '#00ff88', fontWeight: 800 }}>
+                    🎉 <strong>FINAL STEP:</strong> Run to the giant golden beam in the center to collect the crystal and beat the game!
+                  </span>
+                )}
               </div>
             </div>
           ) : (
