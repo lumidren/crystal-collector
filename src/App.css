@@ -1178,6 +1178,141 @@ input[type=range]::-webkit-slider-thumb {
   text-align: center;
 }
 
+/* ==========================================================
+   👑 LEVEL 10 TITAN BOSS GAUNTLET & BEACON TRACKER
+   ========================================================== */
+.boss-progress-meter {
+  min-width: 440px;
+  max-width: 580px;
+  background: rgba(10, 10, 24, 0.92);
+  border: 1.5px solid rgba(255, 0, 85, 0.4);
+  box-shadow: 0 0 25px rgba(255, 0, 85, 0.25);
+  border-radius: 14px;
+  padding: 12px 18px;
+}
+
+.boss-pylons-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+
+.boss-pylon-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  text-align: center;
+  transition: all 0.25s ease;
+}
+
+.boss-pylon-pill .pylon-name {
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.boss-pylon-pill .pylon-status {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.boss-pylon-pill.pylon-pending {
+  background: rgba(0, 240, 255, 0.12);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  color: #00f0ff;
+  animation: pulse-beacon 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse-beacon {
+  0%, 100% { box-shadow: 0 0 8px rgba(0, 240, 255, 0.2); border-color: rgba(0, 240, 255, 0.4); }
+  50% { box-shadow: 0 0 16px rgba(0, 240, 255, 0.6); border-color: #00f0ff; }
+}
+
+.boss-pylon-pill.pylon-secured {
+  background: rgba(0, 255, 136, 0.18);
+  border: 1px solid #00ff88;
+  color: #00ff88;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.35);
+}
+
+.boss-victory-prompt {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(0, 255, 136, 0.2));
+  border: 1.5px solid #ffd700;
+  color: #ffd700;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 10px 14px;
+  border-radius: 8px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  animation: victory-pulse 1.2s infinite alternate;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+
+@keyframes victory-pulse {
+  0% { transform: scale(0.99); filter: brightness(1); }
+  100% { transform: scale(1.02); filter: brightness(1.2); }
+}
+
+.boss-hint-bar {
+  font-size: 11px;
+  line-height: 1.45;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 10px;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.boss-protocol-box {
+  background: rgba(255, 0, 85, 0.1);
+  border: 1.5px solid rgba(255, 0, 85, 0.35);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.boss-step-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+
+.boss-step-card:last-child {
+  margin-bottom: 0;
+}
+
+.boss-step-num {
+  background: #ff0055;
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 
 
 
