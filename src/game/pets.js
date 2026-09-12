@@ -292,6 +292,133 @@ export class PetCompanion {
       });
 
       this.group.add(falconGroup);
+    } else if (this.petId === 'sugar_bunny') {
+      // 🐰 SUGAR BUNNY (MAGICAL FAIRY COMPANION)
+      this.magnetReach = 12.0;
+
+      const bunnyGroup = new THREE.Group();
+
+      const bunnyMat = new THREE.MeshStandardMaterial({
+        color: 0xfff0f6,
+        roughness: 0.55,
+        metalness: 0.1
+      });
+
+      const pinkMat = new THREE.MeshStandardMaterial({
+        color: 0xffb6c1,
+        roughness: 0.5,
+        metalness: 0.1
+      });
+
+      // Body (Round fluffy ball)
+      const body = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 16), bunnyMat);
+      bunnyGroup.add(body);
+
+      // Belly Patch
+      const belly = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 12), pinkMat);
+      belly.position.set(0, -0.04, 0.14);
+      bunnyGroup.add(belly);
+
+      // Head
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.27, 16, 16), bunnyMat);
+      head.position.set(0, 0.28, 0.08);
+      bunnyGroup.add(head);
+
+      // Blush Cheeks
+      [-0.15, 0.15].forEach(cx => {
+        const cheek = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff69b4 }));
+        cheek.position.set(cx, 0.24, 0.28);
+        bunnyGroup.add(cheek);
+      });
+
+      // Glossy Cute Eyes
+      [-0.09, 0.09].forEach(ex => {
+        const eye = new THREE.Mesh(new THREE.SphereGeometry(0.042, 8, 8), new THREE.MeshBasicMaterial({ color: 0x1f0b18 }));
+        eye.position.set(ex, 0.3, 0.31);
+        bunnyGroup.add(eye);
+
+        const highlight = new THREE.Mesh(new THREE.SphereGeometry(0.015, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        highlight.position.set(ex + 0.012, 0.32, 0.34);
+        bunnyGroup.add(highlight);
+      });
+
+      // Cute Button Nose
+      const nose = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.05, 4), new THREE.MeshBasicMaterial({ color: 0xff1493 }));
+      nose.position.set(0, 0.25, 0.34);
+      nose.rotation.x = Math.PI / 2;
+      bunnyGroup.add(nose);
+
+      // Long Floppy Ears with Bouncing Pivots
+      this.bunnyEars = [];
+      [-1, 1].forEach(side => {
+        const earPivot = new THREE.Group();
+        earPivot.position.set(side * 0.14, 0.48, 0.06);
+        earPivot.rotation.z = side * 0.35;
+        earPivot.rotation.x = -0.15;
+
+        const earMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.035, 0.45, 10), bunnyMat);
+        earMesh.position.y = 0.2;
+        earPivot.add(earMesh);
+
+        const innerEar = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.02, 0.38, 8), pinkMat);
+        innerEar.position.set(0, 0.2, 0.02);
+        earPivot.add(innerEar);
+
+        bunnyGroup.add(earPivot);
+        this.bunnyEars.push(earPivot);
+      });
+
+      // Tiny Fluttering Wings
+      const wingMat = new THREE.MeshPhysicalMaterial({
+        color: 0xffb7eb,
+        emissive: 0xff69b4,
+        emissiveIntensity: 0.75,
+        transmission: 0.7,
+        opacity: 0.85,
+        transparent: true,
+        side: THREE.DoubleSide
+      });
+
+      [-1, 1].forEach(side => {
+        const wingPivot = new THREE.Group();
+        wingPivot.position.set(side * 0.16, 0.12, -0.2);
+
+        const wing = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.38, 6), wingMat);
+        wing.scale.set(1.5, 1, 0.2);
+        wing.position.set(side * 0.15, 0.12, 0);
+        wing.rotation.z = side * -1.1;
+        wingPivot.add(wing);
+
+        bunnyGroup.add(wingPivot);
+        this.wings.push({ mesh: wingPivot, side });
+      });
+
+      // Round Fluffy Cotton Tail
+      const tail = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 }));
+      tail.position.set(0, -0.08, -0.3);
+      bunnyGroup.add(tail);
+
+      // Tiny Paws
+      [-0.1, 0.1].forEach(px => {
+        const paw = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 8), pinkMat);
+        paw.position.set(px, -0.02, 0.24);
+        bunnyGroup.add(paw);
+      });
+
+      // Floating Magic Heart above head
+      const heartGeom = new THREE.OctahedronGeometry(0.08);
+      this.sugarHeart = new THREE.Mesh(
+        heartGeom,
+        new THREE.MeshPhysicalMaterial({
+          color: 0xff1493,
+          emissive: 0xff69b4,
+          emissiveIntensity: 1.2
+        })
+      );
+      this.sugarHeart.position.set(0, 0.68, 0.08);
+      bunnyGroup.add(this.sugarHeart);
+
+      this.group.add(bunnyGroup);
     }
   }
 
@@ -367,6 +494,19 @@ export class PetCompanion {
           Math.sin(t * 5) * 0.3,
           Math.sin(t * 6) * 0.55
         );
+      }
+
+      if (this.bunnyEars && this.bunnyEars.length === 2) {
+        const earBounce = Math.sin(t * 8) * 0.12;
+        this.bunnyEars[0].rotation.z = -0.35 + earBounce;
+        this.bunnyEars[1].rotation.z = 0.35 - earBounce;
+        this.bunnyEars[0].rotation.x = -0.15 + Math.sin(t * 6) * 0.08;
+        this.bunnyEars[1].rotation.x = -0.15 + Math.sin(t * 6 + 0.4) * 0.08;
+      }
+
+      if (this.sugarHeart) {
+        this.sugarHeart.rotation.y += dt * 3.0;
+        this.sugarHeart.position.y = 0.68 + Math.sin(t * 4) * 0.04;
       }
     }
   }
