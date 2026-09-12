@@ -32,7 +32,9 @@ const defaultState = {
   graphicsQuality: 'ultra',
   showFps: true,
   showFPS: true,
-  difficulty: 'hard'
+  difficulty: 'hard',
+  unlockedGirlsTheme: false,
+  activeTheme: 'default'
 };
 
 export const loadGameState = () => {
@@ -45,6 +47,8 @@ export const loadGameState = () => {
       ...parsed,
       currentCharacter: parsed.currentCharacter || 'cyber_runner',
       ownedCharacters: (parsed.ownedCharacters && parsed.ownedCharacters.length > 0) ? parsed.ownedCharacters : ['cyber_runner'],
+      unlockedGirlsTheme: parsed.unlockedGirlsTheme || false,
+      activeTheme: parsed.activeTheme || 'default',
       upgrades: {
         ...defaultState.upgrades,
         ...(parsed.upgrades || {})
