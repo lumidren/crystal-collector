@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { soundEngine } from '../audio/soundEngine.js';
 
 export const AboutModal = ({ onClose, onUnlockRoot, unlockedLevels = 1 }) => {
@@ -121,7 +121,7 @@ export const AboutModal = ({ onClose, onUnlockRoot, unlockedLevels = 1 }) => {
               <input
                 type="password"
                 className="root-password-input"
-                placeholder="Enter root password (lumidren)..."
+                placeholder="Enter root password..."
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
