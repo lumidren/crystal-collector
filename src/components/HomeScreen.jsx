@@ -103,12 +103,37 @@ export const HomeScreen = ({
       <div className="home-center-content">
         <div className="home-center-card">
           <div className="home-logo-container">
-            <div className="home-crystal-badge">💎</div>
-            <h1 className="home-title">CRYSTAL COLLECTOR</h1>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#7e95b3', letterSpacing: '2px', marginTop: '6px', textTransform: 'uppercase' }}>
-              NEO-ARCADE 3D PLATFORMER · PROCEDURAL BIOMES
+            <div className="home-crystal-badge">
+              {(savedData.activeTheme || 'default') === 'girls' ? '🌸' : '💎'}
+            </div>
+            <h1 className={`home-title ${(savedData.activeTheme || 'default') === 'girls' ? 'game-title-glow' : ''}`}>
+              {(savedData.activeTheme || 'default') === 'girls' ? 'MAGICAL RUE · DREAM' : 'CRYSTAL COLLECTOR'}
+            </h1>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: (savedData.activeTheme || 'default') === 'girls' ? '#ffb7eb' : '#7e95b3', letterSpacing: '2px', marginTop: '6px', textTransform: 'uppercase' }}>
+              {(savedData.activeTheme || 'default') === 'girls' ? '✨ ENCHANTED CELESTIAL REALM · FAIRY ADVENTURE 💖' : 'NEO-ARCADE 3D PLATFORMER · PROCEDURAL BIOMES'}
             </div>
           </div>
+
+          {/* Girls Theme / Cyberpunk Switcher (Unlocked via 'iloverue') */}
+          {savedData.unlockedGirlsTheme && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+              <div
+                className="theme-toggle-pill"
+                onClick={() => {
+                  soundEngine.playUIClick();
+                  const nextTheme = (savedData.activeTheme || 'default') === 'girls' ? 'default' : 'girls';
+                  if (setSavedData) setSavedData(prev => ({ ...prev, activeTheme: nextTheme }));
+                }}
+              >
+                <div className={`theme-toggle-option ${(savedData.activeTheme || 'default') !== 'girls' ? 'active-cyber' : ''}`}>
+                  ⚡ CYBERPUNK
+                </div>
+                <div className={`theme-toggle-option ${(savedData.activeTheme || 'default') === 'girls' ? 'active-girls' : ''}`}>
+                  🌸 GIRLS THEME
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Difficulty Quick Toggle */}
           {/* 3-Tier Difficulty Switch */}
