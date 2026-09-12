@@ -513,6 +513,7 @@ const CrystalCollectorGame = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [pylonsDeactivated, setPylonsDeactivated] = useState(0);
+  const [bossPylons, setBossPylons] = useState([]);
   const [fps, setFps] = useState(60);
 
   // Combined frozen state: halts physics, obstacles, hazards, boss, and timers
@@ -1043,6 +1044,8 @@ const CrystalCollectorGame = () => {
     // Boss Titan on Level 10
     if (level === 10) {
       bossInstance = new CrystalTitanBoss(scene);
+      setBossPylons(bossInstance.pylons.map(p => ({ id: p.id, name: p.name, activated: false })));
+      setPylonsDeactivated(0);
     }
 
     // Player Character (Next-Gen 3D Hero Exosuit)
@@ -1924,9 +1927,10 @@ const CrystalCollectorGame = () => {
         bossInstance.pylons.forEach(pylon => {
           if (!pylon.activated) {
             const d = Math.hypot(player.position.x - pylon.x, player.position.z - pylon.z);
-            if (d < 2.6) {
+            if (d < 2.8) {
               bossInstance.activatePylon(pylon.id, soundEngine, particleManager);
               setPylonsDeactivated(bossInstance.pylons.filter(p => p.activated).length);
+              setBossPylons(bossInstance.pylons.map(p => ({ id: p.id, name: p.name, activated: p.activated })));
             }
           }
         });
@@ -2080,7 +2084,15 @@ const CrystalCollectorGame = () => {
           magnetTime={magnetTime}
           slowMoTime={slowMoTime}
           feverTime={feverTime}
-          bossState={{ pylonsDeactivated }}
+          bossState={{
+            pylonsDeactivated,
+            pylons: bossPylons.length > 0 ? bossPylons : [
+              { id: 0, name: 'North-West (NW)', activated: pylonsDeactivated >= 1 },
+              { id: 1, name: 'South-East (SE)', activated: pylonsDeactivated >= 2 },
+              { id: 2, name: 'South-West (SW)', activated: pylonsDeactivated >= 3 },
+              { id: 3, name: 'North-East (NE)', activated: pylonsDeactivated >= 4 }
+            ]
+          }}
           fps={fps}
           spawnGraceTime={spawnGraceTime}
           elapsedTime={levelElapsedTime}
@@ -2159,12 +2171,52 @@ const CrystalCollectorGame = () => {
             </h2>
 
             {level === 10 ? (
-              <div style={{ background: 'rgba(255,0,85,0.12)', border: '1px solid rgba(255,0,85,0.3)', padding: '16px', borderRadius: '14px', marginBottom: '25px', textAlign: 'left' }}>
-                <p style={{ margin: '0 0 8px', color: '#ff66aa', fontWeight: 800 }}>⚠️ BOSS PROTOCOL:</p>
-                <div style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5 }}>
-                  1. Dodge rotating lasers & jump ground shockwaves.<br />
-                  2. Sprint to all <strong>4 Power Pylons</strong> in the corners to collapse the forcefield.<br />
-                  3. Collect the exposed <strong>Master Core Crystal</strong> to save the realm!
+              <div className="boss-protocol-box">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '20px' }}>🎯</span>
+                  <span style={{ fontSize: '15px', fontWeight: 900, color: '#ff4d6d', letterSpacing: '0.5px' }}>
+                    HOW TO BEAT THE FINAL BOSS (4 SIMPLE STEPS):
+                  </span>
+                </div>
+
+                <div className="boss-step-card">
+                  <div className="boss-step-num">1</div>
+                  <div>
+                    <strong style={{ color: '#00f0ff' }}>Look for 4 Sky Beacons:</strong>
+                    <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '2px' }}>
+                      Look up! There are 4 tall blue light beams in the 4 corners of the arena powering the Titan's shield.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="boss-step-card">
+                  <div className="boss-step-num">2</div>
+                  <div>
+                    <strong style={{ color: '#00ff88' }}>Step On Each Glowing Floor Ring:</strong>
+                    <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '2px' }}>
+                      Sprint to each corner and simply walk into the glowing floor circle under the beacon to shut it down.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="boss-step-card">
+                  <div className="boss-step-num">3</div>
+                  <div>
+                    <strong style={{ color: '#ffd700' }}>Dodge Lasers & Shockwaves:</strong>
+                    <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '2px' }}>
+                      Tap Space to jump or double-jump over red ground shockwaves, and avoid the sweeping red laser.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="boss-step-card">
+                  <div className="boss-step-num">4</div>
+                  <div>
+                    <strong style={{ color: '#ff66aa' }}>Collect The Golden Master Crystal:</strong>
+                    <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '2px' }}>
+                      Once all 4 beacons are shut down, the shield shatters! Run to the golden sky beam in the center to win the game!
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (
