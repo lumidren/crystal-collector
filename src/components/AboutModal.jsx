@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { soundEngine } from '../audio/soundEngine.js';
 
-export const AboutModal = ({ onClose, onUnlockRoot, unlockedLevels = 1 }) => {
+export const AboutModal = ({ onClose, onUnlockRoot, onUnlockGirlsTheme, unlockedLevels = 1, isGirlsThemeUnlocked = false }) => {
   const [password, setPassword] = useState('');
-  const [authStatus, setAuthStatus] = useState(null); // null | 'success' | 'error'
+  const [authStatus, setAuthStatus] = useState(null); // null | 'success' | 'success_girls' | 'error'
   const isAllUnlocked = unlockedLevels >= 10;
 
   const handlePasswordSubmit = (e) => {
@@ -14,6 +14,12 @@ export const AboutModal = ({ onClose, onUnlockRoot, unlockedLevels = 1 }) => {
       soundEngine.playPowerup('shield');
       if (onUnlockRoot) {
         onUnlockRoot();
+      }
+    } else if (cleanPass === 'iloverue') {
+      setAuthStatus('success_girls');
+      soundEngine.playMagicalChime?.();
+      if (onUnlockGirlsTheme) {
+        onUnlockGirlsTheme();
       }
     } else {
       setAuthStatus('error');
@@ -109,33 +115,40 @@ export const AboutModal = ({ onClose, onUnlockRoot, unlockedLevels = 1 }) => {
             </span>
           </div>
           <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 12px 0' }}>
-            Enter the developer master password to unlock instant root access to all 10 campaign levels.
+            Enter developer secret codes to unlock administrative features or exclusive theme protocols.
           </p>
 
-          {isAllUnlocked || authStatus === 'success' ? (
-            <div className="root-success-banner">
+          {/* Status Banners */}
+          {(isAllUnlocked || authStatus === 'success') && (
+            <div className="root-success-banner" style={{ marginBottom: '10px' }}>
               🚀 ROOT ACCESS ACTIVE: ALL 10 LEVELS UNLOCKED!
             </div>
-          ) : (
-            <form onSubmit={handlePasswordSubmit} className="root-form-row">
-              <input
-                type="password"
-                className="root-password-input"
-                placeholder="Enter root password..."
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (authStatus) setAuthStatus(null);
-                }}
-              />
-              <button
-                type="submit"
-                className="root-submit-btn"
-              >
-                ⚡ UNLOCK
-              </button>
-            </form>
           )}
+
+          {(isGirlsThemeUnlocked || authStatus === 'success_girls') && (
+            <div className="root-girls-banner" style={{ marginBottom: '10px' }}>
+              💖 SECRET UNLOCKED: MAGICAL RUE & GIRLS THEME ACTIVATED! 🌸
+            </div>
+          )}
+
+          <form onSubmit={handlePasswordSubmit} className="root-form-row">
+            <input
+              type="password"
+              className="root-password-input"
+              placeholder="Enter root password..."
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (authStatus) setAuthStatus(null);
+              }}
+            />
+            <button
+              type="submit"
+              className="root-submit-btn"
+            >
+              ⚡ UNLOCK
+            </button>
+          </form>
 
           {authStatus === 'error' && (
             <div className="root-error-banner">
