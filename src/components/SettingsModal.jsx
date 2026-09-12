@@ -175,6 +175,56 @@ export const SettingsModal = ({ savedData, setSavedData, onClose }) => {
             </div>
           </div>
 
+          {/* Visual Theme Selection (Unlocked via 'iloverue') */}
+          {savedData.unlockedGirlsTheme && (
+            <div>
+              <div style={{ fontSize: '14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                <span>🌸 Visual Theme Preset</span>
+                <span style={{
+                  color: (savedData.activeTheme || 'default') === 'girls' ? '#ff70a6' : '#00f0ff',
+                  fontWeight: 800
+                }}>
+                  {(savedData.activeTheme || 'default') === 'girls' ? '🌸 GIRLS THEME' : '⚡ CYBERPUNK'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  className={`graphics-preset-btn ${(savedData.activeTheme || 'default') !== 'girls' ? 'active' : ''}`}
+                  style={{
+                    flex: 1,
+                    borderColor: (savedData.activeTheme || 'default') !== 'girls' ? '#00f0ff' : 'rgba(255,255,255,0.15)',
+                    color: (savedData.activeTheme || 'default') !== 'girls' ? '#00f0ff' : '#8fa0b5'
+                  }}
+                  onClick={() => {
+                    soundEngine.playUIClick();
+                    setSavedData(prev => ({ ...prev, activeTheme: 'default' }));
+                  }}
+                >
+                  ⚡ CYBERPUNK
+                </button>
+                <button
+                  className={`graphics-preset-btn ${(savedData.activeTheme || 'default') === 'girls' ? 'active' : ''}`}
+                  style={{
+                    flex: 1,
+                    borderColor: (savedData.activeTheme || 'default') === 'girls' ? '#ff70a6' : 'rgba(255,255,255,0.15)',
+                    color: (savedData.activeTheme || 'default') === 'girls' ? '#ff70a6' : '#8fa0b5'
+                  }}
+                  onClick={() => {
+                    soundEngine.playUIClick();
+                    setSavedData(prev => ({ ...prev, activeTheme: 'girls' }));
+                  }}
+                >
+                  🌸 GIRLS THEME
+                </button>
+              </div>
+              <div style={{ fontSize: '11px', color: '#ffb7eb', marginTop: '6px' }}>
+                {(savedData.activeTheme || 'default') === 'girls'
+                  ? '💖 Enchanted pastel dreamscape with rose quartz crystals and fairy dust.'
+                  : '⚡ Futuristic high-contrast cyberpunk neon visual aesthetic.'}
+              </div>
+            </div>
+          )}
+
           {/* Show FPS Toggle */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '14px' }}>📊 Show Real-Time FPS Counter</span>
