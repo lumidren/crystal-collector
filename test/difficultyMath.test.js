@@ -59,6 +59,10 @@ export function verifyRootPassword(inputPassword) {
   return typeof inputPassword === 'string' && inputPassword.trim().toLowerCase() === 'lumidren';
 }
 
+export function verifyGirlsThemePassword(inputPassword) {
+  return typeof inputPassword === 'string' && inputPassword.trim().toLowerCase() === 'iloverue';
+}
+
 test('difficultyMath - Easy mode: 0 spiders, more Sentinel Cubes (+25%), relaxed speed', () => {
   const mockLevelCfg = { crystals: 12, coins: 25, obs: 20, speed: 10 };
   const mockPlatforms = [
@@ -127,4 +131,14 @@ test('rootPassword - developer master password unlock logic', () => {
   assert.equal(verifyRootPassword('wrongpassword'), false, 'Rejects invalid password');
   assert.equal(verifyRootPassword(''), false, 'Rejects empty password');
   assert.equal(verifyRootPassword(null), false, 'Handles null safely');
+});
+
+test('rootPassword - secret password iloverue unlocks Magical Rue & Girls Theme', () => {
+  assert.equal(verifyGirlsThemePassword('iloverue'), true, 'Password iloverue unlocks girls theme');
+  assert.equal(verifyGirlsThemePassword('ILOVERUE'), true, 'Case-insensitive ILOVERUE unlocks girls theme');
+  assert.equal(verifyGirlsThemePassword('  iloverue  '), true, 'Trims whitespace correctly');
+  assert.equal(verifyGirlsThemePassword('lumidren'), false, 'lumidren does not unlock girls theme');
+  assert.equal(verifyGirlsThemePassword('wrong'), false, 'Rejects invalid password');
+  assert.equal(verifyGirlsThemePassword(''), false, 'Rejects empty password');
+  assert.equal(verifyGirlsThemePassword(null), false, 'Handles null safely');
 });
