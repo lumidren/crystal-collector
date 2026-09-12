@@ -1,10 +1,10 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CHARACTER_ROSTER, CyberRunner } from '../src/game/character.js';
 
-test('characters - CHARACTER_ROSTER defines 5 distinct playable heroes with unique archetypes', () => {
-  assert.equal(CHARACTER_ROSTER.length, 5, 'Must provide 5 distinct playable heroes');
+test('characters - CHARACTER_ROSTER defines 6 distinct playable heroes with unique archetypes', () => {
+  assert.equal(CHARACTER_ROSTER.length, 6, 'Must provide 6 distinct playable heroes');
 
   const ids = CHARACTER_ROSTER.map(c => c.id);
   assert.ok(ids.includes('cyber_runner'), 'Must include Cyber Runner');
@@ -12,6 +12,7 @@ test('characters - CHARACTER_ROSTER defines 5 distinct playable heroes with uniq
   assert.ok(ids.includes('titan_mech'), 'Must include Titan Juggernaut');
   assert.ok(ids.includes('void_sorcerer'), 'Must include Void Sorcerer');
   assert.ok(ids.includes('neon_valkyrie'), 'Must include Neon Valkyrie');
+  assert.ok(ids.includes('magical_rue'), 'Must include Magical Rue');
 
   // Verify starter hero is free
   const starter = CHARACTER_ROSTER.find(c => c.id === 'cyber_runner');
@@ -43,6 +44,13 @@ test('characters - Neon Valkyrie grants air glide capability', () => {
   assert.equal(valkyrie.stats.airGlide, true, 'Neon Valkyrie must have airGlide active');
 });
 
+test('characters - Magical Rue grants air glide, +1 heart, and +4m starlight magnet', () => {
+  const rue = CHARACTER_ROSTER.find(c => c.id === 'magical_rue');
+  assert.equal(rue.stats.airGlide, true, 'Magical Rue must have fairy airGlide active');
+  assert.equal(rue.stats.extraHearts, 1, 'Magical Rue must grant +1 extra heart');
+  assert.equal(rue.stats.magnetBonus, 4.0, 'Magical Rue must grant +4m starlight magnet reach');
+});
+
 test('characters - CyberRunner 3D class instantiates unique 3D geometries for all character types', () => {
   const scene = new THREE.Scene();
 
@@ -66,4 +74,10 @@ test('characters - CyberRunner 3D class instantiates unique 3D geometries for al
   // Test Neon Valkyrie
   const valkyrie = new CyberRunner({ currentCharacter: 'neon_valkyrie', playerColor: '#00f0ff' }, scene);
   assert.ok(valkyrie.animatedParts.leftWing && valkyrie.animatedParts.rightWing, 'Neon Valkyrie must have dual photonic wings');
+
+  // Test Magical Rue
+  const rue = new CyberRunner({ currentCharacter: 'magical_rue', playerColor: '#ff69b4' }, scene);
+  assert.ok(rue.animatedParts.fairyLeftWing && rue.animatedParts.fairyRightWing, 'Magical Rue must have fluttering fairy wings');
+  assert.ok(rue.animatedParts.pigtailLeft && rue.animatedParts.pigtailRight, 'Magical Rue must have twin ribbons & pigtails');
+  assert.ok(rue.animatedParts.starWandGem, 'Magical Rue must wield star heart wand');
 });
