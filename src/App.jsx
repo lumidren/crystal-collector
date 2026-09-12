@@ -188,20 +188,20 @@ function createCyberHeart(isGirlsTheme = false) {
   return group;
 }
 
-function createPowerupRelic(type) {
+function createPowerupRelic(type, isGirlsTheme = false) {
   const group = new THREE.Group();
 
   if (type === 'shield') {
-    // Aegis Energy Buckler (Hexagonal translucent shield)
+    // Aegis Energy Buckler (Hexagonal translucent shield / Rose Heart Aegis in Girls Theme)
     const shieldPlate = new THREE.Mesh(
       new THREE.CylinderGeometry(0.75, 0.75, 0.1, 6),
       new THREE.MeshPhysicalMaterial({
-        color: 0x00ffff,
-        emissive: 0x0088cc,
-        emissiveIntensity: 0.7,
-        transmission: 0.65,
+        color: isGirlsTheme ? 0xff70a6 : 0x00ffff,
+        emissive: isGirlsTheme ? 0xff2a85 : 0x0088cc,
+        emissiveIntensity: isGirlsTheme ? 0.85 : 0.7,
+        transmission: 0.72,
         transparent: true,
-        opacity: 0.88,
+        opacity: 0.9,
         roughness: 0.1
       })
     );
@@ -210,44 +210,73 @@ function createPowerupRelic(type) {
 
     const shieldCrest = new THREE.Mesh(
       new THREE.OctahedronGeometry(0.3),
-      new THREE.MeshBasicMaterial({ color: 0xffffff })
+      new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xffe066 : 0xffffff })
     );
     group.add(shieldCrest);
   } else if (type === 'magnet') {
     // Graviton Horseshoe Magnet
     const uArch = new THREE.Mesh(
       new THREE.TorusGeometry(0.45, 0.14, 12, 24, Math.PI),
-      new THREE.MeshStandardMaterial({ color: 0x222233, metalness: 0.8, roughness: 0.3 })
+      new THREE.MeshStandardMaterial({
+        color: isGirlsTheme ? 0x5a234f : 0x222233,
+        metalness: isGirlsTheme ? 0.7 : 0.8,
+        roughness: 0.3
+      })
     );
     group.add(uArch);
 
-    // North (Red) and South (Cyan/Blue) magnetic pole tips
+    // North and South magnetic pole tips (Strawberry & Lilac in Girls Theme)
     const poleN = new THREE.Mesh(
       new THREE.CylinderGeometry(0.15, 0.15, 0.35, 12),
-      new THREE.MeshStandardMaterial({ color: 0xff0044, emissive: 0xaa0022, emissiveIntensity: 0.5 })
+      new THREE.MeshStandardMaterial({
+        color: isGirlsTheme ? 0xff70a6 : 0xff0044,
+        emissive: isGirlsTheme ? 0xff2a85 : 0xaa0022,
+        emissiveIntensity: 0.5
+      })
     );
     poleN.position.set(-0.45, -0.18, 0);
     const poleS = new THREE.Mesh(
       new THREE.CylinderGeometry(0.15, 0.15, 0.35, 12),
-      new THREE.MeshStandardMaterial({ color: 0x0088ff, emissive: 0x0044aa, emissiveIntensity: 0.5 })
+      new THREE.MeshStandardMaterial({
+        color: isGirlsTheme ? 0xe0aaff : 0x0088ff,
+        emissive: isGirlsTheme ? 0x9d4edd : 0x0044aa,
+        emissiveIntensity: 0.5
+      })
     );
     poleS.position.set(0.45, -0.18, 0);
     group.add(poleN);
     group.add(poleS);
+
+    if (isGirlsTheme) {
+      const heartGem = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.2),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+      );
+      heartGem.position.set(0, 0.15, 0);
+      group.add(heartGem);
+    }
   } else {
-    // Chrono Gyroscope
+    // Chrono Gyroscope (Rose-Gold Magical Locket in Girls Theme)
     const ring1 = new THREE.Mesh(
       new THREE.TorusGeometry(0.65, 0.05, 8, 24),
-      new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.85, roughness: 0.2 })
+      new THREE.MeshStandardMaterial({
+        color: isGirlsTheme ? 0xffa0bc : 0xffd700,
+        metalness: 0.85,
+        roughness: 0.2
+      })
     );
     const ring2 = new THREE.Mesh(
       new THREE.TorusGeometry(0.5, 0.04, 8, 24),
-      new THREE.MeshStandardMaterial({ color: 0xffaa00, metalness: 0.85, roughness: 0.2 })
+      new THREE.MeshStandardMaterial({
+        color: isGirlsTheme ? 0xff70a6 : 0xffaa00,
+        metalness: 0.85,
+        roughness: 0.2
+      })
     );
     ring2.rotation.x = Math.PI / 2;
     const timeGem = new THREE.Mesh(
       new THREE.OctahedronGeometry(0.28),
-      new THREE.MeshBasicMaterial({ color: 0xffffff })
+      new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xfff0f6 : 0xffffff })
     );
     group.add(ring1);
     group.add(ring2);
@@ -260,25 +289,25 @@ function createPowerupRelic(type) {
 
 // --- 3D HIGH-TECH OBSTACLE BUILDERS ---
 
-function createQuantumSentinelCube() {
+function createQuantumSentinelCube(isGirlsTheme = false) {
   const group = new THREE.Group();
 
-  // Dark obsidian exoskeleton armor box
+  // Exoskeleton armor box (Strawberry velvet in Girls Theme, obsidian in default)
   const armor = new THREE.Mesh(
     new THREE.BoxGeometry(1.9, 1.9, 1.9),
     new THREE.MeshStandardMaterial({
-      color: 0x14141e,
-      roughness: 0.3,
-      metalness: 0.85
+      color: isGirlsTheme ? 0x5a1e46 : 0x14141e,
+      roughness: 0.35,
+      metalness: isGirlsTheme ? 0.35 : 0.85
     })
   );
   group.add(armor);
 
-  // 8 Corner Reinforcement Brackets with red glowing trim
+  // 8 Corner Reinforcement Brackets
   const cornerMat = new THREE.MeshStandardMaterial({
-    color: 0x252535,
-    emissive: 0xff0044,
-    emissiveIntensity: 0.3,
+    color: isGirlsTheme ? 0x7e2d63 : 0x252535,
+    emissive: isGirlsTheme ? 0xff70a6 : 0xff0044,
+    emissiveIntensity: isGirlsTheme ? 0.45 : 0.3,
     roughness: 0.4
   });
   [-0.9, 0.9].forEach(x => {
@@ -291,45 +320,81 @@ function createQuantumSentinelCube() {
     });
   });
 
-  // Inner floating Magma Plasma Reactor Core
+  // Inner floating Reactor Core (Pastel Pink Heart Core in Girls Theme, Magma in default)
   const innerCore = new THREE.Mesh(
     new THREE.OctahedronGeometry(0.88),
     new THREE.MeshStandardMaterial({
-      color: 0xff0044,
-      emissive: 0xff1100,
-      emissiveIntensity: 1.6,
+      color: isGirlsTheme ? 0xff70a6 : 0xff0044,
+      emissive: isGirlsTheme ? 0xff2a85 : 0xff1100,
+      emissiveIntensity: isGirlsTheme ? 1.9 : 1.6,
       roughness: 0.1,
       metalness: 0.2
     })
   );
   group.add(innerCore);
 
-  // Glowing amber hazard chevron stripes on 4 sides
-  const chevronMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
-  const chevrons = [
-    { pos: [0, 0, 0.96], rot: [0, 0, 0] },
-    { pos: [0, 0, -0.96], rot: [0, Math.PI, 0] },
-    { pos: [0.96, 0, 0], rot: [0, Math.PI / 2, 0] },
-    { pos: [-0.96, 0, 0], rot: [0, -Math.PI / 2, 0] }
-  ];
-  chevrons.forEach(c => {
-    const ch = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.18, 0.02), chevronMat);
-    ch.position.set(...c.pos);
-    ch.rotation.set(...c.rot);
-    group.add(ch);
-  });
+  if (isGirlsTheme) {
+    // 3D Ribbon Wrap & Bow (Transforms Cube into a Magical Surprise Gift Box)
+    const ribbonMat = new THREE.MeshStandardMaterial({
+      color: 0xffe066,
+      emissive: 0xffaa00,
+      emissiveIntensity: 0.4,
+      metalness: 0.8,
+      roughness: 0.2
+    });
+    // Horizontal ribbon band around X
+    const ribX = new THREE.Mesh(new THREE.BoxGeometry(1.92, 0.32, 1.92), ribbonMat);
+    group.add(ribX);
+    // Vertical ribbon band around Z
+    const ribZ = new THREE.Mesh(new THREE.BoxGeometry(0.32, 1.92, 1.92), ribbonMat);
+    group.add(ribZ);
+
+    // Cute 3D Ribbon Bow knot on top
+    const knot = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), ribbonMat);
+    knot.position.set(0, 1.08, 0);
+    group.add(knot);
+
+    const loopL = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.07, 8, 16), ribbonMat);
+    loopL.position.set(-0.25, 1.15, 0);
+    loopL.rotation.y = Math.PI / 4;
+    group.add(loopL);
+
+    const loopR = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.07, 8, 16), ribbonMat);
+    loopR.position.set(0.25, 1.15, 0);
+    loopR.rotation.y = -Math.PI / 4;
+    group.add(loopR);
+  } else {
+    // Glowing amber hazard chevron stripes on 4 sides
+    const chevronMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+    const chevrons = [
+      { pos: [0, 0, 0.96], rot: [0, 0, 0] },
+      { pos: [0, 0, -0.96], rot: [0, Math.PI, 0] },
+      { pos: [0.96, 0, 0], rot: [0, Math.PI / 2, 0] },
+      { pos: [-0.96, 0, 0], rot: [0, -Math.PI / 2, 0] }
+    ];
+    chevrons.forEach(c => {
+      const ch = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.18, 0.02), chevronMat);
+      ch.position.set(...c.pos);
+      ch.rotation.set(...c.rot);
+      group.add(ch);
+    });
+  }
 
   // Anti-gravity repulsor emitter on bottom face
   const repulsor = new THREE.Mesh(
     new THREE.CylinderGeometry(0.55, 0.45, 0.08, 16),
-    new THREE.MeshStandardMaterial({ color: 0x222533, metalness: 0.8, roughness: 0.2 })
+    new THREE.MeshStandardMaterial({
+      color: isGirlsTheme ? 0x5a1e46 : 0x222533,
+      metalness: 0.8,
+      roughness: 0.2
+    })
   );
   repulsor.position.set(0, -0.96, 0);
   group.add(repulsor);
 
   const repulsorGlow = new THREE.Mesh(
     new THREE.CircleGeometry(0.42, 16),
-    new THREE.MeshBasicMaterial({ color: 0xff0044 })
+    new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xff70a6 : 0xff0044 })
   );
   repulsorGlow.position.set(0, -1.01, 0);
   repulsorGlow.rotation.x = Math.PI / 2;
@@ -414,27 +479,27 @@ function createHunterInterceptorDrone() {
   return group;
 }
 
-function createAntiGravSkyMine() {
+function createAntiGravSkyMine(isGirlsTheme = false) {
   const group = new THREE.Group();
 
-  // Dark Naval Armor Core Sphere
+  // Core Sphere (Frosted lavender/plum in Girls Theme, dark naval armor in default)
   const core = new THREE.Mesh(
     new THREE.SphereGeometry(0.78, 16, 16),
     new THREE.MeshStandardMaterial({
-      color: 0x1c1508,
-      emissive: 0x332200,
-      roughness: 0.4,
-      metalness: 0.85
+      color: isGirlsTheme ? 0x481845 : 0x1c1508,
+      emissive: isGirlsTheme ? 0x6e245a : 0x332200,
+      roughness: 0.35,
+      metalness: isGirlsTheme ? 0.6 : 0.85
     })
   );
   group.add(core);
 
-  // 6 Magnetic Detonation Spires along ±X, ±Y, ±Z
+  // 6 Detonation Spires along ±X, ±Y, ±Z (Golden Star Points in Girls Theme)
   const spikeMat = new THREE.MeshStandardMaterial({
-    color: 0x2b2210,
-    emissive: 0xffaa00,
-    emissiveIntensity: 0.6,
-    metalness: 0.8
+    color: isGirlsTheme ? 0xffe066 : 0x2b2210,
+    emissive: isGirlsTheme ? 0xffaa00 : 0xffaa00,
+    emissiveIntensity: isGirlsTheme ? 0.75 : 0.6,
+    metalness: 0.85
   });
   const dirs = [
     { pos: [0.95, 0, 0], rot: [0, 0, -Math.PI / 2] },
@@ -445,7 +510,10 @@ function createAntiGravSkyMine() {
     { pos: [0, 0, -0.95], rot: [-Math.PI / 2, 0, 0] }
   ];
   dirs.forEach(d => {
-    const spike = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.55, 6), spikeMat);
+    const spike = new THREE.Mesh(
+      isGirlsTheme ? new THREE.OctahedronGeometry(0.24) : new THREE.ConeGeometry(0.16, 0.55, 6),
+      spikeMat
+    );
     spike.position.set(...d.pos);
     spike.rotation.set(...d.rot);
     group.add(spike);
@@ -454,20 +522,20 @@ function createAntiGravSkyMine() {
   // Dual Counter-Rotating Gyroscopic Rings
   const ring1 = new THREE.Mesh(
     new THREE.TorusGeometry(1.2, 0.05, 8, 28),
-    new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+    new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xffa0bc : 0xffaa00 })
   );
   const ring2 = new THREE.Mesh(
     new THREE.TorusGeometry(1.4, 0.04, 8, 28),
-    new THREE.MeshBasicMaterial({ color: 0xff7700 })
+    new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xff70a6 : 0xff7700 })
   );
   ring2.rotation.x = Math.PI / 2;
   group.add(ring1);
   group.add(ring2);
 
-  // Flashing Danger Strobe Beacon on top
+  // Strobe Beacon on top
   const strobe = new THREE.Mesh(
     new THREE.SphereGeometry(0.24, 12, 12),
-    new THREE.MeshBasicMaterial({ color: 0xffea00 })
+    new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xfff0f6 : 0xffea00 })
   );
   strobe.position.set(0, 0.9, 0);
   group.add(strobe);
@@ -815,12 +883,12 @@ const CrystalCollectorGame = () => {
     const maxStamina = currentSaved.upgrades?.maxStamina || 100;
     const sprintSpeedMult = currentSaved.upgrades?.sprintMultiplier || 1.8;
     const baseMagnetRadius = currentSaved.upgrades?.magnetRadius || 0;
+    const isGirlsTheme = (currentSaved.activeTheme || 'default') === 'girls';
 
     // Scene & Camera
     scene = new THREE.Scene();
-    const biomeEnv = BiomeGenerator.buildBiome(level, scene);
+    const biomeEnv = BiomeGenerator.buildBiome(level, scene, isGirlsTheme);
     const { biome, decorations, solidColliders, jumpPads, hazardZones, platforms } = biomeEnv;
-    const isGirlsTheme = (currentSaved.activeTheme || 'default') === 'girls';
 
     if (isGirlsTheme) {
       scene.background = new THREE.Color(0x281028);
@@ -853,11 +921,17 @@ const CrystalCollectorGame = () => {
     const particleManager = new ParticleManager(scene);
 
     // Dynamic Environmental Lighting (Ambient Fill + Hemisphere + Directional Soft Shadows)
-    // Soft ambient fill light ensures all cast shadows remain light, luminous, and clearly visible underneath
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.62);
+    const ambientLight = new THREE.AmbientLight(
+      isGirlsTheme ? 0xfff0f5 : 0xffffff,
+      isGirlsTheme ? 0.75 : 0.62
+    );
     scene.add(ambientLight);
 
-    const hemiLight = new THREE.HemisphereLight(biome.skyColor, 0x48586c, 0.85);
+    const hemiLight = new THREE.HemisphereLight(
+      isGirlsTheme ? 0xe0aaff : biome.skyColor,
+      isGirlsTheme ? 0xff99bb : 0x48586c,
+      0.85
+    );
     scene.add(hemiLight);
 
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.10);
@@ -879,16 +953,21 @@ const CrystalCollectorGame = () => {
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(76, 76),
       new THREE.MeshStandardMaterial({
-        color: biome.groundColor,
-        roughness: 0.75,
-        metalness: 0.08
+        color: isGirlsTheme ? 0x381434 : biome.groundColor,
+        roughness: isGirlsTheme ? 0.55 : 0.75,
+        metalness: isGirlsTheme ? 0.18 : 0.08
       })
     );
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     scene.add(ground);
 
-    const grid = new THREE.GridHelper(76, 38, 0x555555, 0x222222);
+    const grid = new THREE.GridHelper(
+      76,
+      38,
+      isGirlsTheme ? 0xff85b2 : 0x555555,
+      isGirlsTheme ? 0x6e2055 : 0x222222
+    );
     grid.position.y = 0.01;
     scene.add(grid);
 
@@ -897,8 +976,8 @@ const CrystalCollectorGame = () => {
       const wall = new THREE.Mesh(
         new THREE.BoxGeometry(76, 5, 1),
         new THREE.MeshStandardMaterial({
-          color: biome.wallColor,
-          roughness: 0.7,
+          color: isGirlsTheme ? 0x521e48 : biome.wallColor,
+          roughness: isGirlsTheme ? 0.5 : 0.7,
           metalness: 0.2
         })
       );
@@ -964,7 +1043,7 @@ const CrystalCollectorGame = () => {
     // Spawn Powerups (Shield 🛡️, Magnet 🧲, Chrono Slow-Mo ⏳)
     const powerTypes = ['shield', 'magnet', 'slowmo'];
     powerTypes.forEach((type, idx) => {
-      const pGroup = createPowerupRelic(type);
+      const pGroup = createPowerupRelic(type, isGirlsTheme);
       const angle = (idx / 3) * Math.PI * 2 + 1.0;
       const r = 18 + Math.random() * 12;
       pGroup.position.set(Math.cos(angle) * r, 1.4, Math.sin(angle) * r);
@@ -993,9 +1072,9 @@ const CrystalCollectorGame = () => {
       const isCreature = isEasy ? false : (isMedium ? (i % 6 === 0) : (i % 3 === 0));
       let obsMesh;
       if (isCreature) {
-        obsMesh = createCyberCreature();
+        obsMesh = createCyberCreature(isGirlsTheme);
       } else {
-        obsMesh = createQuantumSentinelCube();
+        obsMesh = createQuantumSentinelCube(isGirlsTheme);
       }
 
       const angle = (i / obsCount) * Math.PI * 2;
@@ -1034,7 +1113,7 @@ const CrystalCollectorGame = () => {
           : (isMedium ? (p.width >= 14 || pIdx % 4 === 0) : (pIdx % 2 === 0 || p.width >= 12));
 
         if (shouldSpawnMine) {
-          const mineGroup = createAntiGravSkyMine();
+          const mineGroup = createAntiGravSkyMine(isGirlsTheme);
           const startX = p.x;
           const startY = p.topY + 1.2;
           const startZ = p.z;
@@ -1063,7 +1142,7 @@ const CrystalCollectorGame = () => {
 
     // Boss Titan on Level 10
     if (level === 10) {
-      bossInstance = new CrystalTitanBoss(scene);
+      bossInstance = new CrystalTitanBoss(scene, isGirlsTheme);
       setBossPylons(bossInstance.pylons.map(p => ({ id: p.id, name: p.name, activated: false })));
       setPylonsDeactivated(0);
     }
