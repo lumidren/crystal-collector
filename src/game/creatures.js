@@ -1,32 +1,33 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 
 /**
  * Procedural 3D Cyber Stalker Creature (Xenomorph Bio-Mecha)
  * High-poly procedural creature with segmented carapace, predatory jaws,
  * 4 crawling jointed legs, and a whipping scorpion stinger tail.
  */
-export function createCyberCreature() {
+export function createCyberCreature(isGirlsTheme = false) {
   const creature = new THREE.Group();
 
   const chitinMat = new THREE.MeshStandardMaterial({
-    color: 0x12151e,
+    color: isGirlsTheme ? 0x4a203f : 0x12151e,
     roughness: 0.25,
-    metalness: 0.85
+    metalness: isGirlsTheme ? 0.6 : 0.85
   });
 
   const armorPlateMat = new THREE.MeshStandardMaterial({
-    color: 0x1c2230,
-    emissive: 0x330011,
+    color: isGirlsTheme ? 0x6e285a : 0x1c2230,
+    emissive: isGirlsTheme ? 0xff70a6 : 0x330011,
+    emissiveIntensity: isGirlsTheme ? 0.35 : 0.2,
     roughness: 0.3,
-    metalness: 0.8
+    metalness: isGirlsTheme ? 0.5 : 0.8
   });
 
   const bioGlowMat = new THREE.MeshBasicMaterial({
-    color: 0xff0044
+    color: isGirlsTheme ? 0xff70a6 : 0xff0044
   });
 
   const eyeMat = new THREE.MeshBasicMaterial({
-    color: 0xff0022
+    color: isGirlsTheme ? 0x00ffff : 0xff0022
   });
 
   // 1. Central Armored Thorax
@@ -47,11 +48,13 @@ export function createCyberCreature() {
   dorsalShell.rotation.x = -Math.PI / 3;
   creature.add(dorsalShell);
 
-  // 3 Bio-Spines along the back
+  // 3 Bio-Spines along the back (Blossom petal fins in Girls Theme)
   [-0.3, 0.0, 0.3].forEach((zOffset, idx) => {
     const spine = new THREE.Mesh(
-      new THREE.ConeGeometry(0.08, 0.45, 4),
-      bioGlowMat
+      new THREE.ConeGeometry(isGirlsTheme ? 0.12 : 0.08, isGirlsTheme ? 0.5 : 0.45, 4),
+      isGirlsTheme
+        ? new THREE.MeshStandardMaterial({ color: 0xffa5c2, emissive: 0xff69b4, emissiveIntensity: 0.6 })
+        : bioGlowMat
     );
     spine.position.set(0, 0.95 + idx * 0.06, zOffset);
     spine.rotation.x = -0.4;
@@ -62,8 +65,8 @@ export function createCyberCreature() {
   const heartCore = new THREE.Mesh(
     new THREE.OctahedronGeometry(0.28),
     new THREE.MeshStandardMaterial({
-      color: 0xff0033,
-      emissive: 0xff1100,
+      color: isGirlsTheme ? 0xff69b4 : 0xff0033,
+      emissive: isGirlsTheme ? 0xff1493 : 0xff1100,
       emissiveIntensity: 2.0,
       roughness: 0.1
     })
@@ -71,7 +74,7 @@ export function createCyberCreature() {
   heartCore.position.set(0, 0.55, 0);
   creature.add(heartCore);
 
-  // 2. Predatory Alien Head & Jaws
+  // 2. Head & Jaws / Antennae
   const headGroup = new THREE.Group();
   headGroup.position.set(0, 0.65, 0.75);
 
@@ -83,20 +86,20 @@ export function createCyberCreature() {
   cranium.rotation.x = Math.PI / 2;
   headGroup.add(cranium);
 
-  // Dual Bioluminescent Compound Eyes
-  const eyeLeft = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 10), eyeMat);
+  // Dual Bioluminescent Compound Eyes (Sparkling anime cyan in Girls Theme)
+  const eyeLeft = new THREE.Mesh(new THREE.SphereGeometry(isGirlsTheme ? 0.14 : 0.12, 10, 10), eyeMat);
   eyeLeft.position.set(-0.24, 0.16, 0.28);
-  const eyeRight = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 10), eyeMat);
+  const eyeRight = new THREE.Mesh(new THREE.SphereGeometry(isGirlsTheme ? 0.14 : 0.12, 10, 10), eyeMat);
   eyeRight.position.set(0.24, 0.16, 0.28);
   headGroup.add(eyeLeft);
   headGroup.add(eyeRight);
 
-  // Articulated Razor Mandibles
+  // Mandibles / Ribbon Antennae
   const mandibleMat = new THREE.MeshStandardMaterial({
-    color: 0x30050e,
-    emissive: 0xff0022,
+    color: isGirlsTheme ? 0xff70a6 : 0x30050e,
+    emissive: isGirlsTheme ? 0xff2a85 : 0xff0022,
     emissiveIntensity: 0.5,
-    metalness: 0.9
+    metalness: isGirlsTheme ? 0.4 : 0.9
   });
   const leftMandible = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.4, 4), mandibleMat);
   leftMandible.position.set(-0.2, -0.15, 0.45);
@@ -176,12 +179,12 @@ export function createCyberCreature() {
     currentParent = segGroup;
   }
 
-  // Energy Detonation Stinger Needle at tail tip
+  // Energy Detonation Stinger Needle at tail tip (Golden star stinger in Girls Theme)
   const stinger = new THREE.Mesh(
-    new THREE.ConeGeometry(0.1, 0.45, 4),
+    isGirlsTheme ? new THREE.OctahedronGeometry(0.18) : new THREE.ConeGeometry(0.1, 0.45, 4),
     new THREE.MeshStandardMaterial({
-      color: 0xff0033,
-      emissive: 0xff0044,
+      color: isGirlsTheme ? 0xffe066 : 0xff0033,
+      emissive: isGirlsTheme ? 0xffaa00 : 0xff0044,
       emissiveIntensity: 2.2,
       metalness: 0.9
     })
