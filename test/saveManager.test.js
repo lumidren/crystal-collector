@@ -55,6 +55,8 @@ test('saveManager - loadGameState returns complete default state when empty', ()
   assert.equal(state.showFPS, true);
   assert.equal(state.graphicsQuality, 'ultra');
   assert.equal(state.difficulty, 'hard');
+  assert.equal(state.unlockedGirlsTheme, false);
+  assert.equal(state.activeTheme, 'default');
 });
 
 test('saveManager - saveGameState and loadGameState persist round-trip', () => {
@@ -67,6 +69,8 @@ test('saveManager - saveGameState and loadGameState persist round-trip', () => {
     currentPet: 'dog',
     ownedPets: ['dog'],
     unlockedLevels: 5,
+    unlockedGirlsTheme: true,
+    activeTheme: 'girls',
     upgrades: {
       maxHearts: 4,
       maxStamina: 125,
@@ -87,6 +91,8 @@ test('saveManager - saveGameState and loadGameState persist round-trip', () => {
   assert.equal(loaded.currentPet, 'dog');
   assert.ok(loaded.ownedPets.includes('dog'));
   assert.equal(loaded.unlockedLevels, 5);
+  assert.equal(loaded.unlockedGirlsTheme, true);
+  assert.equal(loaded.activeTheme, 'girls');
   assert.equal(loaded.upgrades.maxHearts, 4);
   assert.equal(loaded.upgrades.maxStamina, 125);
   assert.equal(loaded.upgrades.magnetRadius, 3);
