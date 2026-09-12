@@ -304,3 +304,56 @@ test('physicsMath - Quantum Sentinel Cube hover altitude guarantees zero clippin
   assert.equal(sentinel.vz, 1.5, 'Sentinel velocity Z must reflect');
 });
 
+test('physicsMath - Level 10 Titan Boss beacon triggers and shield collapse sequence', () => {
+  const pylonCoords = [
+    { x: -16, z: -16, activated: false },
+    { x: 16, z: 16, activated: false },
+    { x: -16, z: 16, activated: false },
+    { x: 16, z: -16, activated: false }
+  ];
+
+  let deactivated = 0;
+  let shieldBroken = false;
+
+  const stepOnPylon = (playerPos) => {
+    pylonCoords.forEach(p => {
+      if (!p.activated) {
+        const d = Math.hypot(playerPos.x - p.x, playerPos.z - p.z);
+        if (d < 2.8) {
+          p.activated = true;
+          deactivated++;
+          if (deactivated === 4) {
+            shieldBroken = true;
+          }
+        }
+      }
+    });
+  };
+
+  // Player in center (0, 0)
+  stepOnPylon({ x: 0, z: 0 });
+  assert.equal(deactivated, 0, 'No pylons triggered in center');
+  assert.equal(shieldBroken, false);
+
+  // Player visits NW beacon (-16, -16)
+  stepOnPylon({ x: -15.5, z: -15.5 });
+  assert.equal(deactivated, 1, 'NW beacon activated');
+  assert.equal(pylonCoords[0].activated, true);
+  assert.equal(shieldBroken, false);
+
+  // Player visits SE beacon (16, 16)
+  stepOnPylon({ x: 16.2, z: 15.9 });
+  assert.equal(deactivated, 2, 'SE beacon activated');
+  assert.equal(shieldBroken, false);
+
+  // Player visits SW beacon (-16, 16)
+  stepOnPylon({ x: -16.0, z: 16.0 });
+  assert.equal(deactivated, 3, 'SW beacon activated');
+  assert.equal(shieldBroken, false);
+
+  // Player visits NE beacon (16, -16)
+  stepOnPylon({ x: 15.8, z: -16.1 });
+  assert.equal(deactivated, 4, 'All 4 beacons activated');
+  assert.equal(shieldBroken, true, 'Shield broken after all 4 beacons secured!');
+});
+
