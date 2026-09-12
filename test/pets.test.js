@@ -70,3 +70,22 @@ test('pets - Cyber Drone, Magic Pixie, and Fire Sprite magnet reaches and access
   assert.ok(sprite.ember);
   sprite.destroy();
 });
+
+test('pets - Sugar Bunny instantiates with floppy ears, fluttering wings, and 12m super-magnet reach', () => {
+  const scene = new THREE.Scene();
+  const bunny = new PetCompanion('sugar_bunny', scene);
+
+  assert.equal(bunny.petId, 'sugar_bunny');
+  assert.equal(bunny.magnetReach, 12.0, 'Sugar Bunny must provide 12m magnet reach');
+  assert.equal(bunny.wings.length, 2, 'Sugar Bunny must have dual fluttering wings');
+  assert.ok(bunny.bunnyEars && bunny.bunnyEars.length === 2, 'Sugar Bunny must have long floppy ears');
+  assert.ok(bunny.sugarHeart, 'Sugar Bunny must have floating starlight heart');
+
+  // Test animation update
+  bunny.update(0.016, 1.0, new THREE.Vector3(0, 0, 0));
+  assert.notEqual(bunny.wings[0].mesh.rotation.z, 0, 'Wings must flutter');
+  assert.notEqual(bunny.sugarHeart.rotation.y, 0, 'Heart must spin');
+
+  bunny.destroy();
+  assert.ok(!scene.children.includes(bunny.group));
+});
