@@ -25,6 +25,7 @@ export const InGameHUD = ({
   onOpenAchievements,
   onOpenGuide
 }) => {
+  const isGirlsTheme = (savedData?.activeTheme || 'default') === 'girls';
   const baseMaxHearts = savedData?.upgrades?.maxHearts || 3;
   const totalDisplaySlots = Math.max(baseMaxHearts, hearts);
   const maxStamina = savedData?.upgrades?.maxStamina || 100;
@@ -47,7 +48,7 @@ export const InGameHUD = ({
   };
 
   return (
-    <div className="hud-container">
+    <div className={`hud-container ${isGirlsTheme ? 'theme-girls' : ''}`}>
       {/* Aiming Reticle in Center */}
       <div className="aim-reticle" />
 
@@ -56,7 +57,7 @@ export const InGameHUD = ({
         {/* Top-Left: Level info, Hearts, Stamina */}
         <div className="hud-panel" style={{ padding: '14px 18px', minWidth: '220px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-            <div style={{ fontSize: '15px', fontWeight: 800, color: '#00f0ff' }}>
+            <div style={{ fontSize: '15px', fontWeight: 800, color: isGirlsTheme ? '#ff70a6' : '#00f0ff' }}>
               {level === 10 ? '👑 LEVEL 10: CRYSTAL TITAN' : `LEVEL ${level}: ${biomeData.name.toUpperCase()}`}
             </div>
             <span
@@ -89,21 +90,24 @@ export const InGameHUD = ({
               [...Array(totalDisplaySlots)].map((_, i) => (
                 <span
                   key={i}
+                  className={isGirlsTheme && i < hearts ? 'hud-heart-icon' : ''}
                   style={{
                     opacity: i < hearts ? 1 : 0.22,
-                    filter: i < hearts ? 'drop-shadow(0 0 6px #ff3366)' : 'none',
+                    filter: i < hearts ? (isGirlsTheme ? 'drop-shadow(0 0 8px #ff69b4)' : 'drop-shadow(0 0 6px #ff3366)') : 'none',
                     marginRight: '2px',
                     lineHeight: '1'
                   }}
                   title={i >= baseMaxHearts ? 'Bonus Heart' : 'Vital Heart'}
                 >
-                  ❤️
+                  {isGirlsTheme ? '💖' : '❤️'}
                 </span>
               ))
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ filter: 'drop-shadow(0 0 8px #ff3366)', fontSize: '22px' }}>❤️</span>
-                <span style={{ fontSize: '18px', fontWeight: 900, color: '#ff4d6d', textShadow: '0 0 8px rgba(255, 51, 102, 0.6)' }}>
+                <span style={{ filter: isGirlsTheme ? 'drop-shadow(0 0 8px #ff69b4)' : 'drop-shadow(0 0 8px #ff3366)', fontSize: '22px' }}>
+                  {isGirlsTheme ? '💖' : '❤️'}
+                </span>
+                <span style={{ fontSize: '18px', fontWeight: 900, color: isGirlsTheme ? '#ff70a6' : '#ff4d6d', textShadow: isGirlsTheme ? '0 0 8px rgba(255, 112, 166, 0.6)' : '0 0 8px rgba(255, 51, 102, 0.6)' }}>
                   × {hearts}
                 </span>
               </div>
@@ -113,14 +117,14 @@ export const InGameHUD = ({
                 style={{
                   fontSize: '11px',
                   fontWeight: 800,
-                  color: '#ff4d6d',
-                  background: 'rgba(255, 51, 102, 0.18)',
-                  border: '1px solid rgba(255, 51, 102, 0.4)',
+                  color: isGirlsTheme ? '#ff70a6' : '#ff4d6d',
+                  background: isGirlsTheme ? 'rgba(255, 112, 166, 0.2)' : 'rgba(255, 51, 102, 0.18)',
+                  border: isGirlsTheme ? '1px solid rgba(255, 112, 166, 0.5)' : '1px solid rgba(255, 51, 102, 0.4)',
                   borderRadius: '8px',
                   padding: '1px 6px',
                   marginLeft: '4px',
                   letterSpacing: '0.5px',
-                  textShadow: '0 0 6px rgba(255, 51, 102, 0.5)'
+                  textShadow: isGirlsTheme ? '0 0 6px rgba(255, 112, 166, 0.6)' : '0 0 6px rgba(255, 51, 102, 0.5)'
                 }}
               >
                 +{hearts - baseMaxHearts} EXTRA
@@ -139,8 +143,12 @@ export const InGameHUD = ({
                 style={{
                   width: `${(stamina / maxStamina) * 100}%`,
                   height: '100%',
-                  background: feverTime > 0 ? 'linear-gradient(90deg, #ff00ff, #00ffff)' : stamina > 30 ? 'linear-gradient(90deg, #00ff88, #00f0ff)' : '#ff3344',
-                  boxShadow: stamina > 30 ? '0 0 8px #00ff88' : '0 0 8px #ff3344',
+                  background: feverTime > 0
+                    ? 'linear-gradient(90deg, #ff00ff, #00ffff)'
+                    : isGirlsTheme
+                      ? 'linear-gradient(90deg, #ff70a6, #e0aaff)'
+                      : stamina > 30 ? 'linear-gradient(90deg, #00ff88, #00f0ff)' : '#ff3344',
+                  boxShadow: isGirlsTheme ? '0 0 8px #ff70a6' : stamina > 30 ? '0 0 8px #00ff88' : '0 0 8px #ff3344',
                   transition: 'width 0.1s linear'
                 }}
               />
@@ -214,11 +222,17 @@ export const InGameHUD = ({
           ) : (
             <div>
               <div style={{ fontSize: '14px', fontWeight: 800, color: '#e0e6ed', display: 'flex', justifyContent: 'space-between' }}>
-                <span>💎 CRYSTALS GOAL</span>
-                <span style={{ color: '#00f0ff' }}>{score} / {targetCrystals}</span>
+                <span>{isGirlsTheme ? '🌸 ENCHANTED CRYSTALS' : '💎 CRYSTALS GOAL'}</span>
+                <span style={{ color: isGirlsTheme ? '#ff70a6' : '#00f0ff' }}>{score} / {targetCrystals}</span>
               </div>
               <div className="progress-track">
-                <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
+                <div
+                  className="progress-fill"
+                  style={{
+                    width: `${progressPercent}%`,
+                    background: isGirlsTheme ? 'linear-gradient(90deg, #ff70a6, #e0aaff)' : undefined
+                  }}
+                />
               </div>
             </div>
           )}
