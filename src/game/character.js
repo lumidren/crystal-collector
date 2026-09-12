@@ -50,6 +50,17 @@ export const CHARACTER_ROSTER = [
     desc: 'Airborne warrior equipped with swept-back photonic energy wings and high-altitude thruster flight heels.',
     perk: '🪽 Extended Air Glide & Wing Thruster Lift',
     stats: { speedMultiplier: 1.12, jumpBonus: 3.0, extraHearts: 0, magnetBonus: 2.0, airGlide: true }
+  },
+  {
+    id: 'magical_rue',
+    name: 'Magical Rue',
+    title: 'Starlight Dreamer',
+    icon: '✨',
+    cost: 0,
+    isSecret: true,
+    desc: 'Magical maiden with iridescent fairy wings, starlight crown, flowing twin ribbons, and an enchanted star wand.',
+    perk: '💖 Fairy Wings Glide, +1 Extra Heart & 4m Starlight Magnet',
+    stats: { speedMultiplier: 1.16, jumpBonus: 3.5, extraHearts: 1, magnetBonus: 4.0, airGlide: true }
   }
 ];
 
@@ -75,32 +86,33 @@ export class CyberRunner {
     this.animatedParts = {};
 
     const pCol = parseInt(this.colorHex.replace('#', '0x'));
+    const isGirls = this.characterType === 'magical_rue';
 
     this.undersuitMat = new THREE.MeshStandardMaterial({
-      color: this.characterType === 'shadow_shinobi' ? 0x0a0b12 : 0x12131c,
-      roughness: 0.7,
-      metalness: 0.2
+      color: this.characterType === 'shadow_shinobi' ? 0x0a0b12 : isGirls ? 0xfff0f6 : 0x12131c,
+      roughness: isGirls ? 0.4 : 0.7,
+      metalness: isGirls ? 0.1 : 0.2
     });
 
     this.armorMat = new THREE.MeshStandardMaterial({
-      color: pCol,
-      roughness: this.characterType === 'titan_mech' ? 0.45 : 0.28,
-      metalness: this.characterType === 'titan_mech' ? 0.85 : 0.65
+      color: isGirls ? 0xff69b4 : pCol,
+      roughness: this.characterType === 'titan_mech' ? 0.45 : isGirls ? 0.25 : 0.28,
+      metalness: this.characterType === 'titan_mech' ? 0.85 : isGirls ? 0.35 : 0.65
     });
 
     this.trimMat = new THREE.MeshStandardMaterial({
-      color: 0x222533,
-      roughness: 0.35,
-      metalness: 0.8
+      color: isGirls ? 0xffd700 : 0x222533,
+      roughness: isGirls ? 0.2 : 0.35,
+      metalness: isGirls ? 0.9 : 0.8
     });
 
     this.visorMat = new THREE.MeshPhysicalMaterial({
-      color: this.characterType === 'shadow_shinobi' ? 0xff0044 : this.characterType === 'void_sorcerer' ? 0xaa00ff : 0x00e1ff,
-      emissive: this.characterType === 'shadow_shinobi' ? 0xaa0022 : this.characterType === 'void_sorcerer' ? 0x6600aa : 0x004466,
-      emissiveIntensity: 0.6,
+      color: this.characterType === 'shadow_shinobi' ? 0xff0044 : this.characterType === 'void_sorcerer' ? 0xaa00ff : isGirls ? 0xff80bf : 0x00e1ff,
+      emissive: this.characterType === 'shadow_shinobi' ? 0xaa0022 : this.characterType === 'void_sorcerer' ? 0x6600aa : isGirls ? 0xff3399 : 0x004466,
+      emissiveIntensity: isGirls ? 0.85 : 0.6,
       roughness: 0.05,
-      metalness: 0.9,
-      transmission: 0.35,
+      metalness: isGirls ? 0.2 : 0.9,
+      transmission: isGirls ? 0.65 : 0.35,
       transparent: true,
       opacity: 0.9,
       clearcoat: 1.0,
@@ -108,22 +120,22 @@ export class CyberRunner {
     });
 
     this.coreMat = new THREE.MeshPhysicalMaterial({
-      color: this.characterType === 'titan_mech' ? 0xff4400 : this.characterType === 'void_sorcerer' ? 0xcc00ff : 0x00ffff,
-      emissive: this.characterType === 'titan_mech' ? 0xff2200 : this.characterType === 'void_sorcerer' ? 0x9900ff : 0x00d4ff,
-      emissiveIntensity: 1.4,
+      color: this.characterType === 'titan_mech' ? 0xff4400 : this.characterType === 'void_sorcerer' ? 0xcc00ff : isGirls ? 0xff1493 : 0x00ffff,
+      emissive: this.characterType === 'titan_mech' ? 0xff2200 : this.characterType === 'void_sorcerer' ? 0x9900ff : isGirls ? 0xff007f : 0x00d4ff,
+      emissiveIntensity: 1.6,
       roughness: 0.1,
       metalness: 0.2,
       transmission: 0.6
     });
 
     this.thrusterMat = new THREE.MeshStandardMaterial({
-      color: 0x2a2a35,
+      color: isGirls ? 0xffe4e6 : 0x2a2a35,
       roughness: 0.3,
       metalness: 0.85
     });
 
     this.exhaustGlowMat = new THREE.MeshBasicMaterial({
-      color: this.characterType === 'titan_mech' ? 0xff5500 : this.characterType === 'void_sorcerer' ? 0xaa00ff : 0x00f0ff
+      color: this.characterType === 'titan_mech' ? 0xff5500 : this.characterType === 'void_sorcerer' ? 0xaa00ff : isGirls ? 0xff69b4 : 0x00f0ff
     });
 
     this.pivotGroup = new THREE.Group();
@@ -141,24 +153,26 @@ export class CyberRunner {
       this.buildVoidSorcerer();
     } else if (this.characterType === 'neon_valkyrie') {
       this.buildNeonValkyrie();
+    } else if (this.characterType === 'magical_rue') {
+      this.buildMagicalRue();
     } else {
       this.buildCyberRunner();
     }
 
     this.leftArmGroup = this.createArm(-1);
-    this.leftArmGroup.position.set(this.characterType === 'titan_mech' ? -0.66 : -0.52, 0.42, 0);
+    this.leftArmGroup.position.set(this.characterType === 'titan_mech' ? -0.66 : isGirls ? -0.44 : -0.52, 0.42, 0);
     this.torsoGroup.add(this.leftArmGroup);
 
     this.rightArmGroup = this.createArm(1);
-    this.rightArmGroup.position.set(this.characterType === 'titan_mech' ? 0.66 : 0.52, 0.42, 0);
+    this.rightArmGroup.position.set(this.characterType === 'titan_mech' ? 0.66 : isGirls ? 0.44 : 0.52, 0.42, 0);
     this.torsoGroup.add(this.rightArmGroup);
 
     this.leftLegGroup = this.createLeg(-1);
-    this.leftLegGroup.position.set(this.characterType === 'titan_mech' ? -0.28 : -0.22, -0.45, 0);
+    this.leftLegGroup.position.set(this.characterType === 'titan_mech' ? -0.28 : isGirls ? -0.18 : -0.22, -0.45, 0);
     this.torsoGroup.add(this.leftLegGroup);
 
     this.rightLegGroup = this.createLeg(1);
-    this.rightLegGroup.position.set(this.characterType === 'titan_mech' ? 0.28 : 0.22, -0.45, 0);
+    this.rightLegGroup.position.set(this.characterType === 'titan_mech' ? 0.28 : isGirls ? 0.18 : 0.22, -0.45, 0);
     this.torsoGroup.add(this.rightLegGroup);
   }
 
@@ -508,6 +522,209 @@ export class CyberRunner {
     this.setupHatMount();
   }
 
+  buildMagicalRue() {
+    // 1. Bodice & Peplum Layered Skirt
+    const bodiceGeom = new THREE.CylinderGeometry(0.3, 0.24, 0.9, 16);
+    this.torso = new THREE.Mesh(bodiceGeom, this.undersuitMat);
+    this.torso.castShadow = true;
+    this.torsoGroup.add(this.torso);
+
+    const corsetGeom = new THREE.BoxGeometry(0.56, 0.52, 0.32);
+    this.chest = new THREE.Mesh(corsetGeom, this.armorMat);
+    this.chest.position.set(0, 0.14, 0.06);
+    this.chest.castShadow = true;
+    this.torsoGroup.add(this.chest);
+
+    // Glowing Heart Core
+    const heartCore = new THREE.Mesh(new THREE.OctahedronGeometry(0.14), this.coreMat);
+    heartCore.position.set(0, 0.18, 0.24);
+    heartCore.rotation.x = Math.PI / 4;
+    this.arcReactor = heartCore;
+    this.torsoGroup.add(heartCore);
+
+    // Golden waist belt
+    const beltGeom = new THREE.CylinderGeometry(0.28, 0.28, 0.1, 16);
+    const belt = new THREE.Mesh(beltGeom, this.trimMat);
+    belt.position.set(0, -0.32, 0);
+    this.torsoGroup.add(belt);
+
+    // Flared Peplum Skirt (Cute layered fairy skirt)
+    const skirtMat = new THREE.MeshStandardMaterial({
+      color: 0xff70a6,
+      roughness: 0.35,
+      metalness: 0.2,
+      side: THREE.DoubleSide
+    });
+    const skirtGeom = new THREE.ConeGeometry(0.56, 0.38, 18, 1, true);
+    const skirt = new THREE.Mesh(skirtGeom, skirtMat);
+    skirt.position.set(0, -0.38, 0);
+    skirt.rotation.x = Math.PI;
+    this.torsoGroup.add(skirt);
+
+    // Petticoat lace frill underneath
+    const frillMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.5,
+      side: THREE.DoubleSide
+    });
+    const frillGeom = new THREE.ConeGeometry(0.62, 0.2, 18, 1, true);
+    const frill = new THREE.Mesh(frillGeom, frillMat);
+    frill.position.set(0, -0.46, 0);
+    frill.rotation.x = Math.PI;
+    this.torsoGroup.add(frill);
+
+    // Waist ribbon bow at back
+    const bowGroup = new THREE.Group();
+    bowGroup.position.set(0, -0.32, -0.28);
+    [-0.1, 0.1].forEach(bx => {
+      const loop = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.03, 8, 16), this.trimMat);
+      loop.position.x = bx;
+      loop.rotation.y = Math.PI / 2;
+      bowGroup.add(loop);
+    });
+    [-0.06, 0.06].forEach(tx => {
+      const ribbonTail = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.35, 0.02), this.trimMat);
+      ribbonTail.position.set(tx, -0.18, 0.02);
+      ribbonTail.rotation.z = Math.sign(tx) * 0.2;
+      bowGroup.add(ribbonTail);
+    });
+    this.torsoGroup.add(bowGroup);
+
+    // 2. Iridescent Fairy Wings
+    const wingMount = new THREE.Group();
+    wingMount.position.set(0, 0.22, -0.2);
+
+    const fairyWingMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffb7eb,
+      emissive: 0xff69b4,
+      emissiveIntensity: 0.8,
+      roughness: 0.1,
+      metalness: 0.1,
+      transmission: 0.7,
+      transparent: true,
+      opacity: 0.85,
+      clearcoat: 1.0,
+      side: THREE.DoubleSide
+    });
+
+    const createFairyWing = (side) => {
+      const wingGroup = new THREE.Group();
+
+      // Upper primary wing
+      const upperWing = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.85, 8), fairyWingMat);
+      upperWing.scale.set(1.5, 1, 0.2);
+      upperWing.position.set(side * 0.45, 0.38, 0);
+      upperWing.rotation.z = side * -0.95;
+      upperWing.rotation.x = -0.15;
+      wingGroup.add(upperWing);
+
+      // Lower secondary wing
+      const lowerWing = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.55, 8), fairyWingMat);
+      lowerWing.scale.set(1.4, 1, 0.2);
+      lowerWing.position.set(side * 0.35, -0.05, 0);
+      lowerWing.rotation.z = side * -1.55;
+      lowerWing.rotation.x = -0.1;
+      wingGroup.add(lowerWing);
+
+      // Wing vein filament
+      const vein = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.01, 0.9, 8), this.trimMat);
+      vein.position.set(side * 0.42, 0.36, 0.02);
+      vein.rotation.z = side * -0.95;
+      wingGroup.add(vein);
+
+      return wingGroup;
+    };
+
+    const fairyLeftWing = createFairyWing(-1);
+    const fairyRightWing = createFairyWing(1);
+    wingMount.add(fairyLeftWing, fairyRightWing);
+    this.torsoGroup.add(wingMount);
+    this.animatedParts.fairyLeftWing = fairyLeftWing;
+    this.animatedParts.fairyRightWing = fairyRightWing;
+
+    // 3. Head & Magical Hair with Twin Ribbons & Crown
+    this.headGroup = new THREE.Group();
+    this.headGroup.position.set(0, 0.82, 0);
+    this.torsoGroup.add(this.headGroup);
+
+    const headMat = new THREE.MeshStandardMaterial({
+      color: 0xfff0f6,
+      roughness: 0.5,
+      metalness: 0.05
+    });
+    const headGeom = new THREE.SphereGeometry(0.33, 20, 20);
+    this.helmet = new THREE.Mesh(headGeom, headMat);
+    this.helmet.castShadow = true;
+    this.headGroup.add(this.helmet);
+
+    // Starlight Hair (Soft Lavender-Pink)
+    const hairMat = new THREE.MeshStandardMaterial({
+      color: 0xff99c8,
+      roughness: 0.4,
+      metalness: 0.15
+    });
+    const hairBase = new THREE.Mesh(new THREE.SphereGeometry(0.35, 18, 18), hairMat);
+    hairBase.position.set(0, 0.03, -0.05);
+    this.headGroup.add(hairBase);
+
+    // Front Bangs / Fringe
+    [-0.14, 0, 0.14].forEach(fx => {
+      const bang = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.26, 6), hairMat);
+      bang.position.set(fx, 0.18, 0.28);
+      bang.rotation.x = 0.4;
+      bang.rotation.z = fx * 0.3;
+      this.headGroup.add(bang);
+    });
+
+    // Twin Pigtails with Golden Ribbon Bows
+    const pigtailLeft = new THREE.Group();
+    pigtailLeft.position.set(-0.35, 0.15, -0.08);
+    const pigtailRight = new THREE.Group();
+    pigtailRight.position.set(0.35, 0.15, -0.08);
+
+    [pigtailLeft, pigtailRight].forEach((pg, idx) => {
+      const s = idx === 0 ? -1 : 1;
+      const bow = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.025, 8, 16), this.trimMat);
+      bow.rotation.y = Math.PI / 2;
+      pg.add(bow);
+
+      const ribbonTail = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.4, 0.015), this.trimMat);
+      ribbonTail.position.set(s * 0.04, -0.22, 0.04);
+      ribbonTail.rotation.z = s * 0.25;
+      pg.add(ribbonTail);
+
+      const hairStrand = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.72, 8), hairMat);
+      hairStrand.position.set(s * 0.05, -0.38, 0);
+      hairStrand.rotation.z = s * 0.15;
+      pg.add(hairStrand);
+    });
+
+    this.headGroup.add(pigtailLeft, pigtailRight);
+    this.animatedParts.pigtailLeft = pigtailLeft;
+    this.animatedParts.pigtailRight = pigtailRight;
+
+    // Starlight Tiara / Crown
+    const tiaraArch = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.025, 8, 16, Math.PI), this.trimMat);
+    tiaraArch.position.set(0, 0.26, 0.08);
+    tiaraArch.rotation.x = -Math.PI / 2;
+    this.headGroup.add(tiaraArch);
+
+    const crownGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.08), this.coreMat);
+    crownGem.position.set(0, 0.38, 0.22);
+    crownGem.rotation.x = Math.PI / 4;
+    this.headGroup.add(crownGem);
+
+    // Sparkly Magical Mask / Visor
+    const maskGeom = new THREE.SphereGeometry(0.32, 16, 16, 0, Math.PI, 0, Math.PI * 0.42);
+    this.visor = new THREE.Mesh(maskGeom, this.visorMat);
+    this.visor.position.set(0, 0.02, 0.08);
+    this.visor.rotation.x = -Math.PI / 2;
+    this.visor.rotation.z = Math.PI;
+    this.headGroup.add(this.visor);
+
+    this.setupHatMount();
+  }
+
   setupHatMount() {
     this.hatMount = new THREE.Group();
     this.hatMount.position.set(0, 0.38, 0);
@@ -517,9 +734,9 @@ export class CyberRunner {
 
   createArm(side) {
     const armGroup = new THREE.Group();
-    const scaleFactor = this.characterType === 'titan_mech' ? 1.35 : 1.0;
+    const scaleFactor = this.characterType === 'titan_mech' ? 1.35 : this.characterType === 'magical_rue' ? 0.85 : 1.0;
 
-    const pRadius = this.characterType === 'titan_mech' ? 0.26 : 0.18;
+    const pRadius = this.characterType === 'titan_mech' ? 0.26 : this.characterType === 'magical_rue' ? 0.14 : 0.18;
     const pauldronGeom = new THREE.SphereGeometry(pRadius, 12, 12, 0, Math.PI);
     const pauldron = new THREE.Mesh(pauldronGeom, this.armorMat);
     pauldron.position.set(0, 0.04, 0);
@@ -543,12 +760,53 @@ export class CyberRunner {
     glove.position.set(0, -0.78, 0);
     armGroup.add(glove);
 
+    if (this.characterType === 'magical_rue' && side === 1) {
+      const wand = new THREE.Group();
+      wand.position.set(0, -0.72, 0.12);
+      wand.rotation.x = Math.PI / 4;
+
+      const shaft = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.025, 0.025, 0.75, 12),
+        this.trimMat
+      );
+      wand.add(shaft);
+
+      const wandTop = new THREE.Group();
+      wandTop.position.set(0, 0.42, 0);
+
+      const ringMount = new THREE.Mesh(
+        new THREE.TorusGeometry(0.12, 0.03, 8, 16),
+        this.trimMat
+      );
+      wandTop.add(ringMount);
+
+      const starGem = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.11),
+        this.coreMat
+      );
+      wandTop.add(starGem);
+      this.animatedParts.starWandGem = starGem;
+
+      [-0.14, 0.14].forEach(sx => {
+        const winglet = new THREE.Mesh(
+          new THREE.ConeGeometry(0.05, 0.18, 4),
+          this.trimMat
+        );
+        winglet.position.set(sx, 0, 0);
+        winglet.rotation.z = -Math.sign(sx) * (Math.PI / 3);
+        wandTop.add(winglet);
+      });
+
+      wand.add(wandTop);
+      armGroup.add(wand);
+    }
+
     return armGroup;
   }
 
   createLeg(side) {
     const legGroup = new THREE.Group();
-    const scaleFactor = this.characterType === 'titan_mech' ? 1.35 : 1.0;
+    const scaleFactor = this.characterType === 'titan_mech' ? 1.35 : this.characterType === 'magical_rue' ? 0.88 : 1.0;
 
     const thighGeom = new THREE.CylinderGeometry(0.14 * scaleFactor, 0.12 * scaleFactor, 0.46, 12);
     const thigh = new THREE.Mesh(thighGeom, this.undersuitMat);
@@ -697,6 +955,27 @@ export class CyberRunner {
       this.animatedParts.rightWing.rotation.y = -wingFlap;
     }
 
+    if (this.animatedParts.fairyLeftWing && this.animatedParts.fairyRightWing) {
+      const flapSpeed = isGrounded ? (isMoving ? 14 : 7) : 24;
+      const flapAmp = isGrounded ? (isMoving ? 0.25 : 0.12) : 0.48;
+      const flutter = Math.sin(t * flapSpeed) * flapAmp;
+      this.animatedParts.fairyLeftWing.rotation.y = flutter;
+      this.animatedParts.fairyRightWing.rotation.y = -flutter;
+      this.animatedParts.fairyLeftWing.rotation.z = -0.18 - (isGrounded ? 0 : 0.12);
+      this.animatedParts.fairyRightWing.rotation.z = 0.18 + (isGrounded ? 0 : 0.12);
+    }
+
+    if (this.animatedParts.pigtailLeft && this.animatedParts.pigtailRight) {
+      const pigtailSway = Math.sin(t * 6) * 0.08 + (isMoving ? 0.1 : 0);
+      this.animatedParts.pigtailLeft.rotation.z = -pigtailSway;
+      this.animatedParts.pigtailRight.rotation.z = pigtailSway;
+    }
+
+    if (this.animatedParts.starWandGem) {
+      this.animatedParts.starWandGem.rotation.y += dt * 3.5;
+      this.animatedParts.starWandGem.rotation.z += dt * 2.0;
+    }
+
     const targetLean = isMoving ? (isSprinting ? 0.28 : 0.12) : 0;
     this.pivotGroup.rotation.x += (targetLean - this.pivotGroup.rotation.x) * Math.min(1, dt * 10);
 
@@ -724,7 +1003,7 @@ export class CyberRunner {
       }
 
       if (isSprinting && particleManager && Math.random() < 0.35) {
-        const thrustColor = feverTime > 0 ? 0xff00ff : this.characterType === 'titan_mech' ? 0xff4400 : 0x00f0ff;
+        const thrustColor = feverTime > 0 ? 0xff00ff : this.characterType === 'magical_rue' ? 0xff69b4 : this.characterType === 'titan_mech' ? 0xff4400 : 0x00f0ff;
         particleManager.createBurst(
           {
             x: this.group.position.x,
@@ -746,7 +1025,7 @@ export class CyberRunner {
       this.torsoGroup.position.y = 1.35;
 
       if (particleManager && Math.random() < 0.4) {
-        const thrustColor = feverTime > 0 ? 0xff00ff : this.characterType === 'titan_mech' ? 0xff4400 : 0x00f0ff;
+        const thrustColor = feverTime > 0 ? 0xff00ff : this.characterType === 'magical_rue' ? 0xff69b4 : this.characterType === 'titan_mech' ? 0xff4400 : 0x00f0ff;
         particleManager.createDust(
           {
             x: this.group.position.x,
