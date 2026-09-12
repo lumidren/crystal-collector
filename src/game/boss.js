@@ -2,8 +2,9 @@ import * as THREE from 'three';
 
 // Level 10 Guardian Boss: The Crystal Titan
 export class CrystalTitanBoss {
-  constructor(scene) {
+  constructor(scene, isGirlsTheme = false) {
     this.scene = scene;
+    this.isGirlsTheme = isGirlsTheme;
     this.group = new THREE.Group();
     this.pylons = [];
     this.pylonsActivated = 0;
@@ -21,17 +22,20 @@ export class CrystalTitanBoss {
   }
 
   buildBoss() {
-    // Central Hovering Torso
-    const torsoMat = new THREE.MeshPhongMaterial({ color: 0x2b0938, emissive: 0x4a0e4e });
+    // Central Hovering Torso (Amethyst & Rose-Gold in Girls Theme)
+    const torsoMat = new THREE.MeshPhongMaterial({
+      color: this.isGirlsTheme ? 0x481845 : 0x2b0938,
+      emissive: this.isGirlsTheme ? 0x6e245a : 0x4a0e4e
+    });
     const torso = new THREE.Mesh(new THREE.DodecahedronGeometry(2.5), torsoMat);
     torso.position.y = 4.5;
     this.group.add(torso);
 
-    // Glowing Power Core
+    // Glowing Power Core (Radiant Ruby Heart Core in Girls Theme)
     const coreMat = new THREE.MeshPhongMaterial({
-      color: 0xff0055,
-      emissive: 0xff0055,
-      emissiveIntensity: 0.9
+      color: this.isGirlsTheme ? 0xff1493 : 0xff0055,
+      emissive: this.isGirlsTheme ? 0xff0066 : 0xff0055,
+      emissiveIntensity: 1.1
     });
     this.core = new THREE.Mesh(new THREE.OctahedronGeometry(1.4), coreMat);
     this.core.position.y = 4.5;
@@ -40,24 +44,24 @@ export class CrystalTitanBoss {
     // Floating Head & Glowing Eye
     const head = new THREE.Mesh(
       new THREE.BoxGeometry(1.6, 1.4, 1.6),
-      new THREE.MeshPhongMaterial({ color: 0x1f002b })
+      new THREE.MeshPhongMaterial({ color: this.isGirlsTheme ? 0x3d143c : 0x1f002b })
     );
     head.position.y = 7;
     this.group.add(head);
 
     const eye = new THREE.Mesh(
       new THREE.SphereGeometry(0.35, 12, 12),
-      new THREE.MeshBasicMaterial({ color: 0xff0033 })
+      new THREE.MeshBasicMaterial({ color: this.isGirlsTheme ? 0xffe066 : 0xff0033 })
     );
     eye.position.set(0, 7, 0.85);
     this.group.add(eye);
 
-    // Rotating Laser Beam
+    // Rotating Laser Beam (Pink ribbon starlight beam in Girls Theme)
     const laserGeom = new THREE.CylinderGeometry(0.12, 0.12, 22, 8);
     const laserMat = new THREE.MeshBasicMaterial({
-      color: 0xff0033,
+      color: this.isGirlsTheme ? 0xff70a6 : 0xff0033,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.85
     });
     this.laserMesh = new THREE.Mesh(laserGeom, laserMat);
     this.laserMesh.rotation.z = Math.PI / 2;
@@ -66,14 +70,14 @@ export class CrystalTitanBoss {
     this.laserAnchor.add(this.laserMesh);
     this.group.add(this.laserAnchor);
 
-    // Force Field Shield
+    // Force Field Shield (Iridescent Magenta in Girls Theme)
     const shieldGeom = new THREE.SphereGeometry(4.5, 24, 24);
     this.shieldMat = new THREE.MeshPhongMaterial({
-      color: 0x9d4edd,
-      emissive: 0x7b2cbf,
-      emissiveIntensity: 0.6,
+      color: this.isGirlsTheme ? 0xff70a6 : 0x9d4edd,
+      emissive: this.isGirlsTheme ? 0x992266 : 0x7b2cbf,
+      emissiveIntensity: 0.65,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.38,
       side: THREE.DoubleSide
     });
     this.shieldMesh = new THREE.Mesh(shieldGeom, this.shieldMat);
@@ -91,20 +95,28 @@ export class CrystalTitanBoss {
       { x: 16, z: -16, name: 'North-East (NE)' }
     ];
 
+    const pylonColor = this.isGirlsTheme ? 0xff70a6 : 0x00f0ff;
+    const pylonEmissive = this.isGirlsTheme ? 0xff2a85 : 0x00d2ff;
+    const tetherColor = this.isGirlsTheme ? 0xff66b2 : 0xbd00ff;
+
     coords.forEach((c, idx) => {
       const pylonGroup = new THREE.Group();
 
-      // Pillar base (high-tech cyber column)
+      // Pillar base (Rose-gold marble in Girls Theme)
       const pillar = new THREE.Mesh(
         new THREE.CylinderGeometry(0.85, 1.3, 3.5, 12),
-        new THREE.MeshPhongMaterial({ color: 0x1a2035, emissive: 0x00f0ff, emissiveIntensity: 0.15 })
+        new THREE.MeshPhongMaterial({
+          color: this.isGirlsTheme ? 0x4a2040 : 0x1a2035,
+          emissive: pylonColor,
+          emissiveIntensity: 0.2
+        })
       );
       pillar.position.y = 1.75;
       pylonGroup.add(pillar);
 
       // Glowing trim ring around pillar
       const ringGeom = new THREE.TorusGeometry(1.0, 0.08, 8, 24);
-      const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+      const ringMat = new THREE.MeshBasicMaterial({ color: pylonColor });
       const trimRing = new THREE.Mesh(ringGeom, ringMat);
       trimRing.rotation.x = Math.PI / 2;
       trimRing.position.y = 2.4;
@@ -112,8 +124,8 @@ export class CrystalTitanBoss {
 
       // Pylon crystal on top (vibrant radiant energy crystal)
       const crystalMat = new THREE.MeshPhongMaterial({
-        color: 0x00f0ff,
-        emissive: 0x00d2ff,
+        color: pylonColor,
+        emissive: pylonEmissive,
         emissiveIntensity: 0.85
       });
       const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(1.1), crystalMat);
@@ -123,10 +135,10 @@ export class CrystalTitanBoss {
       // Glowing Floor Activation Pad (Step Here Ring)
       const floorRingGeom = new THREE.RingGeometry(0.4, 2.5, 32);
       const floorRingMat = new THREE.MeshBasicMaterial({
-        color: 0x00f0ff,
+        color: pylonColor,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.65
+        opacity: 0.7
       });
       const floorRing = new THREE.Mesh(floorRingGeom, floorRingMat);
       floorRing.rotation.x = -Math.PI / 2;
@@ -136,9 +148,9 @@ export class CrystalTitanBoss {
       // Vertical Sky Beacon (tall pillar of light reaching 32m high into the clouds)
       const skyBeamGeom = new THREE.CylinderGeometry(0.55, 0.85, 32, 16);
       const skyBeamMat = new THREE.MeshBasicMaterial({
-        color: 0x00f0ff,
+        color: this.isGirlsTheme ? 0xff3399 : 0x00f0ff,
         transparent: true,
-        opacity: 0.35,
+        opacity: 0.45,
         side: THREE.DoubleSide,
         depthWrite: false
       });
@@ -153,7 +165,7 @@ export class CrystalTitanBoss {
       const tetherDist = Math.hypot(c.x, 4.5 - 4.0, c.z);
       const tetherGeom = new THREE.CylinderGeometry(0.08, 0.08, tetherDist, 8);
       const tetherMat = new THREE.MeshBasicMaterial({
-        color: 0xbd00ff,
+        color: tetherColor,
         transparent: true,
         opacity: 0.75
       });
