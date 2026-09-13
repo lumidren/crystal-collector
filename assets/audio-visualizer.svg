@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 130" width="100%" height="130" style="background:#090914; border-radius: 14px; overflow: hidden;">
+  <defs>
+    <linearGradient id="eqGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#00f0ff" />
+      <stop offset="50%" stop-color="#ff00aa" />
+      <stop offset="100%" stop-color="#ffd700" />
+    </linearGradient>
+
+    <filter id="audioGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="130" fill="#080812" />
+
+  <!-- Left Header -->
+  <g transform="translate(45, 26)">
+    <g transform="translate(0, 0)">
+      <rect width="120" height="20" rx="10" fill="rgba(0, 255, 136, 0.15)" stroke="#00ff88" stroke-width="0.8" />
+      <text x="60" y="14" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="9.5" font-weight="800" fill="#00ff88" letter-spacing="1">⚡ 0 KB AUDIO ASSETS</text>
+    </g>
+
+    <text x="0" y="44" font-family="'Orbitron', 'Segoe UI', sans-serif" font-size="17" font-weight="900" fill="#ffffff" letter-spacing="1">
+      PROCEDURAL WEB AUDIO SYNTHWAVE
+    </text>
+    <text x="0" y="66" font-family="'Segoe UI', sans-serif" font-size="11.5" font-weight="600" fill="#88aacc">
+      Algorithmic Multi-Oscillator Basslines · Dynamic Sprint BPM Acceleration · Interactive SFX
+    </text>
+
+    <!-- Speed Badge -->
+    <g transform="translate(0, 78)">
+      <text x="0" y="12" font-family="'Segoe UI', sans-serif" font-size="10.5" font-weight="700" fill="#ffd700">
+        ▶ Dynamic Pacing: 128 BPM (Normal) ➔ 160 BPM (Sprint &amp; Rainbow Fever)
+      </text>
+    </g>
+  </g>
+
+  <!-- Right Side: 28-Bar Animated Spectrum Visualizer -->
+  <g transform="translate(580, 112) scale(1, -1)" filter="url(#audioGlow)">
+    <!-- 28 Bars with diverse rhythm speeds -->
+    <rect x="0" y="0" width="7" height="20" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="15;55;25;70;20;80;15" dur="1.1s" repeatCount="indefinite" /></rect>
+    <rect x="10" y="0" width="7" height="35" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="30;75;40;85;35;90;30" dur="0.9s" repeatCount="indefinite" /></rect>
+    <rect x="20" y="0" width="7" height="45" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="45;20;65;30;80;40;45" dur="1.2s" repeatCount="indefinite" /></rect>
+    <rect x="30" y="0" width="7" height="60" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="60;90;40;75;50;85;60" dur="0.8s" repeatCount="indefinite" /></rect>
+    <rect x="40" y="0" width="7" height="50" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="50;25;80;35;70;40;50" dur="1.3s" repeatCount="indefinite" /></rect>
+    <rect x="50" y="0" width="7" height="75" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="75;40;95;50;85;60;75" dur="0.95s" repeatCount="indefinite" /></rect>
+    <rect x="60" y="0" width="7" height="40" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="40;80;30;85;45;70;40" dur="1.05s" repeatCount="indefinite" /></rect>
+    <rect x="70" y="0" width="7" height="85" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="85;45;95;60;90;40;85" dur="0.75s" repeatCount="indefinite" /></rect>
+    <rect x="80" y="0" width="7" height="55" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="55;85;35;70;45;90;55" dur="1.15s" repeatCount="indefinite" /></rect>
+    <rect x="90" y="0" width="7" height="70" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="70;30;85;45;75;35;70" dur="1.0s" repeatCount="indefinite" /></rect>
+    <rect x="100" y="0" width="7" height="90" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="90;50;95;40;85;65;90" dur="0.85s" repeatCount="indefinite" /></rect>
+    <rect x="110" y="0" width="7" height="60" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="60;85;40;75;55;80;60" dur="1.25s" repeatCount="indefinite" /></rect>
+    <rect x="120" y="0" width="7" height="75" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="75;35;90;45;80;50;75" dur="0.9s" repeatCount="indefinite" /></rect>
+    <rect x="130" y="0" width="7" height="45" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="45;75;30;85;40;70;45" dur="1.1s" repeatCount="indefinite" /></rect>
+    <rect x="140" y="0" width="7" height="80" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="80;40;95;55;85;45;80" dur="0.8s" repeatCount="indefinite" /></rect>
+    <rect x="150" y="0" width="7" height="65" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="65;85;40;70;50;90;65" dur="1.05s" repeatCount="indefinite" /></rect>
+    <rect x="160" y="0" width="7" height="50" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="50;30;75;40;85;45;50" dur="1.3s" repeatCount="indefinite" /></rect>
+    <rect x="170" y="0" width="7" height="85" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="85;50;95;45;80;60;85" dur="0.9s" repeatCount="indefinite" /></rect>
+    <rect x="180" y="0" width="7" height="60" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="60;80;35;70;45;85;60" dur="1.15s" repeatCount="indefinite" /></rect>
+    <rect x="190" y="0" width="7" height="40" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="40;65;25;80;35;75;40" dur="0.95s" repeatCount="indefinite" /></rect>
+    <rect x="200" y="0" width="7" height="70" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="70;35;85;50;90;40;70" dur="0.85s" repeatCount="indefinite" /></rect>
+    <rect x="210" y="0" width="7" height="55" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="55;80;40;75;45;85;55" dur="1.2s" repeatCount="indefinite" /></rect>
+    <rect x="220" y="0" width="7" height="45" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="45;25;70;35;60;30;45" dur="1.0s" repeatCount="indefinite" /></rect>
+    <rect x="230" y="0" width="7" height="35" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="35;60;20;75;30;65;35" dur="1.1s" repeatCount="indefinite" /></rect>
+    <rect x="240" y="0" width="7" height="25" rx="2" fill="url(#eqGrad)"><animate attributeName="height" values="25;50;15;60;25;55;25" dur="0.9s" repeatCount="indefinite" /></rect>
+  </g>
+
+  <!-- Border -->
+  <rect x="1.5" y="1.5" width="897" height="127" rx="13" fill="none" stroke="rgba(0, 240, 255, 0.25)" stroke-width="1.2" />
+</svg>

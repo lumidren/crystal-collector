@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 160" width="100%" height="160" style="background:#090914; border-radius: 14px; overflow: hidden;">
+  <defs>
+    <linearGradient id="bossShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff0055" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#00f0ff" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#bd00ff" stop-opacity="0.9" />
+    </linearGradient>
+
+    <linearGradient id="beamLaser" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff0044" stop-opacity="0" />
+      <stop offset="50%" stop-color="#ff0055" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="1" />
+    </linearGradient>
+
+    <filter id="bossGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <style>
+      @keyframes shieldPulse {
+        0%, 100% { transform: scale(1); opacity: 0.75; }
+        50% { transform: scale(1.08); opacity: 0.4; }
+      }
+      @keyframes rotateBeacon {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes pylonFlicker {
+        0%, 100% { opacity: 0.9; }
+        50% { opacity: 0.4; }
+      }
+      .shield-bubble { transform-origin: 760px 80px; animation: shieldPulse 3s ease-in-out infinite; }
+      .beacon-ray { transform-origin: 760px 80px; animation: rotateBeacon 10s linear infinite; }
+      .pylon-dot { animation: pylonFlicker 1.5s ease-in-out infinite; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="160" fill="#0c0a18" />
+
+  <!-- Left Content: Boss Tactics -->
+  <g transform="translate(45, 24)">
+    <g transform="translate(0, 0)">
+      <rect width="180" height="22" rx="11" fill="rgba(255, 0, 85, 0.15)" stroke="#ff0055" stroke-width="0.8" />
+      <text x="90" y="15" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#ff4d79" letter-spacing="1">⚔️ LEVEL 10 TITAN GAUNTLET</text>
+    </g>
+
+    <text x="0" y="50" font-family="'Orbitron', 'Segoe UI', sans-serif" font-size="20" font-weight="900" fill="#ffffff" letter-spacing="1">
+      BOSS ENCOUNTER: GUARDIAN TITAN
+    </text>
+
+    <!-- Tactical Steps Diagram -->
+    <g transform="translate(0, 68)">
+      <!-- Step 1 -->
+      <g transform="translate(0, 0)">
+        <rect width="170" height="42" rx="8" fill="rgba(255,255,255,0.04)" stroke="#00f0ff" stroke-width="1" />
+        <text x="12" y="18" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#00f0ff">PHASE 1: TARGET PYLONS</text>
+        <text x="12" y="32" font-family="'Segoe UI', sans-serif" font-size="9.5" font-weight="600" fill="#a0c0dd">Trigger 4 corner pylon towers</text>
+      </g>
+
+      <!-- Arrow -->
+      <text x="180" y="26" font-family="'Segoe UI', sans-serif" font-size="14" font-weight="900" fill="#888888">➔</text>
+
+      <!-- Step 2 -->
+      <g transform="translate(205, 0)">
+        <rect width="170" height="42" rx="8" fill="rgba(255,255,255,0.04)" stroke="#ffd700" stroke-width="1" />
+        <text x="12" y="18" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#ffd700">PHASE 2: SHIELD COLLAPSE</text>
+        <text x="12" y="32" font-family="'Segoe UI', sans-serif" font-size="9.5" font-weight="600" fill="#d0c890">Invulnerability barrier shatters</text>
+      </g>
+
+      <!-- Arrow -->
+      <text x="385" y="26" font-family="'Segoe UI', sans-serif" font-size="14" font-weight="900" fill="#888888">➔</text>
+
+      <!-- Step 3 -->
+      <g transform="translate(410, 0)">
+        <rect width="170" height="42" rx="8" fill="rgba(255,255,255,0.04)" stroke="#ff0055" stroke-width="1" />
+        <text x="12" y="18" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#ff4d79">PHASE 3: SHATTER CORE</text>
+        <text x="12" y="32" font-family="'Segoe UI', sans-serif" font-size="9.5" font-weight="600" fill="#d090a8">Strike exposed reactor heart</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Right Visual: Colosseum Radar & Shield Forcefield -->
+  <g transform="translate(10, 0)">
+    <!-- Rotating Laser Sweepers -->
+    <g class="beacon-ray">
+      <line x1="750" y1="80" x2="840" y2="80" stroke="url(#beamLaser)" stroke-width="2.5" filter="url(#bossGlow)" />
+      <line x1="750" y1="80" x2="660" y2="80" stroke="url(#beamLaser)" stroke-width="2.5" filter="url(#bossGlow)" />
+    </g>
+
+    <!-- Outer 4 Corner Pylons -->
+    <g stroke="#00ffff" stroke-width="1.2">
+      <!-- Pylon NW -->
+      <circle cx="695" cy="35" r="7" fill="#141a2e" />
+      <circle cx="695" cy="35" r="3.5" fill="#00ffff" class="pylon-dot" />
+      <!-- Pylon NE -->
+      <circle cx="805" cy="35" r="7" fill="#141a2e" />
+      <circle cx="805" cy="35" r="3.5" fill="#00ffff" class="pylon-dot" />
+      <!-- Pylon SW -->
+      <circle cx="695" cy="125" r="7" fill="#141a2e" />
+      <circle cx="695" cy="125" r="3.5" fill="#00ffff" class="pylon-dot" />
+      <!-- Pylon SE -->
+      <circle cx="805" cy="125" r="7" fill="#141a2e" />
+      <circle cx="805" cy="125" r="3.5" fill="#00ffff" class="pylon-dot" />
+    </g>
+
+    <!-- Colosseum Center Deck -->
+    <circle cx="750" cy="80" r="38" fill="rgba(255,255,255,0.03)" stroke="#ff0055" stroke-width="1.2" stroke-dasharray="4 3" />
+
+    <!-- Hexagonal Forcefield Shield Bubble -->
+    <polygon points="750,48 778,64 778,96 750,112 722,96 722,64" fill="none" stroke="url(#bossShieldGrad)" stroke-width="2.2" class="shield-bubble" filter="url(#bossGlow)" />
+
+    <!-- Boss Core Crystal -->
+    <polygon points="750,66 762,80 750,94 738,80" fill="#ffffff" filter="url(#bossGlow)" />
+    <polygon points="750,71 757,80 750,89 743,80" fill="#ff0055" />
+  </g>
+
+  <!-- Border -->
+  <rect x="1.5" y="1.5" width="897" height="157" rx="13" fill="none" stroke="rgba(255, 0, 85, 0.25)" stroke-width="1.2" />
+</svg>

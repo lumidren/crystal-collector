@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 200" width="100%" height="200" style="background:#090914; border-radius: 14px; overflow: hidden;">
+  <defs>
+    <linearGradient id="splitBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff" />
+      <stop offset="50%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#ff70a6" />
+    </linearGradient>
+
+    <linearGradient id="cyberSide" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070913" />
+      <stop offset="100%" stop-color="#141a2e" />
+    </linearGradient>
+
+    <linearGradient id="dreamSide" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1426" />
+      <stop offset="100%" stop-color="#2d1c38" />
+    </linearGradient>
+
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <style>
+      @keyframes beamPulse {
+        0%, 100% { opacity: 0.7; transform: scaleX(1); }
+        50% { opacity: 1; transform: scaleX(1.8); }
+      }
+      @keyframes floatLeft {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
+      }
+      @keyframes floatRight {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(6px); }
+      }
+      @keyframes spinStar {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .divider-beam { animation: beamPulse 2.5s ease-in-out infinite; transform-origin: 450px 100px; }
+      .left-float { animation: floatLeft 3.5s ease-in-out infinite; }
+      .right-float { animation: floatRight 3.5s ease-in-out infinite; }
+      .star-spin { animation: spinStar 8s linear infinite; transform-box: fill-box; transform-origin: center; }
+    </style>
+  </defs>
+
+  <!-- Left Half: Cyberpunk Neo-Arcade -->
+  <rect x="0" y="0" width="450" height="200" fill="url(#cyberSide)" />
+
+  <!-- Cyberpunk Background Grid Lines -->
+  <g stroke="#00f0ff" stroke-width="0.8" opacity="0.2">
+    <line x1="0" y1="50" x2="450" y2="50" />
+    <line x1="0" y1="100" x2="450" y2="100" />
+    <line x1="0" y1="150" x2="450" y2="150" />
+    <line x1="90" y1="0" x2="90" y2="200" />
+    <line x1="180" y1="0" x2="180" y2="200" />
+    <line x1="270" y1="0" x2="270" y2="200" />
+    <line x1="360" y1="0" x2="360" y2="200" />
+  </g>
+
+  <!-- Left Content -->
+  <g transform="translate(45, 0)" class="left-float">
+    <rect x="0" y="28" width="130" height="22" rx="11" fill="rgba(0, 240, 255, 0.15)" stroke="#00f0ff" stroke-width="1" />
+    <text x="65" y="43" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#00f0ff" letter-spacing="1">⚡ CYBERPUNK</text>
+
+    <text x="0" y="86" font-family="'Orbitron', 'Segoe UI', sans-serif" font-size="22" font-weight="900" fill="#ffffff" letter-spacing="1">
+      NEO-ARCADE
+    </text>
+    <text x="0" y="112" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#88bbdd">
+      Obsidian Ground · Electric Cyan Grid · Mecha Hazards
+    </text>
+
+    <!-- Mini Spec Badges -->
+    <g transform="translate(0, 134)">
+      <rect x="0" y="0" width="105" height="24" rx="6" fill="rgba(0,0,0,0.4)" stroke="#00f0ff" stroke-width="0.8" />
+      <text x="52" y="16" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#00f0ff">💎 Prismatic Gems</text>
+
+      <rect x="115" y="0" width="115" height="24" rx="6" fill="rgba(0,0,0,0.4)" stroke="#00ff88" stroke-width="0.8" />
+      <text x="172" y="16" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#00ff88">🚀 Rocket Thrusters</text>
+
+      <rect x="240" y="0" width="95" height="24" rx="6" fill="rgba(0,0,0,0.4)" stroke="#ffaa00" stroke-width="0.8" />
+      <text x="287" y="16" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#ffaa00">🐕 Robo-Pup</text>
+    </g>
+  </g>
+
+  <!-- Right Half: Sakura Dreamland -->
+  <rect x="450" y="0" width="450" height="200" fill="url(#dreamSide)" />
+
+  <!-- Sakura Background Grid Lines -->
+  <g stroke="#ff70a6" stroke-width="0.8" opacity="0.2">
+    <line x1="450" y1="50" x2="900" y2="50" />
+    <line x1="450" y1="100" x2="900" y2="100" />
+    <line x1="450" y1="150" x2="900" y2="150" />
+    <line x1="540" y1="0" x2="540" y2="200" />
+    <line x1="630" y1="0" x2="630" y2="200" />
+    <line x1="720" y1="0" x2="720" y2="200" />
+    <line x1="810" y1="0" x2="810" y2="200" />
+  </g>
+
+  <!-- Right Content -->
+  <g transform="translate(505, 0)" class="right-float">
+    <rect x="0" y="28" width="165" height="22" rx="11" fill="rgba(255, 112, 166, 0.18)" stroke="#ff70a6" stroke-width="1" />
+    <text x="82" y="43" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="800" fill="#ff9ebb" letter-spacing="1">🌸 SAKURA DREAMLAND</text>
+
+    <text x="0" y="86" font-family="'Orbitron', 'Segoe UI', sans-serif" font-size="22" font-weight="900" fill="#ffffff" letter-spacing="1">
+      MAGICAL REALM
+    </text>
+    <text x="0" y="112" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#e8c2db">
+      Porcelain Alabaster · Twilight Sky · Mint Launchers
+    </text>
+
+    <!-- Mini Spec Badges -->
+    <g transform="translate(0, 134)">
+      <rect x="0" y="0" width="105" height="24" rx="6" fill="rgba(0,0,0,0.4)" stroke="#ff70a6" stroke-width="0.8" />
+      <text x="52" y="16" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#ff70a6">✨ Magical Girl</text>
+
+      <rect x="115" y="0" width="115" height="24" rx="6" fill="rgba(0,0,0,0.4)" stroke="#2dd4bf" stroke-width="0.8" />
+      <text x="172" y="16" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#2dd4bf">🌸 Mint Jump Pad</text>
+
+      <rect x="240" y="0" width="105" height="24" rx="6" fill="rgba(0,0,0,0.4)" stroke="#ffd700" stroke-width="0.8" />
+      <text x="292" y="16" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#ffd700">🐰 Sugar Bunny</text>
+    </g>
+  </g>
+
+  <!-- Center Energy Beam Divider -->
+  <g class="divider-beam">
+    <line x1="450" y1="0" x2="450" y2="200" stroke="url(#splitBeam)" stroke-width="4" filter="url(#glow)" />
+    <circle cx="450" cy="100" r="14" fill="#ffffff" filter="url(#glow)" />
+    <polygon points="450,88 454,98 464,100 454,102 450,112 446,102 436,100 446,98" fill="#ffd700" class="star-spin" />
+  </g>
+
+  <!-- Outer Border -->
+  <rect x="1.5" y="1.5" width="897" height="197" rx="13" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.5" />
+</svg>
