@@ -1,16 +1,18 @@
-# 💎 Crystal Collector 2.0 — Neo-Arcade 3D Platformer
+<p align="center">
+  <img src="./assets/hero-banner.svg" alt="Crystal Collector 2.0 Hero Banner" width="100%" />
+</p>
 
 <div align="center">
 
-![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Three.js](https://img.shields.io/badge/Three.js-r182-black?style=for-the-badge&logo=threedotjs&logoColor=white)
-![Electron](https://img.shields.io/badge/Electron-Windows%20Desktop-47848F?style=for-the-badge&logo=electron&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-Build%20Tool-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-47%2F47%20Passing-00ff88?style=for-the-badge&logo=node.js&logoColor=white)
-![60 FPS](https://img.shields.io/badge/Performance-Smooth%2060%20FPS-00e5ff?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge)
+[![Play Online](https://img.shields.io/badge/PLAY%20ONLINE-NETLIFY%20LIVE-00f0ff?style=for-the-badge&logo=netlify&logoColor=white)](https://3dcrystalcollector.netlify.app/)
+[![Download Windows](https://img.shields.io/badge/WINDOWS%20APP-PORTABLE%20.EXE-ff007f?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/lumidren/crystal-collector/releases/latest)
+[![Tests Passing](https://img.shields.io/badge/TESTS-47%2F47%20PASSING-00ff88?style=for-the-badge&logo=node.js&logoColor=white)](https://github.com/lumidren/crystal-collector)
+[![60 FPS](https://img.shields.io/badge/PERFORMANCE-LOCKED%2060%20FPS-ffd700?style=for-the-badge&logo=speedtest&logoColor=black)](https://github.com/lumidren/crystal-collector)
+[![License: MIT](https://img.shields.io/badge/LICENSE-MIT-a78bfa?style=for-the-badge)](LICENSE)
 
-**An adrenaline-fueled 3D neo-arcade platformer built with React 19, Three.js & Electron.**  
+<br/>
+
+**A high-octane 3D neo-arcade platformer built with React 19, Three.js & Electron.**  
 Traverse 10 procedural biomes across a massive 76×76m arena, scale multi-tier vertical sky islands, adopt 3D animated companions, pilot 6 distinct heroes with signature abilities, conquer the Level 10 Guardian Titan boss, and experience dual visual worlds (*Cyberpunk Neon* & *Sakura Dreamland*)!
 
 [🎮 **Play in Browser**](https://3dcrystalcollector.netlify.app/) · [📦 **Download Windows Standalone (.exe)**](https://github.com/lumidren/crystal-collector/releases/latest) · [🐛 **Report Bug**](https://github.com/lumidren/crystal-collector/issues)
@@ -21,7 +23,7 @@ Traverse 10 procedural biomes across a massive 76×76m arena, scale multi-tier v
 
 ## ⚡ Quick Start
 
-### 🪟 Windows Standalone (No Installation Required)
+### 🪟 Windows Standalone (Zero Installation Required)
 1. Download the latest portable release:
    - **`Crystal Collector 2.0.0.exe`** (Single-file portable Windows executable)
    - Or extract `release/win-unpacked/` and run `Crystal Collector.exe`.
@@ -33,44 +35,60 @@ Traverse 10 procedural biomes across a massive 76×76m arena, scale multi-tier v
 
 ---
 
-## 🌟 Key Features & Gameplay Highlights
+## 🎭 Dual Aesthetic Themes
+
+<p align="center">
+  <img src="./assets/theme-showcase.svg" alt="Dual Theme Showcase" width="100%" />
+</p>
+
+Switch seamlessly between two completely handcrafted visual presentations via the Home Screen toggle or Developer Root Console:
+
+| Dimension | ⚡ Cyberpunk Neo-Arcade | 🌸 Sakura Dreamland (Enchanted) |
+| :--- | :--- | :--- |
+| **Arena Ground** | Deep obsidian carbon with electric cyan grid lines | **Polished Porcelain Alabaster** (`0xede8f2`) with soft lavender-slate grid |
+| **Sky & Ambience** | Dark cosmic void with amber star tints | **Deep Midnight Twilight Dome** (`0x16132b`) with 1,500 pastel stars |
+| **Atmospheric Fog** | Cyberpunk dense fog (`near: 26m`, `far: 88m`) | **Soft Twilight Horizon Fog** (`near: 35m`, `far: 110m`) for wide-open sightlines |
+| **Jump Trampolines** | High-energy cyan / gold plasma pads | **Luminous Mint-Cyan Pads** (`0x2dd4bf`) with dark bronze rims & rotating golden stars |
+| **Hazard Wells** | Sinuous molten lava lakes & void rifts | **Dark Cursed Obsidian Abyss** (`0x42104f`) with eerie violet bubbles |
+| **Sentinel Cubes** | Obsidian armor with magma plasma core & hazard chevrons | **Obsidian-Violet Mecha Armor** (`0x1a1524`) with ruby danger cores & gold ribbon wrap |
+| **Stalker Crawlers** | Dark bio-mecha with red predator eyes | **Midnight Blackberry Exoskeleton** (`0x1c1726`) with sparkling cyan anime eyes (`0x00ffff`) |
+| **Flora & Scenery** | Low-poly pine trees & volcanic basalt pillars | **14 Organic Cherry-Wood Sakura Trees**, 8 rose quartz geodes, and 6 ivory toadstools |
+| **Weather VFX** | Rising cyber sparks & cosmic floaters | **Gentle Lateral Sakura Petal Flutter** (`Math.sin(y * 0.6 + i) * 1.8`) |
+
+---
+
+## 🌟 Core Gameplay Highlights
 
 ### 🏝️ 1. Multi-Tier Vertical Sky Islands & 3D Physics
-- **Multi-Level Verticality**: High-altitude platforms, suspended catwalks, and apex perches floating between $Y = 3.5\text{m}$ and $10.9\text{m}$.
-- **Solid Physics & Collision**: Axis-aligned platform boundary snapping, ledge-drop falling physics, and true 3D distance gating preventing ground players from looting elevated caches.
+- **Multi-Level Elevation**: Platforms, suspended bridges, and apex lookouts floating from $Y = 3.5\text{m}$ up to $10.9\text{m}$.
+- **Solid Colliders**: Axis-aligned platform boundary snapping, ledge-drop falling physics, and true 3D distance gating preventing ground players from looting elevated caches.
 - **Under-Platform Ambient Repulsor Lighting**: Each floating island houses an anti-gravity repulsor crystal and downward point light illuminating shadowed terrain and hazards below.
 - **Catapult Launch Trampolines**: Biome-tuned jump pads propel players high into the air ($V = 28\text{ m/s}$) to reach soaring sky islands.
-- **Lava Hazard Immunity**: Elevating onto any sky deck grants complete safety from ground molten lava pools and roving hazards.
+- **Lava Hazard Immunity**: Elevating onto any sky deck grants complete safety from ground molten lava pools and roving hazards below.
 
-### 🎭 2. Dual Aesthetic Themes: Cyberpunk & Sakura Dreamland
-Switch instantly between two distinct visual experiences via the Home Screen toggle or Developer Root Console:
-- **⚡ Cyberpunk Neo-Arcade (Default)**:
-  - Deep obsidian ground with electric cyan floor grid and glowing neon perimeter edge rails.
-  - Magma-core Quantum Sentinel Cubes with hazard chevrons, interceptor drones, and naval sky mines.
-  - Volcanic lava pools, cyber light bridges, and cosmic void rifts.
-- **🌸 Sakura Dreamland (Enchanted Girls Theme)**:
-  - **High-Contrast Porcelain Alabaster Floor** (`0xede8f2`) providing crisp, readable drop shadows for all entities.
-  - **Deep Midnight Twilight Dome** (`0x16132b`) and gentle horizon fog (`near: 35m`, `far: 110m`) for clear sightlines with zero eye fatigue.
-  - **Luminous Mint-Cyan Jump Pads** (`0x2dd4bf`) with dark bronze rims and rotating golden stars.
-  - **Cursed Obsidian Abyss Hazard Wells** (`0x42104f`, emissive `0x260530`) with eerie violet bubbles for unambiguous danger recognition.
-  - **Sleek Obsidian-Violet Mecha Sentinel Cubes** (`0x1a1524`) with ruby danger cores and golden ribbon trims.
-  - **Midnight Blackberry Stalker Crawlers** with sparkling anime cyan compound eyes (`0x00ffff`).
-  - **Organic Cherry-Wood Sakura Trees** (`0x42271d`) with blush petal clouds and fresh green spring leaf accents.
-  - **Translucent Rose Quartz Geodes** and ivory-stemmed fairy toadstools.
-
-### ⚔️ 3. Three Tuned Difficulty Modes
+### ⚔️ 2. Three Tuned Difficulty Modes
 - **🟢 Easy**: 0 spiders/crawlers, +25% Sentinel Cubes, relaxed obstacle speed (70%) for chill exploration.
 - **🟡 Medium**: Balanced experience with moderate spider frequency (1 out of every 6 hazards), +15% cubes, and 85% speed.
 - **⚡ Hard**: High-octane arcade challenge with frequent aggressive stalker crawlers (35% density), aerial sky mines, and 105% speed.
 
-### 👑 4. Level 10 Guardian Boss: The Titan / Starlight Empress
+### 👑 3. Level 10 Guardian Boss: The Titan / Starlight Empress
+
+<p align="center">
+  <img src="./assets/boss-encounter.svg" alt="Level 10 Boss Encounter Tactics" width="100%" />
+</p>
+
 The ultimate trial awaiting at Level 10:
 - **Colosseum Throne Arena**: A grand central platform surrounded by 4 elevated Shield Pylon Towers.
 - **Invulnerability Forcefield**: The boss remains completely immune to damage until you activate the 4 corner pylon target beacons.
 - **Sweeping Laser Beams & Shockwaves**: Evade high-damage rotating energy beams and ground shockwave rings while climbing to the pylons.
 - **Shield Collapse & Core Vulnerability**: Once all 4 pylons are triggered, the boss shield shatters, exposing the pulsating core to deliver the finishing blow!
 
-### 🎵 5. Procedural Web Audio Synthwave (0 KB Asset Size)
+### 🎵 4. Procedural Web Audio Synthwave (0 KB Asset Size)
+
+<p align="center">
+  <img src="./assets/audio-visualizer.svg" alt="Procedural Web Audio Visualizer" width="100%" />
+</p>
+
 - Pure algorithmic sound synthesis generated dynamically via the HTML5 Web Audio API:
   - Multi-oscillator synthwave basslines and harmonic chord progressions.
   - Real-time arpeggiators that accelerate tempo during sprints and Rainbow Fever Mode.
@@ -139,6 +157,31 @@ Adopt companions from the Arcade Shop to follow you across sky islands and groun
 | **9** | Cosmic Void | 28 | 55 | 6 Floating hexagonal orbital docks & satellite relays ($4.3\text{m}$ to $10.9\text{m}$) | Anti-gravity quantum jumps & void space rifts |
 | **10** | **THE FINAL TITAN** | 30 | 60 | Colosseum Throne ($3.9\text{m}$) & 4 Elevated Shield Pylon Towers ($5.8\text{m}$) | **Guardian Titan Boss: Forcefield, Lasers & 4 Shield Pylons** |
 
+<details>
+<summary><b>📐 Click to View: 76×76m Arena Spatial Layout Diagram</b></summary>
+
+```text
+================================== NORTH [-38m] ==================================
+|                                                                                |
+|   [Elevated Sky Platform 1]                           [Elevated Sky Platform 2]|
+|   Altitude: Y=5.5m                                    Altitude: Y=5.5m         |
+|                                                                                |
+|                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~                           |
+|                        ~   CENTRAL SUSPENSION      ~                           |
+|                        ~       BRIDGE WAY          ~                           |
+|                        ~    Altitude: Y=4.5m       ~                           |
+|                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~                           |
+|                                                                                |
+|     (Jump Pad 1)                                            (Jump Pad 2)       |
+|      Boost: V=28                                             Boost: V=28       |
+|                                                                                |
+|                                 [APEX LOOKOUT]                                 |
+|                                Altitude: Y=8.9m                                |
+|                                                                                |
+================================== SOUTH [+38m] ==================================
+```
+</details>
+
 ---
 
 ## 🛡️ Power-Ups & Collectibles
@@ -184,9 +227,16 @@ Every module, mathematical calculation, and collision rule is covered by automat
 
 ## 🏗️ Project Structure
 
+<details>
+<summary><b>📂 Click to View: Complete Source File Tree</b></summary>
+
 ```text
 crystal-collector/
-├── README.md                     # Comprehensive documentation & game guide
+├── assets/                       # Animated SVG showcase banners & diagrams
+│   ├── hero-banner.svg           # High-impact animated cyber-space header
+│   ├── theme-showcase.svg        # Split-screen Cyberpunk vs Sakura Dreamland
+│   ├── audio-visualizer.svg      # Procedural Web Audio equalizer spectrum
+│   └── boss-encounter.svg        # Level 10 Guardian Titan tactical diagram
 ├── index.html                    # HTML5 canvas container & font loader
 ├── vite.config.js                # High-performance bundler configuration
 ├── package.json                  # Dependencies, build scripts & electron-builder metadata
@@ -196,17 +246,7 @@ crystal-collector/
 │   ├── main.cjs                  # Electron desktop window process & lifecycle
 │   └── preload.cjs               # Secure desktop IPC bridge
 ├── public/                       # Static web assets & icons
-├── test/
-│   ├── biomeGenerator.test.js    # Biome platform layouts & hazard testing
-│   ├── characters.test.js        # Playable heroes roster & 3D mesh tests
-│   ├── difficultyMath.test.js    # Easy/Medium/Hard difficulty scaling tests
-│   ├── pets.test.js              # Robo-Pup, Falcon, Bunny & pet companion tests
-│   ├── physicsMath.test.js       # 3D collision, ledge falling & physics tests
-│   ├── radarMath.test.js         # Orientation projection & altitude math tests
-│   ├── saveManager.test.js       # Save state persistence & recovery tests
-│   ├── scoreboardMath.test.js    # S/A/B/C letter grade & timer precision tests
-│   ├── soundEngineMath.test.js   # Procedural Web Audio synthesizer tests
-│   └── worldTheme.test.js        # Sakura Dreamland & Girls Theme tests
+├── test/                         # 10 automated test suites (47/47 passing)
 └── src/
     ├── main.jsx                  # React 19 application entrypoint
     ├── index.css                 # Global viewport styles
@@ -235,42 +275,33 @@ crystal-collector/
     └── world/
         └── biomeGenerator.js     # 5 platform topologies, weather systems & jump pads
 ```
+</details>
 
 ---
 
 ## 💻 Local Development & Build Commands
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/lumidren/crystal-collector.git
-   cd crystal-collector
-   ```
+```bash
+# 1. Clone the repository
+git clone https://github.com/lumidren/crystal-collector.git
+cd crystal-collector
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+# 2. Install dependencies
+npm install
 
-3. **Run automated test suite (47 tests)**:
-   ```bash
-   npm test
-   ```
+# 3. Run automated test suite (47 tests)
+npm test
 
-4. **Start local Vite development server**:
-   ```bash
-   npm run dev
-   ```
+# 4. Start local Vite development server
+npm run dev
 
-5. **Launch in native Electron desktop mode**:
-   ```bash
-   npm run app:dev
-   ```
+# 5. Launch in native Electron desktop mode
+npm run app:dev
 
-6. **Build standalone Windows portable executable (`.exe`)**:
-   ```bash
-   npm run app:dist
-   ```
-   *Packaged binary is output to `release/Crystal Collector 2.0.0.exe` and `release/win-unpacked/`.*
+# 6. Build standalone Windows portable executable (.exe)
+npm run app:dist
+```
+*Packaged binary is output to `release/Crystal Collector 2.0.0.exe`.*
 
 ---
 
