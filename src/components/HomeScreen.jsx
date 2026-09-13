@@ -107,7 +107,7 @@ export const HomeScreen = ({
               {(savedData.activeTheme || 'default') === 'girls' ? '🌸' : '💎'}
             </div>
             <h1 className={`home-title ${(savedData.activeTheme || 'default') === 'girls' ? 'game-title-glow' : ''}`}>
-              {(savedData.activeTheme || 'default') === 'girls' ? 'MAGICAL RUE · DREAM' : 'CRYSTAL COLLECTOR'}
+              {(savedData.activeTheme || 'default') === 'girls' ? 'MAGICAL STAR · DREAM' : 'CRYSTAL COLLECTOR'}
             </h1>
             <div style={{ fontSize: '12px', fontWeight: 700, color: (savedData.activeTheme || 'default') === 'girls' ? '#ffb7eb' : '#7e95b3', letterSpacing: '2px', marginTop: '6px', textTransform: 'uppercase' }}>
               {(savedData.activeTheme || 'default') === 'girls' ? '✨ ENCHANTED CELESTIAL REALM · FAIRY ADVENTURE 💖' : 'NEO-ARCADE 3D PLATFORMER · PROCEDURAL BIOMES'}
