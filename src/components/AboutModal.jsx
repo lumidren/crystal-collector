@@ -127,7 +127,7 @@ export const AboutModal = ({ onClose, onUnlockRoot, onUnlockGirlsTheme, unlocked
 
           {(isGirlsThemeUnlocked || authStatus === 'success_girls') && (
             <div className="root-girls-banner" style={{ marginBottom: '10px' }}>
-              💖 SECRET UNLOCKED: MAGICAL RUE & GIRLS THEME ACTIVATED! 🌸
+              💖 SECRET UNLOCKED: MAGICAL GIRL & GIRLS THEME ACTIVATED! 🌸
             </div>
           )}
 
