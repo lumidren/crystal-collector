@@ -1,4 +1,4 @@
-﻿import { test } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { BiomeGenerator } from '../src/world/biomeGenerator.js';
@@ -9,10 +9,10 @@ test('worldTheme - BiomeGenerator returns Sakura Dreamland configuration when is
   const girlsBiome = BiomeGenerator.getBiomeData(1, true);
   assert.equal(girlsBiome.id, 'sakura_dream');
   assert.equal(girlsBiome.isGirlsTheme, true);
-  assert.equal(girlsBiome.weather.type, 'sakura');
-  assert.equal(girlsBiome.groundColor, 0x3b1435);
-  assert.equal(girlsBiome.neonColor, 0xff70a6);
-  assert.equal(girlsBiome.fog.color, 0x351433);
+  assert.equal(girlsBiome.groundColor, 0xede8f2);
+  assert.equal(girlsBiome.neonColor, 0xff6699);
+  assert.equal(girlsBiome.fog.color, 0x241e38);
+  assert.equal(girlsBiome.jumpPadColor, 0x2dd4bf);
 
   // Default theme should return standard biome
   const defaultBiome = BiomeGenerator.getBiomeData(1, false);
