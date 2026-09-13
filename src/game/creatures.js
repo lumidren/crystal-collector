@@ -9,21 +9,21 @@ export function createCyberCreature(isGirlsTheme = false) {
   const creature = new THREE.Group();
 
   const chitinMat = new THREE.MeshStandardMaterial({
-    color: isGirlsTheme ? 0x4a203f : 0x12151e,
+    color: isGirlsTheme ? 0x1c1726 : 0x12151e,
     roughness: 0.25,
-    metalness: isGirlsTheme ? 0.6 : 0.85
+    metalness: isGirlsTheme ? 0.75 : 0.85
   });
 
   const armorPlateMat = new THREE.MeshStandardMaterial({
-    color: isGirlsTheme ? 0x6e285a : 0x1c2230,
-    emissive: isGirlsTheme ? 0xff70a6 : 0x330011,
+    color: isGirlsTheme ? 0x2e213d : 0x1c2230,
+    emissive: isGirlsTheme ? 0x5a184a : 0x330011,
     emissiveIntensity: isGirlsTheme ? 0.35 : 0.2,
     roughness: 0.3,
-    metalness: isGirlsTheme ? 0.5 : 0.8
+    metalness: isGirlsTheme ? 0.7 : 0.8
   });
 
   const bioGlowMat = new THREE.MeshBasicMaterial({
-    color: isGirlsTheme ? 0xff70a6 : 0xff0044
+    color: isGirlsTheme ? 0xff2a6d : 0xff0044
   });
 
   const eyeMat = new THREE.MeshBasicMaterial({
@@ -96,10 +96,10 @@ export function createCyberCreature(isGirlsTheme = false) {
 
   // Mandibles / Ribbon Antennae
   const mandibleMat = new THREE.MeshStandardMaterial({
-    color: isGirlsTheme ? 0xff70a6 : 0x30050e,
-    emissive: isGirlsTheme ? 0xff2a85 : 0xff0022,
+    color: isGirlsTheme ? 0xff2a6d : 0x30050e,
+    emissive: isGirlsTheme ? 0xff0055 : 0xff0022,
     emissiveIntensity: 0.5,
-    metalness: isGirlsTheme ? 0.4 : 0.9
+    metalness: isGirlsTheme ? 0.5 : 0.9
   });
   const leftMandible = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.4, 4), mandibleMat);
   leftMandible.position.set(-0.2, -0.15, 0.45);
