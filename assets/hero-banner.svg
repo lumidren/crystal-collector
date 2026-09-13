@@ -13,13 +13,6 @@
       </stop>
     </linearGradient>
 
-    <linearGradient id="crystalShine" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
-      <stop offset="40%" stop-color="#00f0ff" stop-opacity="0.8" />
-      <stop offset="70%" stop-color="#ff00aa" stop-opacity="0.85" />
-      <stop offset="100%" stop-color="#ffd700" stop-opacity="0.95" />
-    </linearGradient>
-
     <linearGradient id="gridFade" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#000000" stop-opacity="0" />
       <stop offset="100%" stop-color="#00f0ff" stop-opacity="0.25" />
@@ -44,66 +37,35 @@
 
     <style>
       @keyframes gridPulse {
-        0%, 100% { opacity: 0.18; transform: translateY(0); }
-        50% { opacity: 0.35; transform: translateY(-2px); }
-      }
-      @keyframes floatCrystal {
-        0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
-        50% { transform: translateY(-10px) rotate(3deg) scale(1.04); }
-      }
-      @keyframes orbitRing {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0%, 100% { opacity: 0.18; }
+        50% { opacity: 0.35; }
       }
       @keyframes laserBorder {
         0% { stroke-dashoffset: 2320; }
         100% { stroke-dashoffset: 0; }
       }
-      @keyframes petalDrift1 {
-        0% { transform: translate(0px, 0px) rotate(0deg); opacity: 0; }
-        20% { opacity: 0.8; }
-        80% { opacity: 0.8; }
-        100% { transform: translate(-140px, 120px) rotate(260deg); opacity: 0; }
-      }
-      @keyframes petalDrift2 {
-        0% { transform: translate(0px, 0px) rotate(0deg); opacity: 0; }
-        20% { opacity: 0.9; }
-        80% { opacity: 0.9; }
-        100% { transform: translate(-180px, 150px) rotate(320deg); opacity: 0; }
-      }
-      @keyframes starTwinkle {
-        0%, 100% { opacity: 0.2; transform: scale(0.8); }
-        50% { opacity: 1; transform: scale(1.3); }
-      }
       .grid-lines { animation: gridPulse 4s ease-in-out infinite; }
-      .hero-crystal { transform-origin: 760px 125px; animation: floatCrystal 4s ease-in-out infinite; }
-      .orbit-group { transform-origin: 760px 125px; animation: orbitRing 8s linear infinite; }
       .laser-rect { stroke-dasharray: 400 1920; animation: laserBorder 6s linear infinite; }
-      .petal-1 { animation: petalDrift1 6s linear infinite; }
-      .petal-2 { animation: petalDrift2 8s linear infinite 2s; }
-      .petal-3 { animation: petalDrift1 7s linear infinite 4s; }
-      .star-blink { animation: starTwinkle 2.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
     </style>
   </defs>
 
   <!-- Background Space -->
   <rect width="900" height="260" fill="#0b0b18" />
 
-  <!-- Stars -->
+  <!-- Stars with SMIL Opacity Pulses -->
   <g fill="#ffffff">
-    <circle cx="95" cy="40" r="1.5" class="star-blink" style="animation-delay: 0.2s;" />
-    <circle cx="210" cy="85" r="1.2" class="star-blink" style="animation-delay: 1.1s;" />
-    <circle cx="340" cy="30" r="1.8" class="star-blink" style="animation-delay: 0.7s;" />
-    <circle cx="480" cy="70" r="1.4" class="star-blink" style="animation-delay: 1.8s;" />
-    <circle cx="620" cy="35" r="1.6" class="star-blink" style="animation-delay: 0.4s;" />
-    <circle cx="850" cy="65" r="1.5" class="star-blink" style="animation-delay: 1.5s;" />
-    <circle cx="160" cy="200" r="1.2" class="star-blink" style="animation-delay: 2.1s;" />
-    <circle cx="420" cy="220" r="1.4" class="star-blink" style="animation-delay: 0.9s;" />
+    <circle cx="95" cy="40" r="1.5"><animate attributeName="opacity" values="0.2;1;0.2" dur="2.2s" repeatCount="indefinite" /></circle>
+    <circle cx="210" cy="85" r="1.2"><animate attributeName="opacity" values="1;0.2;1" dur="2.8s" repeatCount="indefinite" /></circle>
+    <circle cx="340" cy="30" r="1.8"><animate attributeName="opacity" values="0.3;1;0.3" dur="1.9s" repeatCount="indefinite" /></circle>
+    <circle cx="480" cy="70" r="1.4"><animate attributeName="opacity" values="0.8;0.1;0.8" dur="3.1s" repeatCount="indefinite" /></circle>
+    <circle cx="620" cy="35" r="1.6"><animate attributeName="opacity" values="0.2;0.9;0.2" dur="2.5s" repeatCount="indefinite" /></circle>
+    <circle cx="850" cy="65" r="1.5"><animate attributeName="opacity" values="0.9;0.2;0.9" dur="2.3s" repeatCount="indefinite" /></circle>
+    <circle cx="160" cy="200" r="1.2"><animate attributeName="opacity" values="0.3;1;0.3" dur="2.7s" repeatCount="indefinite" /></circle>
+    <circle cx="420" cy="220" r="1.4"><animate attributeName="opacity" values="1;0.3;1" dur="2.1s" repeatCount="indefinite" /></circle>
   </g>
 
   <!-- Cyber Horizon Grid -->
   <g class="grid-lines" stroke="#00f0ff" stroke-width="1" opacity="0.25">
-    <!-- Perspective rays -->
     <line x1="450" y1="130" x2="-50" y2="270" />
     <line x1="450" y1="130" x2="80" y2="270" />
     <line x1="450" y1="130" x2="210" y2="270" />
@@ -114,7 +76,6 @@
     <line x1="450" y1="130" x2="820" y2="270" />
     <line x1="450" y1="130" x2="950" y2="270" />
 
-    <!-- Horizontal grid rungs -->
     <line x1="0" y1="170" x2="900" y2="170" />
     <line x1="0" y1="195" x2="900" y2="195" />
     <line x1="0" y1="225" x2="900" y2="225" />
@@ -124,58 +85,57 @@
   <!-- Ground Gradient Overlay -->
   <rect x="0" y="140" width="900" height="120" fill="url(#gridFade)" />
 
-  <!-- Left Content: Game Badge & Title -->
-  <g transform="translate(60, 0)">
+  <!-- Left Content: Game Badge & Title (Strict Absolute Coordinates) -->
+  <g id="hero-left-content">
     <!-- Version Pill Badge -->
-    <g transform="translate(0, 36)">
+    <g transform="translate(60, 36)">
       <rect width="186" height="26" rx="13" fill="rgba(0, 240, 255, 0.12)" stroke="#00f0ff" stroke-width="1.2" />
       <circle cx="15" cy="13" r="4" fill="#00ff88">
         <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite" />
       </circle>
-      <text x="28" y="17" font-family="'Segoe UI', Roboto, 'Helvetica Neue', sans-serif" font-size="11" font-weight="800" fill="#00f0ff" letter-spacing="1.5">CRYSTAL COLLECTOR 2.0</text>
+      <text x="28" y="17" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" fill="#00f0ff" letter-spacing="1.5">CRYSTAL COLLECTOR 2.0</text>
     </g>
 
     <!-- Main Holographic Title -->
-    <text x="0" y="108" font-family="'Orbitron', 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="900" fill="url(#cyberGrad)" filter="url(#neonGlow)" letter-spacing="2">
+    <text x="60" y="108" font-family="'Orbitron', 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="900" fill="url(#cyberGrad)" filter="url(#neonGlow)" letter-spacing="2">
       NEO-ARCADE 3D
     </text>
-    <text x="0" y="108" font-family="'Orbitron', 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="900" fill="#ffffff" letter-spacing="2">
+    <text x="60" y="108" font-family="'Orbitron', 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="900" fill="#ffffff" letter-spacing="2">
       NEO-ARCADE 3D
     </text>
 
     <!-- Subtitle -->
-    <text x="2" y="140" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#a0c8e6" letter-spacing="1">
+    <text x="62" y="140" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#a0c8e6" letter-spacing="1">
       ⚡ 10 PROCEDURAL BIOMES · 6 HEROES · DUAL THEMES · 60 FPS
     </text>
 
     <!-- Feature Quick Pills -->
-    <g transform="translate(0, 168)">
-      <!-- Pill 1: Three.js 3D -->
+    <g transform="translate(60, 168)">
       <rect x="0" y="0" width="130" height="30" rx="8" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(0, 240, 255, 0.4)" stroke-width="1" />
       <text x="65" y="19" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#00f0ff">🎮 Three.js Engine</text>
 
-      <!-- Pill 2: Dual Themes -->
       <rect x="140" y="0" width="145" height="30" rx="8" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 112, 166, 0.5)" stroke-width="1" />
       <text x="212" y="19" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#ff70a6">🌸 Dual Aesthetics</text>
 
-      <!-- Pill 3: 47 Tests -->
       <rect x="295" y="0" width="135" height="30" rx="8" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(0, 255, 136, 0.4)" stroke-width="1" />
       <text x="362" y="19" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#00ff88">✔ 47/47 Tests 100%</text>
 
-      <!-- Pill 4: Web Audio -->
       <rect x="440" y="0" width="145" height="30" rx="8" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(255, 215, 0, 0.4)" stroke-width="1" />
       <text x="512" y="19" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#ffd700">🎵 0 KB Web Audio</text>
     </g>
   </g>
 
-  <!-- Right Hero 3D Floating Crystal & Orbit Ring -->
-  <g class="hero-crystal">
+  <!-- Right Hero 3D Floating Crystal & Orbit Ring (Centering around 760, 125 with SMIL) -->
+  <g id="hero-crystal-group">
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="4s" repeatCount="indefinite" />
+
     <!-- Ambient back glow -->
     <circle cx="760" cy="125" r="65" fill="#00f0ff" opacity="0.18" filter="url(#neonGlow)" />
     <circle cx="760" cy="125" r="45" fill="#ff00aa" opacity="0.18" filter="url(#neonGlow)" />
 
-    <!-- Orbiting Energy Ring -->
-    <g class="orbit-group">
+    <!-- Orbiting Energy Ring (Explicit rotation pivot at 760, 125) -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" from="0 760 125" to="360 760 125" dur="8s" repeatCount="indefinite" />
       <ellipse cx="760" cy="125" rx="72" ry="24" fill="none" stroke="#00f0ff" stroke-width="1.8" opacity="0.75" stroke-dasharray="8 6" filter="url(#softGlow)" />
       <circle cx="832" cy="125" r="4" fill="#ffffff" filter="url(#softGlow)" />
       <circle cx="688" cy="125" r="3" fill="#ff00aa" filter="url(#softGlow)" />
@@ -198,11 +158,20 @@
     </polygon>
   </g>
 
-  <!-- Floating Sakura Blossom Petals -->
+  <!-- Floating Sakura Blossom Petals (SMIL drift) -->
   <g>
-    <path d="M 860 30 C 865 35, 875 35, 873 45 C 865 42, 858 38, 860 30 Z" fill="#ffb7c5" opacity="0.85" class="petal-1" />
-    <path d="M 830 50 C 835 53, 843 53, 841 62 C 834 60, 828 56, 830 50 Z" fill="#ff9ebb" opacity="0.9" class="petal-2" />
-    <path d="M 870 90 C 874 94, 882 94, 880 102 C 874 100, 868 96, 870 90 Z" fill="#ffb7c5" opacity="0.75" class="petal-3" />
+    <path d="M 860 30 C 865 35, 875 35, 873 45 C 865 42, 858 38, 860 30 Z" fill="#ffb7c5" opacity="0.85">
+      <animateTransform attributeName="transform" type="translate" values="0,0; -120,90" dur="6s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0;0.9;0.9;0" dur="6s" repeatCount="indefinite" />
+    </path>
+    <path d="M 830 50 C 835 53, 843 53, 841 62 C 834 60, 828 56, 830 50 Z" fill="#ff9ebb" opacity="0.9">
+      <animateTransform attributeName="transform" type="translate" values="0,0; -150,110" dur="8s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0;0.9;0.9;0" dur="8s" repeatCount="indefinite" />
+    </path>
+    <path d="M 870 90 C 874 94, 882 94, 880 102 C 874 100, 868 96, 870 90 Z" fill="#ffb7c5" opacity="0.75">
+      <animateTransform attributeName="transform" type="translate" values="0,0; -100,80" dur="7s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0;0.8;0.8;0" dur="7s" repeatCount="indefinite" />
+    </path>
   </g>
 
   <!-- Glowing Laser Scanning Border -->
