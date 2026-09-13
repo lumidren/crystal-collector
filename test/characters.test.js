@@ -12,7 +12,7 @@ test('characters - CHARACTER_ROSTER defines 6 distinct playable heroes with uniq
   assert.ok(ids.includes('titan_mech'), 'Must include Titan Juggernaut');
   assert.ok(ids.includes('void_sorcerer'), 'Must include Void Sorcerer');
   assert.ok(ids.includes('neon_valkyrie'), 'Must include Neon Valkyrie');
-  assert.ok(ids.includes('magical_rue'), 'Must include Magical Rue');
+  assert.ok(ids.includes('magical_rue'), 'Must include Magical Girl');
 
   // Verify starter hero is free
   const starter = CHARACTER_ROSTER.find(c => c.id === 'cyber_runner');
@@ -44,11 +44,12 @@ test('characters - Neon Valkyrie grants air glide capability', () => {
   assert.equal(valkyrie.stats.airGlide, true, 'Neon Valkyrie must have airGlide active');
 });
 
-test('characters - Magical Rue grants air glide, +1 heart, and +4m starlight magnet', () => {
-  const rue = CHARACTER_ROSTER.find(c => c.id === 'magical_rue');
-  assert.equal(rue.stats.airGlide, true, 'Magical Rue must have fairy airGlide active');
-  assert.equal(rue.stats.extraHearts, 1, 'Magical Rue must grant +1 extra heart');
-  assert.equal(rue.stats.magnetBonus, 4.0, 'Magical Rue must grant +4m starlight magnet reach');
+test('characters - Magical Girl grants air glide, +1 heart, and +4m starlight magnet', () => {
+  const girl = CHARACTER_ROSTER.find(c => c.id === 'magical_rue');
+  assert.equal(girl.name, 'Magical Girl');
+  assert.equal(girl.stats.airGlide, true, 'Magical Girl must have fairy airGlide active');
+  assert.equal(girl.stats.extraHearts, 1, 'Magical Girl must grant +1 extra heart');
+  assert.equal(girl.stats.magnetBonus, 4.0, 'Magical Girl must grant +4m starlight magnet reach');
 });
 
 test('characters - CyberRunner 3D class instantiates unique 3D geometries for all character types', () => {
@@ -75,9 +76,9 @@ test('characters - CyberRunner 3D class instantiates unique 3D geometries for al
   const valkyrie = new CyberRunner({ currentCharacter: 'neon_valkyrie', playerColor: '#00f0ff' }, scene);
   assert.ok(valkyrie.animatedParts.leftWing && valkyrie.animatedParts.rightWing, 'Neon Valkyrie must have dual photonic wings');
 
-  // Test Magical Rue
-  const rue = new CyberRunner({ currentCharacter: 'magical_rue', playerColor: '#ff69b4' }, scene);
-  assert.ok(rue.animatedParts.fairyLeftWing && rue.animatedParts.fairyRightWing, 'Magical Rue must have fluttering fairy wings');
-  assert.ok(rue.animatedParts.pigtailLeft && rue.animatedParts.pigtailRight, 'Magical Rue must have twin ribbons & pigtails');
-  assert.ok(rue.animatedParts.starWandGem, 'Magical Rue must wield star heart wand');
+  // Test Magical Girl
+  const girl = new CyberRunner({ currentCharacter: 'magical_rue', playerColor: '#ff69b4' }, scene);
+  assert.ok(girl.animatedParts.fairyLeftWing && girl.animatedParts.fairyRightWing, 'Magical Girl must have fluttering fairy wings');
+  assert.ok(girl.animatedParts.pigtailLeft && girl.animatedParts.pigtailRight, 'Magical Girl must have twin ribbons & pigtails');
+  assert.ok(girl.animatedParts.starWandGem, 'Magical Girl must wield star heart wand');
 });
