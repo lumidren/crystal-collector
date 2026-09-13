@@ -292,21 +292,21 @@ function createPowerupRelic(type, isGirlsTheme = false) {
 function createQuantumSentinelCube(isGirlsTheme = false) {
   const group = new THREE.Group();
 
-  // Exoskeleton armor box (Strawberry velvet in Girls Theme, obsidian in default)
+  // Exoskeleton armor box (Obsidian-violet mecha in Girls Theme, dark carbon in default)
   const armor = new THREE.Mesh(
     new THREE.BoxGeometry(1.9, 1.9, 1.9),
     new THREE.MeshStandardMaterial({
-      color: isGirlsTheme ? 0x5a1e46 : 0x14141e,
+      color: isGirlsTheme ? 0x1a1524 : 0x14141e,
       roughness: 0.35,
-      metalness: isGirlsTheme ? 0.35 : 0.85
+      metalness: isGirlsTheme ? 0.75 : 0.85
     })
   );
   group.add(armor);
 
   // 8 Corner Reinforcement Brackets
   const cornerMat = new THREE.MeshStandardMaterial({
-    color: isGirlsTheme ? 0x7e2d63 : 0x252535,
-    emissive: isGirlsTheme ? 0xff70a6 : 0xff0044,
+    color: isGirlsTheme ? 0x2e2338 : 0x252535,
+    emissive: isGirlsTheme ? 0xff2a6d : 0xff0044,
     emissiveIntensity: isGirlsTheme ? 0.45 : 0.3,
     roughness: 0.4
   });
@@ -320,12 +320,12 @@ function createQuantumSentinelCube(isGirlsTheme = false) {
     });
   });
 
-  // Inner floating Reactor Core (Pastel Pink Heart Core in Girls Theme, Magma in default)
+  // Inner floating Reactor Core (Ruby-Coral Danger Core in Girls Theme, Magma in default)
   const innerCore = new THREE.Mesh(
     new THREE.OctahedronGeometry(0.88),
     new THREE.MeshStandardMaterial({
-      color: isGirlsTheme ? 0xff70a6 : 0xff0044,
-      emissive: isGirlsTheme ? 0xff2a85 : 0xff1100,
+      color: isGirlsTheme ? 0xff2a6d : 0xff0044,
+      emissive: isGirlsTheme ? 0xff0055 : 0xff1100,
       emissiveIntensity: isGirlsTheme ? 1.9 : 1.6,
       roughness: 0.1,
       metalness: 0.2
@@ -334,12 +334,12 @@ function createQuantumSentinelCube(isGirlsTheme = false) {
   group.add(innerCore);
 
   if (isGirlsTheme) {
-    // 3D Ribbon Wrap & Bow (Transforms Cube into a Magical Surprise Gift Box)
+    // 3D Ribbon Wrap & Bow (Transforms Cube into an Elegant Golden Star Gift Box)
     const ribbonMat = new THREE.MeshStandardMaterial({
-      color: 0xffe066,
-      emissive: 0xffaa00,
+      color: 0xffd700,
+      emissive: 0xff9900,
       emissiveIntensity: 0.4,
-      metalness: 0.8,
+      metalness: 0.85,
       roughness: 0.2
     });
     // Horizontal ribbon band around X
@@ -384,7 +384,7 @@ function createQuantumSentinelCube(isGirlsTheme = false) {
   const repulsor = new THREE.Mesh(
     new THREE.CylinderGeometry(0.55, 0.45, 0.08, 16),
     new THREE.MeshStandardMaterial({
-      color: isGirlsTheme ? 0x5a1e46 : 0x222533,
+      color: isGirlsTheme ? 0x2e2338 : 0x222533,
       metalness: 0.8,
       roughness: 0.2
     })
@@ -394,7 +394,7 @@ function createQuantumSentinelCube(isGirlsTheme = false) {
 
   const repulsorGlow = new THREE.Mesh(
     new THREE.CircleGeometry(0.42, 16),
-    new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xff70a6 : 0xff0044 })
+    new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xff2a6d : 0xff0044 })
   );
   repulsorGlow.position.set(0, -1.01, 0);
   repulsorGlow.rotation.x = Math.PI / 2;
@@ -482,22 +482,22 @@ function createHunterInterceptorDrone() {
 function createAntiGravSkyMine(isGirlsTheme = false) {
   const group = new THREE.Group();
 
-  // Core Sphere (Frosted lavender/plum in Girls Theme, dark naval armor in default)
+  // Core Sphere (Dark tungsten mecha in Girls Theme, dark naval armor in default)
   const core = new THREE.Mesh(
     new THREE.SphereGeometry(0.78, 16, 16),
     new THREE.MeshStandardMaterial({
-      color: isGirlsTheme ? 0x481845 : 0x1c1508,
-      emissive: isGirlsTheme ? 0x6e245a : 0x332200,
+      color: isGirlsTheme ? 0x1e1828 : 0x1c1508,
+      emissive: isGirlsTheme ? 0x3d204d : 0x332200,
       roughness: 0.35,
-      metalness: isGirlsTheme ? 0.6 : 0.85
+      metalness: isGirlsTheme ? 0.8 : 0.85
     })
   );
   group.add(core);
 
   // 6 Detonation Spires along ±X, ±Y, ±Z (Golden Star Points in Girls Theme)
   const spikeMat = new THREE.MeshStandardMaterial({
-    color: isGirlsTheme ? 0xffe066 : 0x2b2210,
-    emissive: isGirlsTheme ? 0xffaa00 : 0xffaa00,
+    color: isGirlsTheme ? 0xffd700 : 0x2b2210,
+    emissive: isGirlsTheme ? 0xff9900 : 0xffaa00,
     emissiveIntensity: isGirlsTheme ? 0.75 : 0.6,
     metalness: 0.85
   });
@@ -519,14 +519,14 @@ function createAntiGravSkyMine(isGirlsTheme = false) {
     group.add(spike);
   });
 
-  // Dual Counter-Rotating Gyroscopic Rings
+  // Dual Counter-Rotating Gyroscopic Rings (Rose & Mint in Girls Theme)
   const ring1 = new THREE.Mesh(
     new THREE.TorusGeometry(1.2, 0.05, 8, 28),
-    new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xffa0bc : 0xffaa00 })
+    new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xff6699 : 0xffaa00 })
   );
   const ring2 = new THREE.Mesh(
     new THREE.TorusGeometry(1.4, 0.04, 8, 28),
-    new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xff70a6 : 0xff7700 })
+    new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0x2dd4bf : 0xff7700 })
   );
   ring2.rotation.x = Math.PI / 2;
   group.add(ring1);
@@ -890,14 +890,9 @@ const CrystalCollectorGame = () => {
     const biomeEnv = BiomeGenerator.buildBiome(level, scene, isGirlsTheme);
     const { biome, decorations, solidColliders, jumpPads, hazardZones, platforms } = biomeEnv;
 
-    if (isGirlsTheme) {
-      scene.background = new THREE.Color(0x281028);
-      scene.fog = new THREE.Fog(0x351433, 18, 80);
-    } else {
-      scene.background = new THREE.Color(biome.skyColor);
-      if (biome.fog) {
-        scene.fog = new THREE.Fog(biome.fog.color, biome.fog.near, biome.fog.far);
-      }
+    scene.background = new THREE.Color(biome.skyColor);
+    if (biome.fog) {
+      scene.fog = new THREE.Fog(biome.fog.color, biome.fog.near, biome.fog.far);
     }
 
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -922,19 +917,19 @@ const CrystalCollectorGame = () => {
 
     // Dynamic Environmental Lighting (Ambient Fill + Hemisphere + Directional Soft Shadows)
     const ambientLight = new THREE.AmbientLight(
-      isGirlsTheme ? 0xfff0f5 : 0xffffff,
-      isGirlsTheme ? 0.75 : 0.62
+      isGirlsTheme ? 0xf5eefa : 0xffffff,
+      isGirlsTheme ? 0.72 : 0.62
     );
     scene.add(ambientLight);
 
     const hemiLight = new THREE.HemisphereLight(
-      isGirlsTheme ? 0xe0aaff : biome.skyColor,
-      isGirlsTheme ? 0xff99bb : 0x48586c,
+      isGirlsTheme ? 0xd5c8ec : biome.skyColor,
+      isGirlsTheme ? 0xf5edf8 : 0x48586c,
       0.85
     );
     scene.add(hemiLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.10);
+    const dirLight = new THREE.DirectionalLight(isGirlsTheme ? 0xfff8ee : 0xffffff, isGirlsTheme ? 1.15 : 1.10);
     dirLight.position.set(16, 26, 16);
     dirLight.castShadow = shadowsEnabled;
     dirLight.shadow.mapSize.width = isUltra ? 2048 : 1024;
@@ -949,13 +944,13 @@ const CrystalCollectorGame = () => {
     dirLight.shadow.normalBias = 0.02;
     scene.add(dirLight);
 
-    // Ground Floor with PBR Texture (76x76 Arena)
+    // Ground Floor with PBR Texture (76x76 Arena) - High-contrast porcelain alabaster in Girls Theme
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(76, 76),
       new THREE.MeshStandardMaterial({
-        color: isGirlsTheme ? 0x381434 : biome.groundColor,
-        roughness: isGirlsTheme ? 0.55 : 0.75,
-        metalness: isGirlsTheme ? 0.18 : 0.08
+        color: isGirlsTheme ? 0xede8f2 : biome.groundColor,
+        roughness: isGirlsTheme ? 0.45 : 0.75,
+        metalness: isGirlsTheme ? 0.08 : 0.08
       })
     );
     ground.rotation.x = -Math.PI / 2;
@@ -965,8 +960,8 @@ const CrystalCollectorGame = () => {
     const grid = new THREE.GridHelper(
       76,
       38,
-      isGirlsTheme ? 0xff85b2 : 0x555555,
-      isGirlsTheme ? 0x6e2055 : 0x222222
+      isGirlsTheme ? 0xb8a8c8 : 0x555555,
+      isGirlsTheme ? 0xdcd2e6 : 0x222222
     );
     grid.position.y = 0.01;
     scene.add(grid);
@@ -976,7 +971,7 @@ const CrystalCollectorGame = () => {
       const wall = new THREE.Mesh(
         new THREE.BoxGeometry(76, 5, 1),
         new THREE.MeshStandardMaterial({
-          color: isGirlsTheme ? 0x521e48 : biome.wallColor,
+          color: isGirlsTheme ? 0x3d3245 : biome.wallColor,
           roughness: isGirlsTheme ? 0.5 : 0.7,
           metalness: 0.2
         })
