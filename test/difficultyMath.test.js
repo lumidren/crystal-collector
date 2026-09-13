@@ -133,8 +133,8 @@ test('rootPassword - developer master password unlock logic', () => {
   assert.equal(verifyRootPassword(null), false, 'Handles null safely');
 });
 
-test('rootPassword - secret password iloverue unlocks Magical Rue & Girls Theme', () => {
-  assert.equal(verifyGirlsThemePassword('iloverue'), true, 'Password iloverue unlocks girls theme');
+test('rootPassword - secret password unlocks Magical Girl & Girls Theme', () => {
+  assert.equal(verifyGirlsThemePassword('iloverue'), true, 'Secret password unlocks girls theme');
   assert.equal(verifyGirlsThemePassword('ILOVERUE'), true, 'Case-insensitive ILOVERUE unlocks girls theme');
   assert.equal(verifyGirlsThemePassword('  iloverue  '), true, 'Trims whitespace correctly');
   assert.equal(verifyGirlsThemePassword('lumidren'), false, 'lumidren does not unlock girls theme');
