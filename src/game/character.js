@@ -53,7 +53,7 @@ export const CHARACTER_ROSTER = [
   },
   {
     id: 'magical_rue',
-    name: 'Magical Rue',
+    name: 'Magical Girl',
     title: 'Starlight Dreamer',
     icon: '✨',
     cost: 0,
