@@ -7,17 +7,17 @@ export class BiomeGenerator {
       return {
         id: 'sakura_dream',
         name: level === 10 ? 'THE STARLIGHT SANCTUARY' : 'Sakura Dreamland',
-        skyColor: 0x281028,
-        groundColor: 0x3b1435,
-        wallColor: 0x541e48,
-        ambientColor: 0xffd1dc,
-        neonColor: 0xff70a6,
-        fog: { color: 0x351433, near: 24, far: 92 },
+        skyColor: 0x16132b,
+        groundColor: 0xede8f2,
+        wallColor: 0x3d3245,
+        ambientColor: 0xf5eefa,
+        neonColor: 0xff6699,
+        fog: { color: 0x241e38, near: 35, far: 110 },
         friction: 1.0,
-        jumpPadColor: 0xff66a3,
+        jumpPadColor: 0x2dd4bf,
         hasLava: false,
         isGirlsTheme: true,
-        weather: { count: 320, color: 0xffa5c2, size: 0.38, speed: 0.85, type: 'sakura' }
+        weather: { count: 180, color: 0xffb7c5, size: 0.32, speed: 0.75, type: 'sakura' }
       };
     }
     if (level <= 2) {
@@ -330,11 +330,11 @@ export class BiomeGenerator {
     padCoords.forEach(pos => {
       const padGroup = new THREE.Group();
 
-      // Outer rim with metallic finish (Rose gold in Girls Theme)
+      // Outer rim with metallic finish (Dark bronze-amethyst in Girls Theme)
       const rim = new THREE.Mesh(
         new THREE.CylinderGeometry(1.6, 1.8, 0.25, 32),
         new THREE.MeshStandardMaterial({
-          color: isGirlsTheme ? 0x5e2946 : 0x1e2430,
+          color: isGirlsTheme ? 0x362838 : 0x1e2430,
           metalness: 0.8,
           roughness: 0.25
         })
@@ -344,12 +344,12 @@ export class BiomeGenerator {
       rim.receiveShadow = true;
       padGroup.add(rim);
 
-      // Glowing launch pad surface
+      // Glowing launch pad surface (High-contrast luminous mint-cyan in Girls Theme)
       const pad = new THREE.Mesh(
         new THREE.CylinderGeometry(1.3, 1.3, 0.3, 32),
         new THREE.MeshStandardMaterial({
-          color: isGirlsTheme ? 0xff66a3 : biome.jumpPadColor,
-          emissive: isGirlsTheme ? 0xff2a85 : biome.jumpPadColor,
+          color: isGirlsTheme ? 0x2dd4bf : biome.jumpPadColor,
+          emissive: isGirlsTheme ? 0x14b8a6 : biome.jumpPadColor,
           emissiveIntensity: 0.8,
           metalness: 0.3,
           roughness: 0.15
@@ -398,24 +398,24 @@ export class BiomeGenerator {
     const solidColliders = [];
     if (isGirlsTheme) {
       // Girls Theme: Sakura Dreamland Props
-      // 1. Cherry Blossom Sakura Trees with cloud-like pink foliage
+      // 1. Cherry Blossom Sakura Trees with organic cherry-wood bark & blush canopies
       for (let i = 0; i < 14; i++) {
         const tree = new THREE.Group();
         const trunk = new THREE.Mesh(
           new THREE.CylinderGeometry(0.38, 0.55, 2.8, 8),
-          new THREE.MeshStandardMaterial({ color: 0x63384a, roughness: 0.8 })
+          new THREE.MeshStandardMaterial({ color: 0x42271d, roughness: 0.85 })
         );
         trunk.position.y = 1.4;
         trunk.castShadow = true;
         tree.add(trunk);
 
-        // Layered Cloud Clusters of Sakura Blossom
-        const pinkColors = [0xffa5c2, 0xff85a1, 0xffc2d1];
+        // Layered Cloud Clusters of Sakura Blossom with fresh green leaf accents
+        const pinkColors = [0xffb7c5, 0xff9ebb, 0xfce4ec];
         const cloudConfigs = [
           { y: 2.8, r: 1.85, c: pinkColors[0], x: 0, z: 0 },
           { y: 4.1, r: 1.4, c: pinkColors[1], x: 0, z: 0 },
           { y: 2.6, r: 1.1, c: pinkColors[2], x: 0.6, z: 0.4 },
-          { y: 2.5, r: 1.1, c: pinkColors[0], x: -0.6, z: -0.3 }
+          { y: 2.5, r: 1.05, c: 0x7da876, x: -0.6, z: -0.3 } // Organic spring leaf accent
         ];
         cloudConfigs.forEach(cfg => {
           const foliage = new THREE.Mesh(
@@ -440,20 +440,20 @@ export class BiomeGenerator {
         solidColliders.push({ type: 'tree', x: tx, z: tz, radius: 1.25, height: 6.8 });
       }
 
-      // 2. Rose Quartz Crystal Geodes & Iridescent Gem Formations
+      // 2. Translucent Rose Quartz Crystal Geodes & Refined Gem Formations
       for (let i = 0; i < 8; i++) {
         const rockRadius = 1.4 + (i % 3) * 0.25;
         const rock = new THREE.Mesh(
           new THREE.DodecahedronGeometry(rockRadius),
           new THREE.MeshPhysicalMaterial({
-            color: 0xff70a6,
-            emissive: 0xff2a85,
-            emissiveIntensity: 0.45,
-            roughness: 0.12,
-            metalness: 0.15,
-            transmission: 0.55,
+            color: 0xf3d2e6,
+            emissive: 0xb388eb,
+            emissiveIntensity: 0.25,
+            roughness: 0.18,
+            metalness: 0.12,
+            transmission: 0.65,
             transparent: true,
-            opacity: 0.92,
+            opacity: 0.90,
             clearcoat: 1.0
           })
         );
@@ -469,7 +469,7 @@ export class BiomeGenerator {
         solidColliders.push({ type: 'rock', x: rx, z: rz, radius: rockRadius + 0.25, height: 2.4 });
       }
 
-      // 3. Magical Glowing Fairy Toadstools
+      // 3. Magical Glowing Fairy Toadstools (Ivory Stalks & Coral Caps)
       for (let i = 0; i < 6; i++) {
         const shroom = new THREE.Group();
         const stem = new THREE.Mesh(
@@ -482,10 +482,10 @@ export class BiomeGenerator {
         const cap = new THREE.Mesh(
           new THREE.ConeGeometry(1.35, 1.1, 16),
           new THREE.MeshStandardMaterial({
-            color: 0xff3388,
-            emissive: 0xff1493,
-            emissiveIntensity: 0.5,
-            roughness: 0.3
+            color: 0xe63973,
+            emissive: 0x991b42,
+            emissiveIntensity: 0.35,
+            roughness: 0.35
           })
         );
         cap.position.y = 1.8;
@@ -645,18 +645,18 @@ export class BiomeGenerator {
     rawHazards.forEach(s => {
       const poolGroup = new THREE.Group();
 
-      // Basalt border rim (Rose-gold in Girls Theme)
+      // Basalt border rim (Dark obsidian-amethyst in Girls Theme)
       const rim = new THREE.Mesh(
         new THREE.TorusGeometry(s.r + 0.15, 0.25, 8, 28),
-        new THREE.MeshStandardMaterial({ color: isGirlsTheme ? 0x66294a : 0x221815, roughness: 0.7 })
+        new THREE.MeshStandardMaterial({ color: isGirlsTheme ? 0x261a2e : 0x221815, roughness: 0.7 })
       );
       rim.rotation.x = Math.PI / 2;
       rim.position.y = 0.04;
       poolGroup.add(rim);
 
-      // Pulsing molten magma / void core / bubblegum soda in Girls Theme
-      const magmaColor = isGirlsTheme ? 0xff1493 : (biome.id === 'void' ? 0xbd00ff : 0xff3700);
-      const magmaEmissive = isGirlsTheme ? 0xff0066 : (biome.id === 'void' ? 0x8800cc : 0xff2200);
+      // Pulsing molten magma / void core / cursed abyss in Girls Theme
+      const magmaColor = isGirlsTheme ? 0x42104f : (biome.id === 'void' ? 0xbd00ff : 0xff3700);
+      const magmaEmissive = isGirlsTheme ? 0x260530 : (biome.id === 'void' ? 0x8800cc : 0xff2200);
       const magma = new THREE.Mesh(
         new THREE.CylinderGeometry(s.r, s.r, 0.06, 28),
         new THREE.MeshStandardMaterial({
@@ -670,11 +670,11 @@ export class BiomeGenerator {
       poolGroup.add(magma);
 
       if (isGirlsTheme) {
-        // Floating effervescent bubbles on the surface
+        // Mystical violet bubbles on the surface
         [-1.2, 0, 1.2].forEach((offset, idx) => {
           const bubble = new THREE.Mesh(
             new THREE.SphereGeometry(0.28, 8, 8),
-            new THREE.MeshBasicMaterial({ color: 0xffc2d1, transparent: true, opacity: 0.75 })
+            new THREE.MeshBasicMaterial({ color: 0xba68c8, transparent: true, opacity: 0.6 })
           );
           bubble.position.set(offset * 0.8, 0.1, (idx % 2 === 0 ? 0.6 : -0.6));
           poolGroup.add(bubble);
@@ -701,13 +701,13 @@ export class BiomeGenerator {
     platformConfigs.forEach(p => {
       const pGroup = new THREE.Group();
 
-      // Platform Deck (Frosted Rose Marble in Girls Theme)
+      // Platform Deck (Polished Porcelain Alabaster in Girls Theme for maximum readability)
       const deck = new THREE.Mesh(
         new THREE.BoxGeometry(p.width, p.height, p.depth),
         new THREE.MeshStandardMaterial({
-          color: isGirlsTheme ? 0x3a193b : 0x141b29,
-          roughness: 0.4,
-          metalness: isGirlsTheme ? 0.6 : 0.82
+          color: isGirlsTheme ? 0xeae3f0 : 0x141b29,
+          roughness: isGirlsTheme ? 0.35 : 0.4,
+          metalness: isGirlsTheme ? 0.15 : 0.82
         })
       );
       deck.castShadow = true;
@@ -717,7 +717,7 @@ export class BiomeGenerator {
       // Neon Underglow Edge Trim
       const edgeTrim = new THREE.Mesh(
         new THREE.BoxGeometry(p.width + 0.15, 0.1, p.depth + 0.15),
-        new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xff70a6 : p.color })
+        new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xff6699 : p.color })
       );
       edgeTrim.position.y = -p.height / 2;
       pGroup.add(edgeTrim);
@@ -727,7 +727,7 @@ export class BiomeGenerator {
         new THREE.OctahedronGeometry(0.95),
         new THREE.MeshStandardMaterial({
           color: isGirlsTheme ? 0xff70a6 : p.color,
-          emissive: isGirlsTheme ? 0xff2a85 : p.color,
+          emissive: isGirlsTheme ? 0xff3377 : p.color,
           emissiveIntensity: 0.8,
           metalness: 0.4,
           roughness: 0.1
@@ -750,7 +750,7 @@ export class BiomeGenerator {
       ].forEach(corner => {
         const beacon = new THREE.Mesh(
           new THREE.CylinderGeometry(0.08, 0.08, 0.5, 8),
-          new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xffe066 : p.color })
+          new THREE.MeshBasicMaterial({ color: isGirlsTheme ? 0xffd700 : p.color })
         );
         beacon.position.set(corner[0], p.height / 2 + 0.25, corner[1]);
         pGroup.add(beacon);
